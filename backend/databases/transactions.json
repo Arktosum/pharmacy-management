@@ -64,5 +64,19 @@
                 "multiplier": 5
             }
         ]
+    },
+    "1679833764920": {
+        "patientName": "tarun",
+        "dateTime": "2023-03-26T12:29:24.920Z",
+        "medicine": [
+            {
+                "id": 16,
+                "name": "ERIGERON",
+                "hundredml": 20,
+                "thirtyml": 10,
+                "price": 150,
+                "multiplier": 5
+            }
+        ]
     }
 }

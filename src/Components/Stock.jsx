@@ -48,6 +48,23 @@ export default function Stock() {
 }
 function EditModal(props){
   let {setRender,editRow,setShowEditModal} = props.props
+  function deleteStock(){
+    let randInt = Math.floor(Math.random()*100+1)
+    let choice = prompt(`Type number to delete | ${randInt}`)
+    if(choice != randInt) return;
+    let query = `DELETE FROM MEDICINE_STOCK WHERE id = ${editRow.id}`
+    POST('/query', {query},(data)=>{
+      if(data.success){
+        setRender(prev=>!prev)
+        alert(`Successfully deleted item from database!`)
+        setShowEditModal(null);
+      }
+      else{
+        alert(data.err.code)
+      }
+      
+    })
+  }
   function updateStock(e){
     e.preventDefault();
     let formData = Object.fromEntries(new FormData(e.target));
@@ -73,7 +90,7 @@ function EditModal(props){
       <div className="bg-gray-600 rounded-xl">
         <form onSubmit={(e)=>{updateStock(e)}}className='grid grid-cols-2 place-content-center gap-5 p-20'>
           <label htmlFor="name" className="text-white">Medicine Name: </label>
-          <input type="text" name="name" defaultValue={editRow.name} className='rounded-sm px-5'/>
+          <input type="text" name="name" defaultValue={editRow.name} className='rounded-sm px-5' required/>
           <label htmlFor="hundredml" className="text-white">100ml count: </label>
           <input type="number" name="hundredml" defaultValue={editRow.hundredml} className='rounded-sm px-5'/>
           <label htmlFor="thirtyml" className="text-white">30ml count: </label>
@@ -86,6 +103,10 @@ function EditModal(props){
           className='font-bold uppercase text-black px-4 py-2 bg-[#ff000046] rounded-xl 
           text-center hover:bg-[#ff0000] duration-200 cursor-pointer'>cancel</div>
           <button className='font-bold uppercase text-black px-4 py-2 bg-[#00ff0046] rounded-xl text-center hover:bg-[#00ff00] duration-200'>update</button>
+          <div onClick={()=>{
+            deleteStock();
+          }}
+          className='cursor-pointer font-bold uppercase text-white px-4 py-2 bg-[#000000] rounded-xl text-center hover:bg-[#7a7a7a] duration-200'>delete</div>
         </form>
       </div>
     </div>
@@ -118,7 +139,7 @@ function MainStockTable(props){
     <h1 className='text-5xl text-white text-center py-10'>Stock</h1>
       <form onSubmit={(e)=>{addStock(e)}} className='flex gap-10 justify-center items-center'>
         <label htmlFor="medicine-name" className="text-white">Medicine name</label>
-        <input type="text" name='name' placeholder='Enter medicine name...' className="px-5 rounded-sm"/>
+        <input type="text" name='name' placeholder='Enter medicine name...' className="px-5 rounded-sm" required/>
         <button className='border-green-600 border-2 
         hover:bg-green-600 duration-200 text-green-600 px-5 py-2 rounded-xl font-bold hover:text-black'>ADD</button>
       </form>
