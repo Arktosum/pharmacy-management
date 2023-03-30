@@ -4,7 +4,7 @@ import Navbar from './Components/Navbar'
 import Transaction from './Components/Transaction'
 import { Route, Routes } from 'react-router'
 import './Components/Main.css'
-import Bills from './Components/Bills'
+import Logs from './Components/Logs'
 export default function App() {
   return (
     <>
@@ -12,7 +12,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Stock/>}></Route>
       <Route path="/transaction" element={<Transaction/>}></Route>
-      <Route path="/bills" element={<Bills/>}></Route>
+      <Route path="/logs" element={<Logs/>}></Route>
     </Routes>
     </>
   )

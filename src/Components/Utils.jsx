@@ -1,5 +1,5 @@
-export let ORIGIN = `http://localhost:3000`
-// export let ORIGIN = `https://Synergy.blazingknightog.repl.co`
+// export let ORIGIN = `http://localhost:3000`
+export let ORIGIN = `https://pharmacy-database.blazingknightog.repl.co`
 
 export function POST(endpoint,data,callback=()=>{}){
     fetch(ORIGIN+endpoint, {

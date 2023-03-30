@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { POST } from './Utils'
-const HUNDRED_ML_THRESHOLD = 24
-const THIRTY_ML_THRESHOLD = 20
+const HUNDRED_ML_THRESHOLD = 5
+const THIRTY_ML_THRESHOLD = 15
 
 
 export default function Stock() {
@@ -15,17 +15,17 @@ export default function Stock() {
       if(data.success){
         switch(filter.filter){
           case 'name':  data.data.sort((a,b)=>{
-            if(filter.order == 'asc') return b.name - a.name;
-            return a.name - b.name
+            if(filter.order == 'desc') return b.name.localeCompare(a.name);
+            return a.name.localeCompare(b.name);
           }); break;
           case 'hundredml':  data.data.sort((a,b)=>{
-            if(filter.order == 'asc') return b.hundredml - a.hundredml;
+            if(filter.order == 'desc') return b.hundredml - a.hundredml;
             return a.hundredml - b.hundredml}); break;
           case 'thirtyml':  data.data.sort((a,b)=>{
-            if(filter.order == 'asc') return b.thirtyml - a.thirtyml;
+            if(filter.order == 'desc') return b.thirtyml - a.thirtyml;
             return a.thirtyml - b.thirtyml}); break;
           case 'price':  data.data.sort((a,b)=>{
-            if(filter.order == 'asc') return b.price - a.price;
+            if(filter.order == 'desc') return b.price - a.price;
             return a.price - b.price}); break;
         }
         setStockTable(data.data)
@@ -42,7 +42,7 @@ export default function Stock() {
         <EditModal props={{setRender,editRow,setShowEditModal}}/>
         </div>}
       <div className='h-full w-[50vw] border-r-green-600 border-black border-2'>{<MainStockTable props={{stockTable,setRender,setShowEditModal,setFilter}}/>}</div>
-      <div className='h-full w-[50vw] border-l-green-600 border-black border-2'>{<EditStockTable props={{setShowEditModal}}/>}</div>
+      <div className='h-full w-[50vw] border-l-green-600 border-black border-2'>{<EditStockTable props={{render,setShowEditModal}}/>}</div>
     </div>
   )
 }
@@ -56,7 +56,16 @@ function EditModal(props){
     POST('/query', {query},(data)=>{
       if(data.success){
         setRender(prev=>!prev)
-        alert(`Successfully deleted item from database!`)
+        let UNIXTimestamp = Date.now()
+        let log = {}
+        log[UNIXTimestamp] = {
+          datetime : new Date(),
+          type : 'deleted',
+          data : {
+            medicine : editRow
+          }
+        }
+        POST('/logs/create', log)
         setShowEditModal(null);
       }
       else{
@@ -74,9 +83,27 @@ function EditModal(props){
     `
     POST('/query', {query},(data)=>{
       if(data.success){
-        setRender(prev=>!prev)
-        alert(`Successfully updated ${formData.name} to database!`)
         setShowEditModal(null);
+        let UNIXTimestamp = Date.now()
+        let log = {}
+        log[UNIXTimestamp] = {
+          datetime : new Date(),
+          type : 'updated',
+          data : {
+            old : editRow,
+            new : {
+              id:editRow.id,
+              name : formData.name,
+              thirtyml:formData.thirtyml,
+              hundredml:formData.hundredml,
+              price : formData.price
+            }
+          }
+        }
+        POST('/logs/create', log)
+        setTimeout(()=>{
+          setRender(prev=>!prev)
+        },300)
       }
       else{
         alert(data.err.code)
@@ -121,7 +148,16 @@ function MainStockTable(props){
     let query = `INSERT INTO MEDICINE_STOCK (name,hundredml,thirtyml) VALUES ('${formData.name.toUpperCase()}',0,0)` 
     POST('/query', {query},(data)=>{
       if(data.success){
-        alert(`Successfully added ${formData.name} to database`)
+        let UNIXTimestamp = Date.now()
+        let log = {}
+        log[UNIXTimestamp] = {
+          datetime : new Date(),
+          type : 'added',
+          data : {
+            medicine : formData.name
+          }
+        }
+        POST('/logs/create', log)
         setRender(prev=>!prev)
       }
       else{
@@ -151,9 +187,9 @@ function MainStockTable(props){
         })
         setRender(prev=>!prev)
       })} name="" id="">
+        <option value="thirtyml">30 ml</option>
         <option value="name">Name</option>
         <option value="hundredml">100 ml</option>
-        <option value="thirtyml" selected>30 ml</option>
         <option value="price">Price</option>
       </select>
       <label htmlFor="medicine-name" className="text-white">Order By: </label>
@@ -164,7 +200,7 @@ function MainStockTable(props){
         setRender(prev=>!prev)
       })} name="" id="">
         <option value="asc">Ascending</option>
-        <option value="desc" selected>Descending</option>
+        <option value="desc">Descending</option>
       </select>
       </div>
       <div className="w-full grid grid-cols-5 place-items-center p-5">
@@ -180,14 +216,17 @@ function MainStockTable(props){
   </>)
 }
 function EditStockTable(props){
-  let {setShowEditModal} = props.props
+  let {render,setShowEditModal} = props.props
   let [stock,setStock] = useState([])
+  useEffect(()=>{
+    setStock([])
+  },[render])
   function findStock(name) {
     if(name == ''){
       setStock([])
       return;
     }
-    let query = `SELECT * FROM MEDICINE_STOCK WHERE name LIKE '${name}%' or name LIKE '%${name}%'`
+    let query = `SELECT * FROM MEDICINE_STOCK WHERE name LIKE '%${name}%'`
     POST("/query",{query},(data)=>{
       if(data.success){
         setStock(data.data)
@@ -223,12 +262,12 @@ function StockItem(props){
   let {row,setShowEditModal} = props.props
   return (<>
   <div onClick={()=>{setShowEditModal(row)}}
-  className="w-full grid grid-cols-5 place-items-center hover:bg-gray-600 duration-200 p-2 rounded-sm cursor-pointer">
-    <div className="text-white text-sm">{row.id}</div>
-    <div className="text-white text-sm">{row.name}</div>
-    <div className={`text-sm ${row.hundredml < HUNDRED_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.hundredml}</div>
-    <div className={`text-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.thirtyml}</div>
-    <div className="text-white text-sm">₹ {row.price}</div>
+  className="w-full grid grid-cols-5 place-items-center hover:bg-[#181818] duration-200 p-2 rounded-sm cursor-pointer">
+    <div className="text-blue-600 text-md">{row.id}</div>
+    <div className="text-yellow-300 text-md">{row.name}</div>
+    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.hundredml < HUNDRED_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.hundredml}</div>
+    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.thirtyml}</div>
+    <div className="text-green-400 text-md">₹ {row.price}</div>
   </div>
   </>)
 }

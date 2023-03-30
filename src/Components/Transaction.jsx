@@ -1,24 +1,37 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { POST } from './Utils';
 
-const HUNDRED_ML_THRESHOLD = 24
-const THIRTY_ML_THRESHOLD = 20
+const HUNDRED_ML_THRESHOLD = 5
+const THIRTY_ML_THRESHOLD = 15
 
 export default function Transaction() {
   let [selectedItems,setselectedItems] = useState([])
-  
   return (
     <div className='h-[90vh] bg-black'>
       <div className='w-full h-full flex'>
-        <div className='w-[50vw]'><StockSelect props={{setselectedItems}}/></div>
+        <div className='w-[50vw]'><StockSelect props={{setselectedItems,selectedItems}}/></div>
         <div className='w-[50vw] border-l-green-600 border-2 border-black'><TransactBill props={{selectedItems,setselectedItems}}/></div>
       </div>
     </div>
   )
 }
+
 function StockSelect(props){
   let [stock,setStock] = useState([])
-  let {setselectedItems} = props.props
+  let {setselectedItems,selectedItems} = props.props
+  let [dailyCount,setDailyCount] = useState(0)
+  
+  useEffect(()=>{
+    let thisDate = new Date().toLocaleDateString('in',{
+      year  : 'numeric',
+      month : '2-digit',
+      day : '2-digit'
+    })
+    POST('/daily_count/read',{},(data)=>{
+      setDailyCount(data[thisDate])
+    })
+  },[selectedItems])
+
   function findStock(name) {
     if(name == ''){
       setStock([])
@@ -37,8 +50,53 @@ function StockSelect(props){
   let stockTableElements = stock.map((row)=>{
     return <StockItem key={row.id} props={{row,setselectedItems}}/>
   })
+  function handleTransaction(){
+    
+    let count = 0
+    for (let item of selectedItems){
+      count+= item.multiplier
+      let remainingStock = item.thirtyml - item.multiplier
+      if(remainingStock < 0){
+        alert("Stock went to zero!");
+        continue;
+      }
+      let query = `UPDATE MEDICINE_STOCK 
+      SET thirtyml=${remainingStock}
+      WHERE id = ${item.id}
+      `
+      POST('/query',{query})
+    }
+    let thisDate = new Date().toLocaleDateString('in',{
+      year  : 'numeric',
+      month : '2-digit',
+      day : '2-digit'
+    })
+    let daily_ = {}
+    daily_[thisDate] = count
+    POST('/daily_count/create',daily_)
+    let UNIXTimestamp = Date.now()
+    let log = {}
+    log[UNIXTimestamp] = {
+      datetime : new Date(),
+      type : 'transaction',
+      data : {
+        medicine : selectedItems
+      }
+    }
+    POST('/logs/create', log)
+    setselectedItems([]);
+    setStock([])
+  }
   return(<>
-      <h1 className='text-6xl text-white text-center py-10'>Edit</h1>
+      <div className="flex justify-center items-center gap-10">
+        <h1 className='text-6xl text-white text-center py-10 uppercase' >on hand</h1>
+        <div>
+          <button onClick={handleTransaction} className="border-green-600 border-2 
+            hover:bg-green-600 duration-200 text-green-600 px-5 py-2 rounded-xl font-bold hover:text-black uppercase">update</button>
+        </div>
+        <div className="text-white text-md">Daily count: {dailyCount}</div>
+      </div>
+     
         <div className='flex gap-10 justify-center items-center'>
           <label htmlFor="medicine-name" className="text-white">Medicine name</label>
           <input onChange={(e)=>{findStock(e.target.value)}}
@@ -68,15 +126,15 @@ function StockItem(props){
         break;
       }
     }
-    if(!exists) return [...prev,{...row,multiplier:0}]
+    if(!exists) return [...prev,{...row,multiplier:1}]
     return [...prev]
   })}}
   className="w-full grid grid-cols-5 place-items-center hover:bg-gray-600 duration-200 p-2 rounded-sm cursor-pointer">
-    <div className="text-white text-sm">{row.id}</div>
-    <div className="text-white text-sm">{row.name}</div>
-    <div className={`text-sm ${row.hundredml < HUNDRED_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.hundredml}</div>
-    <div className={`text-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.thirtyml}</div>
-    <div className="text-white text-sm">₹ {row.price}</div>
+    <div className="text-blue-600 text-md">{row.id}</div>
+    <div className="text-yellow-300 text-md">{row.name}</div>
+    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.hundredml < HUNDRED_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.hundredml}</div>
+    <div className={`text-md  bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.thirtyml}</div>
+    <div className="text-green-500 text-md">₹ {row.price}</div>
   </div>
   </>)
 }
@@ -86,41 +144,13 @@ function TransactBill(props){
   let selectedItemElements = selectedItems.map((row)=>{
     return <TransactItem key={row.id} props={{row,setselectedItems}}/>
   })
-
   let grandTotal = 0
   let itemCount = 0
   for(let item of selectedItems){
     grandTotal += item.price*item.multiplier
     itemCount += item.multiplier
   }
-  function handleTransaction(e){
-    e.preventDefault();
-    let formData = Object.fromEntries(new FormData(e.target));
-
-    for (let item of selectedItems){
-      let remainingStock = item.thirtyml - item.multiplier
-      if(remainingStock < 0){
-        alert("Stock went to zero!");
-        continue;
-      }
-      let query = `UPDATE MEDICINE_STOCK 
-      SET thirtyml=${remainingStock}
-      WHERE id = ${item.id}
-      `
-      POST('/query',{query})
-    }
-    let UNIXTimestamp = Date.now()
-    let bill = {}
-    bill[UNIXTimestamp] = {
-      patientName : formData.patientName,
-      dateTime : new Date(),
-      medicine : selectedItems
-    }
-    POST('/bills/create', bill)
-    alert("Succesfully completed the transaction!")
-    setselectedItems([]);
-    e.target.reset();
-  }
+  
   return (<>
     <div>
         <h1 className='text-5xl text-white text-center py-10'>Billing</h1>
@@ -131,17 +161,12 @@ function TransactBill(props){
             <div className='text-white'>Multiplier</div>
             <div className='text-white'>Price</div>
         </div>
-        <div className="w-full grid grid-cols-1 place-items-center p-5 min-h-[40vh] overflow-y-scroll">
+        <div className="w-full grid grid-cols-1 place-items-center p-5 h-[40vh] overflow-y-scroll">
           {selectedItemElements}
         </div>
         <div className='p-5 flex flex-col justify-center items-center'>
           <div className='text-white'>Item Count: {itemCount}</div>
           <div className='text-white'>Final Amount: ₹ {grandTotal}</div>
-          <form className='flex gap-5 justify-center items-center' onSubmit={(e)=>{handleTransaction(e)}}>
-            <label htmlFor="patientName" className='text-white'>Patient Name: </label>
-            <input type="text" className='px-2 rounded-sm' name="patientName" required/>
-            <button className="uppercase px-5 py-2 bg-green-600 rounded-sm">transact</button>
-          </form>
         </div>
     </div>
   </>)
@@ -172,13 +197,13 @@ function TransactItem(props){
   }
   return (<>
   <div className="w-full grid grid-cols-6 place-items-center hover:bg-gray-600 duration-200 p-2 rounded-sm cursor-pointer" >
-    <div className="text-white text-sm">{row.id}</div>
-    <div className="text-white text-sm">{row.name}</div>
-    <div className={`text-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.thirtyml-row.multiplier}</div>
-    <div className={`text-sm`}>
-      <input type="number" className='w-15 px-2' min="0" max={row.thirtyml} value={row.multiplier} onChange={(e)=>{updateMultiplier(parseInt(e.target.value))}}/>
+    <div className="text-blue-600 text-md">{row.id}</div>
+    <div className="text-yellow-300 text-md">{row.name}</div>
+    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.thirtyml-row.multiplier}</div>
+    <div className={`text-md`}>
+      <input type="number" className='w-10 px-2 text-center' min="1" max={row.thirtyml} value={row.multiplier} onChange={(e)=>{updateMultiplier(parseInt(e.target.value))}}/>
     </div>
-    <div className="text-white text-sm">₹ {row.price*row.multiplier}</div>
+    <div className="text-md text-green-500">₹ {row.price*row.multiplier}</div>
     <div className='w-5 h-5 rounded-full grid place-content-center hover:scale-125 duration-200' onClick={removeItem}>{deleteSVG}</div>
   </div>
   </>)

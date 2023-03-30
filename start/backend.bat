@@ -1,1 +1,1 @@
-cd backend && nodemon server.js
+cd ..\backend && nodemon server.js
