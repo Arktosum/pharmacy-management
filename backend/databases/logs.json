@@ -1,0 +1,827 @@
+{
+    "1682157271143": {
+        "datetime": "2023-04-22T09:54:31.143Z",
+        "type": "transaction",
+        "patientName": "jaga",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ZIGNIDD ",
+                    "thirtyml": 12,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "540",
+                    "multiplier": 1
+                },
+                {
+                    "name": "ttt",
+                    "thirtyml": 201,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "1680195985261",
+                    "multiplier": 1
+                },
+                {
+                    "name": "STAP",
+                    "thirtyml": 62,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "504",
+                    "multiplier": 1
+                },
+                {
+                    "name": "ARN",
+                    "thirtyml": 40,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "348",
+                    "multiplier": 1
+                },
+                {
+                    "name": "PSOR",
+                    "thirtyml": 27,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "529",
+                    "multiplier": 1
+                },
+                {
+                    "name": "CHION V",
+                    "thirtyml": 18,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "378",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682157562517": {
+        "datetime": "2023-04-22T09:59:22.517Z",
+        "type": "transaction",
+        "patientName": "nithya",
+        "data": {
+            "medicine": [
+                {
+                    "name": "k3  kars",
+                    "thirtyml": 145,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "452",
+                    "multiplier": 1
+                },
+                {
+                    "name": "HYDRAS",
+                    "thirtyml": 30,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "434",
+                    "multiplier": 1
+                },
+                {
+                    "name": "ARALIA",
+                    "thirtyml": 28,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "358",
+                    "multiplier": 1
+                },
+                {
+                    "name": "SARAS",
+                    "thirtyml": 66,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "495",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682157762980": {
+        "datetime": "2023-04-22T10:02:42.980Z",
+        "type": "transaction",
+        "patientName": "sum",
+        "data": {
+            "medicine": [
+                {
+                    "name": "FRAX",
+                    "thirtyml": 28,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "414",
+                    "multiplier": 1
+                },
+                {
+                    "name": "k3  kars",
+                    "thirtyml": 145,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "452",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682157769824": {
+        "datetime": "2023-04-22T10:02:49.824Z",
+        "type": "transaction",
+        "patientName": "sum",
+        "data": {
+            "medicine": [
+                {
+                    "name": "FRAX",
+                    "thirtyml": 28,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "414",
+                    "multiplier": 1
+                },
+                {
+                    "name": "k3  kars",
+                    "thirtyml": 145,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "452",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682158550364": {
+        "datetime": "2023-04-22T10:15:50.364Z",
+        "type": "transaction",
+        "patientName": "No Name",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ttt",
+                    "thirtyml": 200,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "1680195985261",
+                    "multiplier": 1
+                },
+                {
+                    "name": "IPE ",
+                    "thirtyml": 49,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "441",
+                    "multiplier": 1
+                },
+                {
+                    "name": "DIOS",
+                    "thirtyml": 51,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "396",
+                    "multiplier": 1
+                },
+                {
+                    "name": "AESC",
+                    "thirtyml": 13,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "349",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682161743778": {
+        "datetime": "2023-04-22T11:09:03.778Z",
+        "type": "transaction",
+        "patientName": "radha",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ttt",
+                    "thirtyml": 199,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "1680195985261",
+                    "multiplier": 1
+                },
+                {
+                    "name": "RHOD",
+                    "thirtyml": 25,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "485",
+                    "multiplier": 1
+                },
+                {
+                    "name": "COLCH",
+                    "thirtyml": 22,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "383",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682161790962": {
+        "datetime": "2023-04-22T11:09:50.962Z",
+        "type": "transaction",
+        "patientName": "No Name",
+        "data": {
+            "medicine": [
+                {
+                    "name": "CIMCI",
+                    "thirtyml": 43,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "380",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682161835674": {
+        "datetime": "2023-04-22T11:10:35.674Z",
+        "type": "transaction",
+        "patientName": "sara",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ttt",
+                    "thirtyml": 198,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "1680195985261",
+                    "multiplier": 1
+                },
+                {
+                    "name": "SPIG",
+                    "thirtyml": 37,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "502",
+                    "multiplier": 1
+                },
+                {
+                    "name": "DIGIT",
+                    "thirtyml": 43,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "395",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682161914148": {
+        "datetime": "2023-04-22T11:11:54.148Z",
+        "type": "transaction",
+        "patientName": "ind",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ttt",
+                    "thirtyml": 197,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "1680195985261",
+                    "multiplier": 1
+                },
+                {
+                    "name": "PHD",
+                    "thirtyml": 55,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "472",
+                    "multiplier": 1
+                },
+                {
+                    "name": "GAMBO",
+                    "thirtyml": 11,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "413",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682162368826": {
+        "datetime": "2023-04-22T11:19:28.826Z",
+        "type": "transaction",
+        "patientName": "mith",
+        "data": {
+            "medicine": [
+                {
+                    "name": "SKOO",
+                    "thirtyml": 70,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "500",
+                    "multiplier": 1
+                },
+                {
+                    "name": "STAP",
+                    "thirtyml": 61,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "504",
+                    "multiplier": 1
+                },
+                {
+                    "name": "MEZ",
+                    "thirtyml": 26,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "455",
+                    "multiplier": 1
+                },
+                {
+                    "name": "SAM N",
+                    "thirtyml": 50,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "493",
+                    "multiplier": 1
+                },
+                {
+                    "name": "RUMEX",
+                    "thirtyml": 15,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "503",
+                    "multiplier": 1
+                },
+                {
+                    "name": "ANDRO",
+                    "thirtyml": 19,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "343",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682162636419": {
+        "datetime": "2023-04-22T11:23:56.419Z",
+        "type": "transaction",
+        "patientName": "rad",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ttt",
+                    "thirtyml": 196,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "1680195985261",
+                    "multiplier": 1
+                },
+                {
+                    "name": "RHOD",
+                    "thirtyml": 24,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "485",
+                    "multiplier": 1
+                },
+                {
+                    "name": "COLCH",
+                    "thirtyml": 21,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "383",
+                    "multiplier": 1
+                },
+                {
+                    "name": "CIMCI",
+                    "thirtyml": 42,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "380",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682164903046": {
+        "datetime": "2023-04-22T12:01:43.046Z",
+        "type": "transaction",
+        "patientName": "athi",
+        "data": {
+            "medicine": [
+                {
+                    "name": "BM 3",
+                    "thirtyml": 232,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "370",
+                    "multiplier": 1
+                },
+                {
+                    "name": "STAP",
+                    "thirtyml": 60,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "504",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682165180147": {
+        "datetime": "2023-04-22T12:06:20.147Z",
+        "type": "transaction",
+        "patientName": "moh",
+        "data": {
+            "medicine": [
+                {
+                    "name": "BC3",
+                    "thirtyml": 102,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "361",
+                    "multiplier": 1
+                },
+                {
+                    "name": "SANG ",
+                    "thirtyml": 35,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "520",
+                    "multiplier": 1
+                },
+                {
+                    "name": "RUMEX",
+                    "thirtyml": 14,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "503",
+                    "multiplier": 1
+                },
+                {
+                    "name": "IPE ",
+                    "thirtyml": 48,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "441",
+                    "multiplier": 1
+                },
+                {
+                    "name": "ttt",
+                    "thirtyml": 195,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "1680195985261",
+                    "multiplier": 1
+                },
+                {
+                    "name": "SAM N",
+                    "thirtyml": 50,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "493",
+                    "multiplier": 1
+                },
+                {
+                    "name": "EUPRAS O",
+                    "thirtyml": 49,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "411",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682170632874": {
+        "datetime": "2023-04-22T13:37:12.874Z",
+        "type": "transaction",
+        "patientName": "No Name",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ttt",
+                    "thirtyml": 194,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "1680195985261",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682170648596": {
+        "datetime": "2023-04-22T13:37:28.596Z",
+        "type": "transaction",
+        "patientName": "kv",
+        "data": {
+            "medicine": [
+                {
+                    "name": "VALER",
+                    "thirtyml": 22,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "534",
+                    "multiplier": 1
+                },
+                {
+                    "name": "CHELL",
+                    "thirtyml": 51,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "376",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682170673100": {
+        "datetime": "2023-04-22T13:37:53.100Z",
+        "type": "transaction",
+        "patientName": "No Name",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ttt",
+                    "thirtyml": 193,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "1680195985261",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682171514771": {
+        "datetime": "2023-04-22T13:51:54.771Z",
+        "type": "transaction",
+        "patientName": "vl",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ttt",
+                    "thirtyml": 192,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "1680195985261",
+                    "multiplier": 1
+                },
+                {
+                    "name": "SKOO",
+                    "thirtyml": 69,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "500",
+                    "multiplier": 1
+                },
+                {
+                    "name": "THUJ",
+                    "thirtyml": 64,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "515",
+                    "multiplier": 1
+                },
+                {
+                    "name": "STAP",
+                    "thirtyml": 59,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "504",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682171527918": {
+        "datetime": "2023-04-22T13:52:07.918Z",
+        "type": "updated",
+        "data": {
+            "old": {
+                "name": "THUJ",
+                "thirtyml": 63,
+                "hundredml": 0,
+                "price": 0,
+                "id": "515"
+            },
+            "new": {
+                "id": "515",
+                "name": "THUJ  tq",
+                "thirtyml": "63",
+                "hundredml": "0",
+                "price": "0"
+            }
+        }
+    },
+    "1682172520354": {
+        "datetime": "2023-04-22T14:08:40.354Z",
+        "type": "transaction",
+        "patientName": "vk",
+        "data": {
+            "medicine": [
+                {
+                    "name": "BI 3",
+                    "thirtyml": 116,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "368",
+                    "multiplier": 1
+                },
+                {
+                    "name": "SKOO",
+                    "thirtyml": 68,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "500",
+                    "multiplier": 1
+                },
+                {
+                    "name": "HYDRAS",
+                    "thirtyml": 29,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "434",
+                    "multiplier": 1
+                },
+                {
+                    "name": "COLOCY",
+                    "thirtyml": 38,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "389",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682173204002": {
+        "datetime": "2023-04-22T14:20:04.002Z",
+        "type": "transaction",
+        "patientName": "tam",
+        "data": {
+            "medicine": [
+                {
+                    "name": "SKOO",
+                    "thirtyml": 68,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "500",
+                    "multiplier": 1
+                },
+                {
+                    "name": "GEL",
+                    "thirtyml": 35,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "416",
+                    "multiplier": 1
+                },
+                {
+                    "name": "HYDRAS",
+                    "thirtyml": 28,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "434",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682222085581": {
+        "datetime": "2023-04-23T03:54:45.581Z",
+        "type": "updated",
+        "data": {
+            "old": {
+                "name": "ttt",
+                "thirtyml": 191,
+                "hundredml": 0,
+                "price": 0,
+                "id": "1680195985261"
+            },
+            "new": {
+                "id": "1680195985261",
+                "name": "ttt",
+                "thirtyml": "191",
+                "hundredml": "0",
+                "price": "110"
+            }
+        }
+    },
+    "1682223179658": {
+        "datetime": "2023-04-23T04:12:59.658Z",
+        "type": "updated",
+        "data": {
+            "old": {
+                "name": "s3 sel",
+                "thirtyml": 330,
+                "hundredml": 0,
+                "price": 0,
+                "id": "497"
+            },
+            "new": {
+                "id": "497",
+                "name": "s3 sel",
+                "thirtyml": "330",
+                "hundredml": "0",
+                "price": "100"
+            }
+        }
+    },
+    "1682223325783": {
+        "datetime": "2023-04-23T04:15:25.783Z",
+        "type": "updated",
+        "data": {
+            "old": {
+                "name": "s3 sel",
+                "thirtyml": 330,
+                "hundredml": 0,
+                "price": 100,
+                "id": "497"
+            },
+            "new": {
+                "id": "497",
+                "name": "s3 sel",
+                "thirtyml": "330",
+                "hundredml": "0",
+                "price": "130"
+            }
+        }
+    },
+    "1682232285361": {
+        "datetime": "2023-04-23T06:44:45.361Z",
+        "type": "transaction",
+        "consultFee": 100,
+        "patientName": "idk",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ADONIS",
+                    "thirtyml": 19,
+                    "hundredml": 0,
+                    "price": 150,
+                    "id": "331",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682233088313": {
+        "datetime": "2023-04-23T06:58:08.313Z",
+        "type": "transaction",
+        "consultFee": 100,
+        "patientName": "abc",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ADONIS",
+                    "thirtyml": 18,
+                    "hundredml": 0,
+                    "price": 150,
+                    "id": "331",
+                    "multiplier": 1
+                },
+                {
+                    "name": "ADA",
+                    "thirtyml": 34,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "352",
+                    "multiplier": 1
+                },
+                {
+                    "name": "OLENADER oq",
+                    "thirtyml": 46,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "466",
+                    "multiplier": 1
+                },
+                {
+                    "name": "SABAD",
+                    "thirtyml": 28,
+                    "hundredml": 0,
+                    "price": 0,
+                    "id": "496",
+                    "multiplier": 1
+                }
+            ]
+        }
+    },
+    "1682235303993": {
+        "datetime": "2023-04-23T07:35:03.993Z",
+        "type": "transaction",
+        "consultFee": 100,
+        "patientName": "test",
+        "data": {
+            "medicine": [
+                {
+                    "name": "ADONIS",
+                    "thirtyml": 18,
+                    "hundredml": 0,
+                    "price": 155,
+                    "id": "331",
+                    "multiplier": 2
+                }
+            ]
+        }
+    }
+}

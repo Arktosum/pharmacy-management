@@ -14,3 +14,14 @@
     border-radius: 15px;
     background-color: rgb(198, 192, 192);
 }
+
+::-webkit-scrollbar{
+    width:0.5em;
+    background-color: gray;
+    border-radius: 15px;
+}
+
+::-webkit-scrollbar-thumb{
+    border-radius: 15px;
+    background-color: rgb(198, 192, 192);
+}

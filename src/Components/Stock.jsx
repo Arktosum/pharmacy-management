@@ -10,30 +10,30 @@ export default function Stock() {
   let [editRow,setShowEditModal] = useState(null)
   let [render,setRender] = useState(false)
   useEffect(()=>{
-    let query = `SELECT * FROM MEDICINE_STOCK`
-    POST('/query',{query},(data)=>{
-      if(data.success){
-        switch(filter.filter){
-          case 'name':  data.data.sort((a,b)=>{
-            if(filter.order == 'desc') return b.name.localeCompare(a.name);
-            return a.name.localeCompare(b.name);
-          }); break;
-          case 'hundredml':  data.data.sort((a,b)=>{
-            if(filter.order == 'desc') return b.hundredml - a.hundredml;
-            return a.hundredml - b.hundredml}); break;
-          case 'thirtyml':  data.data.sort((a,b)=>{
-            if(filter.order == 'desc') return b.thirtyml - a.thirtyml;
-            return a.thirtyml - b.thirtyml}); break;
-          case 'price':  data.data.sort((a,b)=>{
-            if(filter.order == 'desc') return b.price - a.price;
-            return a.price - b.price}); break;
-        }
-        setStockTable(data.data)
+    POST('/api/medicine/read',{},(data)=>{
+      let DATA = []
+      for(let id in data){
+        data[id].id = id
+        DATA.push(data[id])
       }
-      else{
-        alert(data.err.code)
+      switch(filter.filter){
+        case 'name':  DATA.sort((a,b)=>{
+          if(filter.order == 'desc') return b.name.localeCompare(a.name);
+          return a.name.localeCompare(b.name);
+        }); break;
+        case 'hundredml':  DATA.sort((a,b)=>{
+          if(filter.order == 'desc') return b.hundredml - a.hundredml;
+          return a.hundredml - b.hundredml}); break;
+        case 'thirtyml':  DATA.sort((a,b)=>{
+          if(filter.order == 'desc') return b.thirtyml - a.thirtyml;
+          return a.thirtyml - b.thirtyml}); break;
+        case 'price':  DATA.sort((a,b)=>{
+          if(filter.order == 'desc') return b.price - a.price;
+          return a.price - b.price}); break;
       }
-    })
+      setStockTable(DATA)
+      }
+    )
   },[render])
   
   return (
@@ -52,41 +52,46 @@ function EditModal(props){
     let randInt = Math.floor(Math.random()*100+1)
     let choice = prompt(`Type number to delete | ${randInt}`)
     if(choice != randInt) return;
-    let query = `DELETE FROM MEDICINE_STOCK WHERE id = ${editRow.id}`
-    POST('/query', {query},(data)=>{
-      if(data.success){
+    let query = {key:editRow.id};
+    POST('/api/medicine/delete', query,(data)=>{
+        alert("Successfully deleted item | " + editRow.name);
         setRender(prev=>!prev)
         let UNIXTimestamp = Date.now()
-        let log = {}
-        log[UNIXTimestamp] = {
-          datetime : new Date(),
-          type : 'deleted',
-          data : {
-            medicine : editRow
+        let log = {
+          key :UNIXTimestamp,
+          value : {
+            datetime : new Date(),
+            type : 'deleted',
+            data : {
+              medicine : editRow
+            }
           }
         }
-        POST('/logs/create', log)
+        POST('/api/logs/add', log)
         setShowEditModal(null);
-      }
-      else{
-        alert(data.err.code)
-      }
-      
     })
   }
   function updateStock(e){
     e.preventDefault();
     let formData = Object.fromEntries(new FormData(e.target));
-    let query = `UPDATE MEDICINE_STOCK 
-    SET name = '${formData.name}',thirtyml=${formData.thirtyml},hundredml=${formData.hundredml},price=${formData.price}
-    WHERE id = ${editRow.id}
-    `
-    POST('/query', {query},(data)=>{
-      if(data.success){
-        setShowEditModal(null);
-        let UNIXTimestamp = Date.now()
-        let log = {}
-        log[UNIXTimestamp] = {
+    if(formData.thirtyml == '') formData.thirtyml = 0
+    if(formData.hundredml == '') formData.hundredml = 0
+    if(formData.price == '') formData.price = 0
+    let my_data  = {
+      key : editRow.id,
+      value : {
+        name : formData.name,
+        thirtyml : parseInt(formData.thirtyml),
+        hundredml : parseInt(formData.hundredml),
+        price: parseInt(formData.price)
+      }
+    }
+    POST('/api/medicine/add',my_data,(data)=>{
+      setShowEditModal(null);
+      let UNIXTimestamp = Date.now()
+      let log = {
+        key : UNIXTimestamp,
+        value : {
           datetime : new Date(),
           type : 'updated',
           data : {
@@ -100,15 +105,11 @@ function EditModal(props){
             }
           }
         }
-        POST('/logs/create', log)
-        setTimeout(()=>{
-          setRender(prev=>!prev)
-        },300)
       }
-      else{
-        alert(data.err.code)
-      }
-      
+      POST('/api/logs/add', log)
+      setTimeout(()=>{
+        setRender(prev=>!prev)
+      },300)
     })
     e.target.reset()
   }
@@ -141,30 +142,43 @@ function EditModal(props){
 }
 function MainStockTable(props){
   let {stockTable,setRender,setShowEditModal,setFilter} = props.props
-
   function addStock(e){
     e.preventDefault();
     let formData = Object.fromEntries(new FormData(e.target));
-    let query = `INSERT INTO MEDICINE_STOCK (name,hundredml,thirtyml) VALUES ('${formData.name.toUpperCase()}',0,0)` 
-    POST('/query', {query},(data)=>{
-      if(data.success){
+    for(let item of stockTable){
+      if(item.name == formData.name.toUpperCase()){
+        alert("Item already exists!");
+        return;
+      }
+    }
+    let UNIXTimestamp = Date.now()
+    let data = {
+      key :UNIXTimestamp,
+      value : {
+        name : formData.name.toUpperCase(),
+        hundredml : 0,
+        thirtyml :0,
+        price : 0
+      }
+    }
+    POST('/api/medicine/add',data,()=>{
+        alert("Successfully added | " + formData.name.toUpperCase())
         let UNIXTimestamp = Date.now()
-        let log = {}
-        log[UNIXTimestamp] = {
-          datetime : new Date(),
-          type : 'added',
-          data : {
-            medicine : formData.name
-          }
+        let log = {
+          key : UNIXTimestamp,
+          value : {
+            datetime : new Date(),
+            type : 'added',
+            data : {
+              medicine : formData.name
+            }
         }
-        POST('/logs/create', log)
-        setRender(prev=>!prev)
-      }
-      else{
-        alert(data.err.code)
-      }
+       }
+        POST('/api/logs/add', log)
+        setTimeout(()=>{
+          setRender(prev=>!prev)
+        },300)
     })
-    
     e.target.reset()
   }
 
@@ -203,8 +217,7 @@ function MainStockTable(props){
         <option value="desc">Descending</option>
       </select>
       </div>
-      <div className="w-full grid grid-cols-5 place-items-center p-5">
-        <div className='text-white'>ID</div>
+      <div className="w-full grid grid-cols-4 place-items-center p-5 bg-slate-900">
         <div className='text-white'>Medicine Name</div>
         <div className='text-white'>100 ml</div>
         <div className='text-white'>30 ml</div>
@@ -218,6 +231,7 @@ function MainStockTable(props){
 function EditStockTable(props){
   let {render,setShowEditModal} = props.props
   let [stock,setStock] = useState([])
+  let [InputString, setInputString] = useState("")
   useEffect(()=>{
     setStock([])
   },[render])
@@ -226,28 +240,33 @@ function EditStockTable(props){
       setStock([])
       return;
     }
-    let query = `SELECT * FROM MEDICINE_STOCK WHERE name LIKE '%${name}%'`
-    POST("/query",{query},(data)=>{
-      if(data.success){
-        setStock(data.data)
+    let regex = new RegExp(name,'i')
+    POST("/api/medicine/read",{},(data)=>{
+      let FILTERED = []
+      for(let key in data){
+        data[key].id = key
+        let name = data[key].name
+        if(regex.test(name)){
+          FILTERED.push(data[key])
+        }
       }
-      else{
-        alert(data.err.code)
-      } 
+      setStock(FILTERED)
     })
   }
   let stockTableElements = stock.map((row)=>{
-    return <StockItem key={row.id} props={{row,setShowEditModal}}/>
+    return <StockItem key={row.id} props={{row,setShowEditModal,setInputString}}/>
   })
   return(<>
       <h1 className='text-6xl text-white text-center py-10'>Edit</h1>
         <div className='flex gap-10 justify-center items-center'>
           <label htmlFor="medicine-name" className="text-white">Medicine name</label>
-          <input onChange={(e)=>{findStock(e.target.value)}}
+          <input value={InputString} onChange={(e)=>{
+            setInputString(e.target.value)
+            findStock(e.target.value)
+          }}
           type="text" name='name' placeholder='Enter medicine name...' className="px-5 rounded-sm"/>
         </div>
-        <div className="w-full grid grid-cols-5 place-items-center p-5">
-          <div className='text-white'>ID</div>
+        <div className="w-full grid grid-cols-4 place-items-center p-5 bg-slate-900 my-5">
           <div className='text-white'>Medicine Name</div>
           <div className='text-white'>100 ml</div>
           <div className='text-white'>30 ml</div>
@@ -259,14 +278,16 @@ function EditStockTable(props){
     </>)
 }
 function StockItem(props){
-  let {row,setShowEditModal} = props.props
+  let {row,setShowEditModal,setInputString} = props.props
   return (<>
-  <div onClick={()=>{setShowEditModal(row)}}
-  className="w-full grid grid-cols-5 place-items-center hover:bg-[#181818] duration-200 p-2 rounded-sm cursor-pointer">
-    <div className="text-blue-600 text-md">{row.id}</div>
+  <div onClick={()=>{
+    setShowEditModal(row);
+    setInputString("")
+  }}
+  className="w-full grid grid-cols-4 place-items-center hover:bg-[#181818] duration-200 p-2 rounded-sm cursor-pointer">
     <div className="text-yellow-300 text-md">{row.name}</div>
-    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.hundredml < HUNDRED_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.hundredml}</div>
-    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.thirtyml}</div>
+    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.hundredml < HUNDRED_ML_THRESHOLD ? 'text-[#ff00ff] font-bold' : 'text-white'}`}>{row.hundredml}</div>
+    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-[#ff00ff] font-bold' : 'text-white'}`}>{row.thirtyml}</div>
     <div className="text-green-400 text-md">₹ {row.price}</div>
   </div>
   </>)

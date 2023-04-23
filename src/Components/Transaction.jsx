@@ -6,11 +6,14 @@ const THIRTY_ML_THRESHOLD = 15
 
 export default function Transaction() {
   let [selectedItems,setselectedItems] = useState([])
+  let [patientName,setpatientName] = useState("")
+  let [consultFee,setconsultFee] = useState(0)
+  
   return (
     <div className='h-[90vh] bg-black'>
       <div className='w-full h-full flex'>
-        <div className='w-[50vw]'><StockSelect props={{setselectedItems,selectedItems}}/></div>
-        <div className='w-[50vw] border-l-green-600 border-2 border-black'><TransactBill props={{selectedItems,setselectedItems}}/></div>
+        <div className='w-[50vw]'><StockSelect props={{setselectedItems,selectedItems,patientName,setpatientName,consultFee,setconsultFee}}/></div>
+        <div className='w-[50vw] border-l-green-600 border-2 border-black'><TransactBill props={{selectedItems,setselectedItems,setpatientName,patientName,consultFee, setconsultFee}}/></div>
       </div>
     </div>
   )
@@ -18,7 +21,7 @@ export default function Transaction() {
 
 function StockSelect(props){
   let [stock,setStock] = useState([])
-  let {setselectedItems,selectedItems} = props.props
+  let {setselectedItems,selectedItems,patientName,setpatientName,consultFee,setconsultFee} = props.props
   let [dailyCount,setDailyCount] = useState(0)
   
   useEffect(()=>{
@@ -27,65 +30,94 @@ function StockSelect(props){
       month : '2-digit',
       day : '2-digit'
     })
-    POST('/daily_count/read',{},(data)=>{
+    POST('/api/daily/read',{},(data)=>{
       setDailyCount(data[thisDate])
     })
   },[selectedItems])
-
   function findStock(name) {
     if(name == ''){
       setStock([])
       return;
     }
-    let query = `SELECT * FROM MEDICINE_STOCK WHERE name LIKE '${name}%' or name LIKE '%${name}%'`
-    POST("/query",{query},(data)=>{
-      if(data.success){
-        setStock(data.data)
+    let regex = new RegExp(name,'i')
+    POST("/api/medicine/read",{},(data)=>{
+      let FILTERED = []
+      for(let key in data){
+        data[key].id = key
+        let name = data[key].name
+        if(regex.test(name)){
+          FILTERED.push(data[key])
+        }
       }
-      else{
-        alert(data.err.code)
-      } 
+      setStock(FILTERED)
     })
   }
   let stockTableElements = stock.map((row)=>{
     return <StockItem key={row.id} props={{row,setselectedItems}}/>
   })
+  console.log(consultFee);
   function handleTransaction(){
-    
-    let count = 0
-    for (let item of selectedItems){
-      count+= item.multiplier
-      let remainingStock = item.thirtyml - item.multiplier
-      if(remainingStock < 0){
-        alert("Stock went to zero!");
-        continue;
-      }
-      let query = `UPDATE MEDICINE_STOCK 
-      SET thirtyml=${remainingStock}
-      WHERE id = ${item.id}
-      `
-      POST('/query',{query})
+    if(selectedItems.length == 0){
+      alert("Please select an item to transact");
+      return;
     }
-    let thisDate = new Date().toLocaleDateString('in',{
-      year  : 'numeric',
+    let processedCount = 0
+    let processedItems = []
+    for(let item of selectedItems){
+      let diff = item.thirtyml - item.multiplier
+      if(diff < 0) continue // User entered wrong input!;
+      
+      let data = {
+        key : item.id,
+        value : {
+          name: item.name,
+          thirtyml: diff,
+          hundredml: item.hundredml,
+          price: item.price
+        }
+      }
+      processedItems.push(item);
+      POST('/api/medicine/add',data,)
+      processedCount+=item.multiplier
+    }
+    if(patientName == "") patientName = "No Name"
+    if(processedCount>0){
+      let log = {
+        key : Date.now(),
+        value : {
+          datetime : new Date().toISOString(),
+          type : "transaction",
+          consultFee : consultFee,
+          patientName : patientName,
+          data : {medicine:processedItems}
+        }
+      }
+      log[Date.now()] = 
+      POST('/api/logs/add',log);
+    }
+    let todayDate = new Date().toLocaleDateString('en-in',{
+      year : 'numeric',
       month : '2-digit',
       day : '2-digit'
-    })
-    let daily_ = {}
-    daily_[thisDate] = count
-    POST('/daily_count/create',daily_)
-    let UNIXTimestamp = Date.now()
-    let log = {}
-    log[UNIXTimestamp] = {
-      datetime : new Date(),
-      type : 'transaction',
-      data : {
-        medicine : selectedItems
+    });
+    POST('/api/daily/read',{},(db)=>{
+      let count
+      if (todayDate in db){
+        count = db[todayDate]+processedCount;
       }
-    }
-    POST('/logs/create', log)
-    setselectedItems([]);
-    setStock([])
+      else{
+        count = processedCount
+      }
+      let query = {
+        key : todayDate,
+        value : count
+      }
+      POST('/api/daily/add',query,(success)=>{
+        setselectedItems([])
+        setpatientName("")
+        setconsultFee(0)
+      })
+    })
   }
   return(<>
       <div className="flex justify-center items-center gap-10">
@@ -93,8 +125,9 @@ function StockSelect(props){
         <div>
           <button onClick={handleTransaction} className="border-green-600 border-2 
             hover:bg-green-600 duration-200 text-green-600 px-5 py-2 rounded-xl font-bold hover:text-black uppercase">update</button>
+
         </div>
-        <div className="text-white text-md">Daily count: {dailyCount}</div>
+        <div className="text-md  text-center inline-block rounded-sm text-white">Daily count: <span className='text-[#ffff00] text-[2em] bg-[#212121] w-[50%] h-full px-5 rounded-md'>{dailyCount}</span></div>
       </div>
      
         <div className='flex gap-10 justify-center items-center'>
@@ -102,8 +135,7 @@ function StockSelect(props){
           <input onChange={(e)=>{findStock(e.target.value)}}
           type="text" name='name' placeholder='Enter medicine name...' className="px-5 rounded-sm"/>
         </div>
-        <div className="w-full grid grid-cols-5 place-items-center p-5">
-          <div className='text-white'>ID</div>
+        <div className="w-full grid grid-cols-4 place-items-center p-5 bg-slate-900 my-5">
           <div className='text-white'>Medicine Name</div>
           <div className='text-white'>100 ml</div>
           <div className='text-white'>30 ml</div>
@@ -118,6 +150,10 @@ function StockItem(props){
   let {row,setselectedItems} = props.props
   return (<>
   <div onClick={()=>{setselectedItems((prev)=>{
+    if(row.thirtyml == 0){
+      alert("Cannot add this item to transact!");
+      return [...prev];
+    }
     // Check if id already in list
     let exists = false;
     for(let i = 0; i < prev.length; i++) {
@@ -129,44 +165,65 @@ function StockItem(props){
     if(!exists) return [...prev,{...row,multiplier:1}]
     return [...prev]
   })}}
-  className="w-full grid grid-cols-5 place-items-center hover:bg-gray-600 duration-200 p-2 rounded-sm cursor-pointer">
-    <div className="text-blue-600 text-md">{row.id}</div>
+  className="w-full grid grid-cols-4 place-items-center hover:bg-gray-600 duration-200 p-2 rounded-sm cursor-pointer">
     <div className="text-yellow-300 text-md">{row.name}</div>
-    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.hundredml < HUNDRED_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.hundredml}</div>
-    <div className={`text-md  bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.thirtyml}</div>
+    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.hundredml < HUNDRED_ML_THRESHOLD ? 'text-[#ff00ff] font-bold' : 'text-white'}`}>{row.hundredml}</div>
+    <div className={`text-md  bg-[#212121] w-[50%] text-[1.2em] h-full text-center inline-block rounded-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-[#ff00ff] font-bold' : 'text-white'}`}>{row.thirtyml}</div>
     <div className="text-green-500 text-md">₹ {row.price}</div>
   </div>
   </>)
 }
 function TransactBill(props){
-  let {selectedItems,setselectedItems} = props.props
-  
+  let {selectedItems,setselectedItems,patientName,setpatientName,consultFee,setconsultFee} = props.props
   let selectedItemElements = selectedItems.map((row)=>{
     return <TransactItem key={row.id} props={{row,setselectedItems}}/>
   })
-  let grandTotal = 0
+  let total = 0
   let itemCount = 0
   for(let item of selectedItems){
-    grandTotal += item.price*item.multiplier
+    total += item.price*item.multiplier
     itemCount += item.multiplier
   }
   
   return (<>
     <div>
-        <h1 className='text-5xl text-white text-center py-10'>Billing</h1>
-        <div className="w-full grid grid-cols-6 place-items-center p-5">
-            <div className='text-white'>ID</div>
-            <div className='text-white'>Medicine Name</div>
-            <div className='text-white'>30 ml</div>
+        <h1 className='text-5xl text-white text-center py-5'>Billing</h1>
+        <div className="w-full grid grid-cols-6 place-items-center p-5 bg-slate-900">
+            <div className='text-white'>Name</div>
+            <div className='text-white'>Remaining</div>
             <div className='text-white'>Multiplier</div>
             <div className='text-white'>Price</div>
+            <div className='text-white'>Amount</div>
         </div>
         <div className="w-full grid grid-cols-1 place-items-center p-5 h-[40vh] overflow-y-scroll">
           {selectedItemElements}
         </div>
-        <div className='p-5 flex flex-col justify-center items-center'>
-          <div className='text-white'>Item Count: {itemCount}</div>
-          <div className='text-white'>Final Amount: ₹ {grandTotal}</div>
+        <div className="w-full flex flex-col justify-center items-center">
+          <div className="flex justify-center items-center py-5 gap-x-5">
+            <div className="text-md  text-center inline-block rounded-sm text-white">
+              <span className="text-white">Item Count : </span>
+              <span className='text-black  font-bold text-[2em] bg-[#ff8a1d] w-[50%] h-full px-5 rounded-md'>{itemCount}</span>
+            </div>
+            <div className='text-md'>
+               <span className="text-white">Fee : </span>
+              <input type="number" min="0" value={consultFee} onChange={(e)=>{
+                let val = e.target.value;
+                if(val == "") val = 0
+                val = parseInt(val);
+                setconsultFee(val);
+              }} className='ml-2 appearance-none bg-blue-300 text-[2em] font-bold text-black w-[50%] ring-2  rounded-lg px-5' required/>
+            </div>
+          </div>
+          <div className='text-white'>
+            <span>Patient Name: </span>
+            <input type="text"  className="ml-2 bg-green-500  text-black font-bold text-[1.7em] ring-2 ring-black rounded-lg px-5" value={patientName} onChange={(e)=>{
+            setpatientName(e.target.value);
+          }}/>
+          </div>
+          <div className="text-md  text-center inline-block rounded-sm text-white py-2">
+              <span className="text-white">Grand Total : </span>
+              <span className='text-black  font-bold text-[2em] bg-[#d8ff15] w-[50%] h-full px-5 rounded-md'>{total+consultFee}</span>
+            </div>
         </div>
     </div>
   </>)
@@ -190,6 +247,17 @@ function TransactItem(props){
       return [...prev]
     })
   }
+  function updatePrice(price){
+    setselectedItems((prev)=>{
+      for(let item of prev){
+        if(item.id == row.id){
+          item.price = price
+          break;
+        }
+      }
+      return [...prev]
+    })
+  }
   function removeItem(){
     setselectedItems((prev)=>{
       return prev.filter(a=>a.id != row.id)
@@ -197,11 +265,13 @@ function TransactItem(props){
   }
   return (<>
   <div className="w-full grid grid-cols-6 place-items-center hover:bg-gray-600 duration-200 p-2 rounded-sm cursor-pointer" >
-    <div className="text-blue-600 text-md">{row.id}</div>
     <div className="text-yellow-300 text-md">{row.name}</div>
-    <div className={`text-md bg-[#212121] w-[50%] h-full text-center inline-block rounded-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-red-600 font-bold' : 'text-white'}`}>{row.thirtyml-row.multiplier}</div>
-    <div className={`text-md`}>
-      <input type="number" className='w-10 px-2 text-center' min="1" max={row.thirtyml} value={row.multiplier} onChange={(e)=>{updateMultiplier(parseInt(e.target.value))}}/>
+    <div className={`text-md bg-[#212121] text-[1.2em] w-[50%] h-full text-center inline-block rounded-sm ${row.thirtyml < THIRTY_ML_THRESHOLD ? 'text-[#ff00ff] font-bold' : 'text-white'}`}>{row.thirtyml-row.multiplier}</div>
+    <div className={`text-[1.2em] text-yellow-300`}>
+      <input type="number" className='w-[100px] px-2 text-center bg-[#212121] rounded-md' min="1" max={row.thirtyml} value={row.multiplier} onChange={(e)=>{updateMultiplier(parseInt(e.target.value))}}/>
+    </div>
+    <div className={`text-[1.2em] text-yellow-300`}>
+      <input type="number" className='w-[100px] px-2 text-center bg-[#212121] rounded-md' min="1" value={row.price} onChange={(e)=>{updatePrice(parseInt(e.target.value))}}/>
     </div>
     <div className="text-md text-green-500">₹ {row.price*row.multiplier}</div>
     <div className='w-5 h-5 rounded-full grid place-content-center hover:scale-125 duration-200' onClick={removeItem}>{deleteSVG}</div>
