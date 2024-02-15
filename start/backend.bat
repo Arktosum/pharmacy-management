@@ -1,1 +1,1 @@
-cd .. && cd backend && npm install && npm run start
+cd.. && cd backend && npm install && npm run dev

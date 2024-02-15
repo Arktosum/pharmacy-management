@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body{
+    background-color: black;
+    height: 100vh;
+    overflow-y : clip;
+}
+*{
+    font-family: 'Roboto', sans-serif;
+}
+
+.style-input{
+    background-color:black;
+    outline: 2px solid gray;
+    border: 1px solid gray;
+    padding : 5px;
+    border-radius : 5px;
+    color : white !important;
+}
+/* Firefox */
+.no-arrow {
+    -moz-appearance: textfield;
+  }
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.custom-table tbody tr td {
+  background-color: #d7f1e1;
+  font-size : 1.5em;
+  font-weight:  bold;
+}
+
+.custom-cell{
+  background-color: pink !important;
+}
+
+.custom-cell-2{
+  background-color: yellow !important;
+}
+
+.pulse-red-green{
+  border :0;
+  animation: pulse-red-green 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-red-green{
+  from{
+    background-color: #f886dd;
+  }
+  to{
+    background-color: lightgreen;
+    scale:1.1;
+  }
+}
+
+.pulse-text{
+  border :0;
+  animation: pulse-text 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-text{
+  from{
+    color: lightgreen;
+  }
+  to{
+    color: red;
+    scale:1.3;
+  }
+}
