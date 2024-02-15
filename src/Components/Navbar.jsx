@@ -21,6 +21,8 @@ export default function Navbar() {
         className={`${selected=='monthly' ? 'text-green-300 animate-pulse' : 'text-white'} text-xl text-bold hover:text-blue-500 duration-200 font-extrabold`}>MT Datewise</div></Link>
         <Link to='/monthlyLog'><div onClick={()=>{setselected('monthlyLog')}}
         className={`${selected=='monthlyLog' ? 'text-green-300 animate-pulse' : 'text-white'} text-xl text-bold hover:text-blue-500 duration-200 font-extrabold`}>G Total Monthly</div></Link>
+        <Link to='/medicineCount'><div onClick={()=>{setselected('medicineCount')}}
+        className={`${selected=='medicineCount' ? 'text-green-300 animate-pulse' : 'text-white'} text-xl text-bold hover:text-blue-500 duration-200 font-extrabold`}>MedicineCount</div></Link>
     </div>
   )
 }

@@ -9,6 +9,7 @@ import DailyLog from './Components/DailyLog'
 import Monthly from './Components/Monthly'
 import MonthlyLog from './Components/MonthlyLog'
 import SearchLog from './Components/SearchLog'
+import MedicineCount from './Components/MedicineCount'
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
       <Route path="/monthly" element={<Monthly/>}></Route>
       <Route path="/monthlylog" element={<MonthlyLog/>}></Route>
       <Route path="/searchlog" element={<SearchLog/>}></Route>
+      <Route path="/medicineCount" element={<MedicineCount/>}></Route>
     </Routes>
     </>
   )
