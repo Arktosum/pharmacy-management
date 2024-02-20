@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { StockItem } from './stockSlice';
-import moment from 'moment';
 
 // Async thunk to read data
 

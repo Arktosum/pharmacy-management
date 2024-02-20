@@ -20,8 +20,6 @@ function updateLocalStorage(billItemList : any[],patientName : string,consultFee
 function clearlocalStorage(){
   updateLocalStorage([],"",0);
 }
-
-
 export default function Billing() {
   let [regexString,setregexString] = useState("")
   let [billItemList,setbillItemList] = useState<StockItem[] |[]>([])
@@ -162,7 +160,7 @@ export default function Billing() {
   return (
     <div className="bg-black h-[90vh] flex">
       {/*---------------------------------------------------------- Transaction ---------------------------------------------------------- */}
-      <div className='border-2 border-r-green-600 border-black w-[50vw] h-full'>
+      <div className='border-black w-[50vw] h-full'>
         <h1 className='text-[3em] text-white text-bold text-center'>Transaction</h1>
           <div className='flex justify-center items-center py-5 gap-5'>
             <input ref={regexInput} type="text" value={regexString} onChange={(e)=>{
@@ -178,11 +176,14 @@ export default function Billing() {
           <div onClick={()=>{
             let choice = prompt("Sure to delete? y/n");
             if(choice!='y') return;
-            clearlocalStorage()
+            clearlocalStorage();
+            setbillItemList([])
+            setpatientName("")
+            setconsultFee(0)
           }} className='duration-200 cursor-pointer uppercase border-2 px-5 py-2 rounded-xl border-red-600 hover:bg-red-600 text-red-600 hover:text-black'>cancel</div>
           </div>
           
-          <div className='grid grid-cols-4 bg-slate-600 p-5 text-center'>
+          <div className='grid grid-cols-4 bg-slate-800 p-5 text-center'>
               <div className='text-white text-md font-bold'>Name</div>
               <div className='text-white text-md font-bold'>30 ml</div>
               <div className='text-white text-md font-bold'>100 ml</div>
@@ -193,10 +194,10 @@ export default function Billing() {
           </div>
    
       </div>
-      <div className='border-2 border-l-green-600 border-black w-[50vw] h-full'>
+      <div className='border-black w-[50vw] h-full'>
       {/*---------------------------------------------------------- Billing ---------------------------------------------------------- */}
         <h1 className='text-[3em] text-white text-bold text-center'>Billing</h1>
-          <div className='grid grid-cols-6 bg-slate-600 p-5 text-center'>
+          <div className='grid grid-cols-6 bg-slate-800 p-5 text-center'>
               <div className='text-white text-md font-bold'>Name</div>
               <div className='text-white text-md font-bold'>Remaining</div>
               <div className='text-white text-md font-bold'>Multiplier</div>

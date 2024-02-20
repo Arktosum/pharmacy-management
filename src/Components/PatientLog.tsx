@@ -111,7 +111,7 @@ export default function Log() {
             </div>
       </div> : <></>}
       {/*---------------------------------------------------------- InfoModal ---------------------------------------------------------- */}
-      <h1 className='text-[3em] text-white text-bold text-center'>Logs</h1>
+      <h1 className='text-[3em] text-white text-bold text-center'>Patient Logs</h1>
       <div className='flex justify-between text-white'>
         <label>From Date:</label>
         <input type="date" value={fromDate} onChange={(e)=>setFromDate(e.target.value)} className='text-black'/>

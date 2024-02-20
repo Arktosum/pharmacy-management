@@ -1,24 +1,10 @@
 [
     {
-        "id": "331",
-        "name": "ADONIS",
-        "thirtyml": 9,
-        "hundredml": 0,
-        "price": 150
-    },
-    {
         "id": "332",
         "name": "ABROMA RAD",
         "thirtyml": 3,
         "hundredml": 20,
         "price": 100
-    },
-    {
-        "id": "333",
-        "name": "AC3",
-        "thirtyml": 198,
-        "hundredml": "972",
-        "price": 130
     },
     {
         "id": "334",

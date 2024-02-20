@@ -2,13 +2,13 @@
 import { Route, Routes } from 'react-router-dom'
 import './App.css'
 import Billing from './Components/Billing'
-import Log from './Components/Log'
+import Log from './Components/PatientLog'
 import Navbar from './Components/Navbar'
 import Stock from './Components/Stock'
 import DailyLog from './Components/DailyLog'
-import Monthly from './Components/Monthly'
+import Monthly from './Components/MonthlyCount'
 import MonthlyLog from './Components/MonthlyLog'
-import SearchLog from './Components/SearchLog'
+import SearchLog from './Components/CumulativeTotalLog'
 import MedicineCount from './Components/MedicineCount'
 
 

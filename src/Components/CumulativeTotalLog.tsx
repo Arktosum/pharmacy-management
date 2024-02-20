@@ -9,7 +9,7 @@ let deleteSVG = <svg xmlns="http://www.w3.org/2000/svg" fill="rgb(237, 149, 151)
 </svg>
 
 export default function SearchLog() {
-  let [regexString,setregexString] = useState(".*")
+  let [regexString,setregexString] = useState("")
   let [billItemList,setbillItemList] = useState<LogItem[] |[]>([])
   let [receivedAmt,setreceivedAmt] = useState(0)
   let [evalString,setevalString] = useState("")
@@ -81,8 +81,8 @@ export default function SearchLog() {
   return (
     <div className="bg-black h-[90vh] flex">
       {/*---------------------------------------------------------- Transaction ---------------------------------------------------------- */}
-      <div className='border-2 border-r-green-600 border-black w-[50vw] h-full'>
-        <h1 className='text-[3em] text-white text-bold text-center'>Search Log</h1>
+      <div className='border-black w-[50vw] h-full'>
+        <h1 className='text-[3em] text-white text-bold text-center'>Cumulative Total</h1>
           <div className='flex justify-center items-center py-5 gap-5'>
             <input type="text" value={regexString} onChange={(e)=>{
               setregexString(e.target.value);
