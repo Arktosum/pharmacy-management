@@ -9,13 +9,13 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function Stock() {
 
-  let [regexString,setregexString] = useState("")
+  let [regexString,setregexString] = useState(".*")
   let [addMedicineName,setaddMedicineName] = useState("")
   let [showModal,setshowModal] = useState(false);
   let [selectedItem,setselectedItem] = useState<StockItem | null>(null);
   let [filter,setFilter] = useState({type:'thirtyml',order:'asc'})
 
-  const stockData : StockItem[]  = useAppSelector((state) => state.stocks.data)
+  let stockData : StockItem[]  = useAppSelector((state) => state.stocks.data)
   const dispatch = useAppDispatch()
 
   useEffect(()=>{
@@ -51,6 +51,18 @@ export default function Stock() {
     dispatch(deleteStockItem(selectedItem))
     resetModal();
   }
+  stockData = [...stockData].sort((a,b)=>{
+    // Hundred ml might not be a string.
+    let a_hundredml = a.hundredml.toString();
+    let b_hundredml = b.hundredml.toString();
+    switch(filter.type){
+      case 'thirtyml'  : return filter.order == 'asc' ? a.thirtyml - b.thirtyml : b.thirtyml - a.thirtyml
+      case 'hundredml'  : return filter.order == 'asc'? a_hundredml.localeCompare(b_hundredml) : b_hundredml.localeCompare(a_hundredml)
+      case 'price'  : return filter.order == 'asc' ? a.price - b.price : b.price - a.price
+      case 'name'  : return filter.order == 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+      default : return -1;
+    }
+  })
  
   let rowElements = stockData.map((item)=>{
     let regex = new RegExp(regexString,'i')
