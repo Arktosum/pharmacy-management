@@ -25,26 +25,15 @@ app.listen(PORT, () => {
   console.log(`listening on port | http://localhost:${PORT}`);
 });
 
-// readJSON('./backend/databases/logs.json', (items) => {
+// readJSON('./databases/stock.json', (items) => {
 //     let Items = [];
 
 //     for(let id in items){
 //         let item = {id,...items[id]}
 //         Items.push(item);
 //     }
-//     writeJSON('./backend/databases/logs.json',Items,()=>{
+//     writeJSON('./databases/stock.json',Items,()=>{
 //         console.log("Done!");
 //     })
 // })
 
-// readJSON('./backend/databases/daily_count.json', (items) => {
-//         let Items = [];
-
-//         for(let date in items){
-//             let item = {date,count:items[date]}
-//             Items.push(item);
-//         }
-//         writeJSON('./backend/databases/daily_count.json',Items,()=>{
-//             console.log("Done!");
-//         })
-//     })
