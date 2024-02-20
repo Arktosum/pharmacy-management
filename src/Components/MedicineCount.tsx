@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../hooks';
 import moment from 'moment';
 import { LogItem, fetchLogs } from '../features/logSlice';
-import { isInMonth } from './Utils';
+import { isInMonth, regexUtil } from './Utils';
 
 export default function MedicineCount() {
     let [regexString,setregexString] = useState(".*")
@@ -29,7 +29,7 @@ export default function MedicineCount() {
     }
     let rowItems : any =  [];
     for(let name in medicineCounts){
-        if(testRegex(name)) rowItems.push([name,medicineCounts[name]])
+        if(regexUtil(regexString,name)) rowItems.push([name,medicineCounts[name]])
     }
 
     rowItems = rowItems.sort((a: any[],b: any[])=>b[1] - a[1])

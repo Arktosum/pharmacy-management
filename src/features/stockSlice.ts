@@ -26,6 +26,17 @@ export const updateStockItem = createAsyncThunk('data/updateStockItem', async (i
   }
 });
 
+export const updateStockItems = createAsyncThunk('data/updateStockItems', async (items : StockItem[]) => {
+  try {
+    const response = await axios.put(context+"/many", items); // Adjust the URL as per your backend API
+    return response.data;
+  } catch (error : any) {
+    alert(error.response.data.error);
+    throw error;
+  }
+});
+
+
 // Async thunk to delete data
 export const deleteStockItem = createAsyncThunk('data/deleteStockItem', async (item : StockItem) => {
   try {
@@ -54,7 +65,8 @@ export type StockItem = {
   thirtyml : number,
   price : number,
   id : string,
-  multiplier? : number
+  multiplier? : number,
+  updateType?: string
 }
 // Define initial state, reducers, and slice
 const initialState : {
@@ -81,6 +93,9 @@ const stockSlice = createSlice({
         if (updatedDataIndex !== -1) {
           state.data[updatedDataIndex] = action.payload;
         }
+      })
+      .addCase(updateStockItems.fulfilled, (state, action) => {
+        state.data = action.payload;
       })
       .addCase(deleteStockItem.fulfilled, (state, action) => {
         state.data = state.data.filter(item => item.id !== action.payload.id);

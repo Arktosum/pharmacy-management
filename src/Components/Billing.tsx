@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../hooks';
-import { LogItem, fetchLogs } from '../features/logSlice';
-import { StockItem, fetchStock } from '../features/stockSlice';
+import { LogItem, TransactionLog, addLogItem, fetchLogs } from '../features/logSlice';
+import { StockItem, fetchStock, updateStockItem, updateStockItems } from '../features/stockSlice';
 import moment from 'moment';
-import { regexUtil } from './Utils';
+import { isBetween, regexUtil } from './Utils';
 
 let deleteSVG = <svg xmlns="http://www.w3.org/2000/svg" fill="rgb(237, 149, 151)" viewBox="0 0 24 24" strokeWidth={1.5} stroke="black" className="w-6 h-6">
 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -30,16 +30,14 @@ export default function Billing() {
   let [evalString,setevalString] = useState("")
   let [receivedAmt,setreceivedAmt] = useState(0)
 
-  let regexInput = useRef()
+  let regexInput = useRef<HTMLInputElement>(null)
   // let [selectedDate,setselectedDate] = useState("");
   const dispatch = useAppDispatch();
   const currentDate = moment().format('YYYY-MM-DD');
   useEffect(()=>{
       // setselectedDate(currentDate);
-      dispatch(fetchLogs());
-      dispatch(fetchStock());
-
-
+    dispatch(fetchLogs());
+    dispatch(fetchStock());
     let localStorageData = localStorage.getItem('bill-items')
     if(!localStorageData){
       updateLocalStorage(billItemList,patientName,consultFee);
@@ -54,75 +52,41 @@ export default function Billing() {
   },[])
   let LogData : LogItem[]  = useAppSelector((state) => state.logs.data)
   let StockData : StockItem[]  = useAppSelector((state) => state.stocks.data)
-
-  // let dailyTally : { [key: string]: number } = {}
-
+  let dailyCount = 0
+  for(let logItem of LogData){
+    if(isBetween(currentDate,currentDate,logItem.id)){
+      for(let item of logItem.data.medicine){
+        dailyCount+= item.multiplier
+      }
+    }
+  }
   function handleTransaction(){
     if(billItemList.length == 0) return;
-    // No -ve errors
-    let process = []
-    let itemCount = 0
-    let i = 1
+    let transactionItem  = {
+      type : "TRANSACTION",
+      data : {
+        patientName,
+        consultFee,
+        medicine : []
+      }
+    } as LogItem
     for(let item of billItemList){
-      let diff = item.thirtyml - item.multiplier
-      if(diff < 0 ) continue;
-      let payload = {
-        key : item.id,
-        value : {
-          name : item.name,
-          thirtyml : diff,
-          hundredml : item.hundredml,
-          price : item.price
-        }
-      }
-      itemCount+=item.multiplier
-      sendRequest({...payload},i)
-      i++
-      process.push(item);
+      transactionItem.data.medicine.push(item)
     }
-    // Add to daily count
-    
-    POST('/api/daily/read',{},(db)=>{
-      if(!(todayDate in db)){
-        db[todayDate] = 0
-      }
-      let daily = {
-        key : todayDate,
-        value : db[todayDate] + itemCount
-      }
-      POST('/api/daily/add',daily,()=>{
-        setdailyCount(db[todayDate] + itemCount);
-      });
-    })
-    
-    let payload = {
-      key : Date.now(),
-      value : {
-        type : "transaction",
-        data : {
-          patientName : patientName,
-          consultFee : consultFee,
-          medicine : process
-        }
-      }
-    }
-    POST('/api/logs/add',payload,()=>{
-      localStorage.removeItem('bill-items')
-      setbillItemList([])
-      setregexString("")
-      setpatientName("");
-      setconsultFee(0);
-      setfetchAll(prev=>!prev)
-    });
+    dispatch(addLogItem(transactionItem));
+    dispatch(updateStockItems(transactionItem.data.medicine));
+    localStorage.removeItem('bill-items')
+    setbillItemList([])
+    setregexString("")
+    setpatientName("");
+    setconsultFee(0);
   }
 
-  let editItems = []
-  
-  for(let item of StockData){
-    
-    let jsxElement = (
+
+  let editItems = StockData.map((item)=>{
+    if(!(regexUtil(regexString,item.name))) return;
+    return (
       <div key={item.id} onClick={()=>{
-        // Add if item not already exists
         let index = billItemList.findIndex((billItem)=>billItem.id == item.id);
         if(index != -1){
           alert("Item already in cart");
@@ -132,9 +96,9 @@ export default function Billing() {
           alert("Cannot add Item! | Zero Left!");
           return;
         }
-        item.multiplier = 1  // Initial multiplier
-        updateLocalStorage([...billItemList,item],patientName,consultFee);
-        setbillItemList(prev=>[...prev,item])
+        let newItem = {...item,multiplier : 1} as StockItem
+        setbillItemList(prev=>[...prev,newItem])
+        updateLocalStorage([...billItemList,newItem],patientName,consultFee);
         setregexString("")
         if(regexInput && regexInput.current) regexInput.current.focus()
         }
@@ -146,11 +110,12 @@ export default function Billing() {
           <div className={`text-yellow-300 text-[1.2em] font-bold`}>{item.price}</div>
       </div>
     )
-    if(regexUtil(regexString,item.name)) editItems.push(jsxElement)
-  }
+
+  })
   let itemCount = 0
   let total = 0
   let billItems = billItemList.map((item)=>{
+      if(!item.multiplier) return;
       itemCount+=item.multiplier
       total+=item.multiplier*item.price
       return (

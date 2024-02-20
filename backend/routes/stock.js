@@ -38,7 +38,6 @@ router.post("/", (req, res) => {
 // PUT update item by ID
 router.put("/", (req, res) => {
   let newItem = req.body
-  console.log(newItem);
   readJSON(filePath, (items) => {
     let itemIndex = items.findIndex(item => item.id === newItem.id);
     if(itemIndex === -1){
@@ -57,6 +56,19 @@ router.put("/", (req, res) => {
     items[itemIndex] = newItem;
     writeJSON(filePath, items, () => {
       res.status(200).json(newItem);
+    });
+  });
+});
+
+router.put("/many", (req, res) => {
+  let newItems = req.body
+  readJSON(filePath, (items) => {
+    for(let newItem of newItems) {
+      let itemIndex = items.findIndex(item => item.id === newItem.id);
+      items[itemIndex].thirtyml = items[itemIndex].thirtyml + newItem.multiplier*(newItem.updateType == 'UNDO' ? 1 : -1);
+    }
+    writeJSON(filePath, items, () => {
+      res.status(200).json(items);
     });
   });
 });

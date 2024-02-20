@@ -7,13 +7,18 @@ import { store } from './store.js'
 
 import { Provider } from 'react-redux'
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <Provider store={store}>
-    <BrowserRouter>
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>,
-    </BrowserRouter>
-  </Provider>
-
-)
+let rootElement = document.getElementById('root')
+if(rootElement){
+  ReactDOM.createRoot(rootElement).render(
+    <Provider store={store}>
+      <BrowserRouter>
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>,
+      </BrowserRouter>
+    </Provider>
+  )
+}
+else{
+  console.log("Root element not found!");
+}

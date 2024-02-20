@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { LogItem, fetchLogs } from '../features/logSlice';
+import { LogItem, TransactionLog, fetchLogs, updateLogItem } from '../features/logSlice';
 import { useAppSelector, useAppDispatch } from '../hooks';
-import { StockItem } from '../features/stockSlice';
+import { StockItem, updateStockItems  } from '../features/stockSlice';
 import moment from 'moment';
 import { isBetween } from './Utils';
 
@@ -45,10 +45,16 @@ export default function Log() {
     )
   })
     
-  function undoItem(item : StockItem) {
-
+  function undoItem(logItem: TransactionLog , stockItem : StockItem) {
+    let newStockItem = {...stockItem,updateType: 'UNDO'} as StockItem
+    dispatch(updateStockItems([newStockItem]));
+    let newlogItem = {...logItem,data : {...logItem.data,
+      medicine : logItem.data.medicine.filter((item)=> item.id != stockItem.id)
+    }} as TransactionLog
+    dispatch(updateLogItem(newlogItem));
+    setselectedItem(null);
+    setshowModal(false);
   }
-
   let infoItems = selectedItem ? selectedItem.data.medicine.map((item : StockItem)=>{
     return (
       <div key={item.id}
@@ -58,7 +64,7 @@ export default function Log() {
           <div className='text-blue-400 text-[1.2em] font-bold'>{item.multiplier}</div>
           <div className='text-green-400 text-[1.2em] font-bold'>{item.price}</div>
           <div onClick={()=>{
-              undoItem(item);
+              undoItem(selectedItem as TransactionLog ,item);
               }} className="text-red-600 uppercase px-5 m-5 border-2 border-red-600 rounded-xl hover:bg-red-600 duration-200 hover:text-black text-center cursor-pointer">undo</div>
            </div>
     )

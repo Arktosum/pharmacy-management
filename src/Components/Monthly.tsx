@@ -4,7 +4,6 @@ import { useAppDispatch, useAppSelector } from '../hooks';
 import moment from 'moment';
 import { isInMonth } from './Utils';
 
-
 export default function Monthly() {
     let [selectedDate,setselectedDate] = useState("");
     const dispatch = useAppDispatch();

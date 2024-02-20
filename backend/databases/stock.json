@@ -2,7 +2,7 @@
     {
         "id": "331",
         "name": "ADONIS",
-        "thirtyml": 17,
+        "thirtyml": 9,
         "hundredml": 0,
         "price": 150
     },
@@ -16,35 +16,35 @@
     {
         "id": "333",
         "name": "AC3",
-        "thirtyml": 199,
+        "thirtyml": 198,
         "hundredml": "972",
         "price": 130
     },
     {
         "id": "334",
         "name": "AGNUS",
-        "thirtyml": 19,
+        "thirtyml": 18,
         "hundredml": 0,
         "price": 140
     },
     {
         "id": "335",
         "name": "AI6  A6 IMP",
-        "thirtyml": 51,
+        "thirtyml": 48,
         "hundredml": 0,
         "price": 130
     },
     {
         "id": "336",
         "name": "ALFALFA",
-        "thirtyml": 20,
+        "thirtyml": 19,
         "hundredml": 175,
         "price": 110
     },
     {
         "id": "338",
         "name": "A3 AI IMP",
-        "thirtyml": 171,
+        "thirtyml": 170,
         "hundredml": "828",
         "price": 130
     },
@@ -107,7 +107,7 @@
     {
         "id": "347",
         "name": "ARJUNA",
-        "thirtyml": 8,
+        "thirtyml": 6,
         "hundredml": 0,
         "price": 100
     },
@@ -128,7 +128,7 @@
     {
         "id": "350",
         "name": "ASF 3",
-        "thirtyml": 142,
+        "thirtyml": 141,
         "hundredml": 900,
         "price": 130
     },
@@ -142,7 +142,7 @@
     {
         "id": "352",
         "name": "ADA",
-        "thirtyml": 67,
+        "thirtyml": 11,
         "hundredml": 175,
         "price": 110
     },

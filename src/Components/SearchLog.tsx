@@ -2,21 +2,20 @@ import  { useEffect, useState } from 'react'
 import { LogItem, fetchLogs } from '../features/logSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import moment from 'moment';
+import { regexUtil } from './Utils';
 
 let deleteSVG = <svg xmlns="http://www.w3.org/2000/svg" fill="rgb(237, 149, 151)" viewBox="0 0 24 24" strokeWidth={1.5} stroke="black" className="w-6 h-6">
 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
 </svg>
 
-
 export default function SearchLog() {
   let [regexString,setregexString] = useState(".*")
-  let [billItemList,setbillItemList] = useState([])
+  let [billItemList,setbillItemList] = useState<LogItem[] |[]>([])
   let [receivedAmt,setreceivedAmt] = useState(0)
   let [evalString,setevalString] = useState("")
   
   const dispatch = useAppDispatch();
   useEffect(()=>{
-    // setselectedDate(currentDate);
     dispatch(fetchLogs());
   },[])
   
@@ -26,62 +25,56 @@ export default function SearchLog() {
   let stockItems = []
   for(let item of LogData){
     let infoString = "Something went wrong"
-    let [date,time] = moment(parseInt(id)).format("DD-MM-YYYY HH:mm:ss").split(" ")
+    let [date,time] = moment(parseInt(item.id)).format("DD-MM-YYYY HH:mm:ss").split(" ")
     if(item.type.toUpperCase() == 'TRANSACTION') {
       infoString = `${item.data.patientName} || ${item.data.medicine.length}`
     }
-    let regex
-    try{
-      regex = new RegExp(regexString,'i')
-    }
-    catch{
-      alert("Invalid regex expression!!!" + regexString);
-      setregexString("")
-    }
-
+    if(item.data.patientName == "") continue;
+    
     let jsxElement = (
       <div key={item.id} onClick={()=>{
         // Add if item not already exists
         let index = billItemList.findIndex((billItem)=>billItem.id == item.id);
-        if(index == -1) setbillItemList(prev=>[...billItemList,item])
+        if(index == -1) setbillItemList(prev=>[...prev,item])
       }}
       className='grid grid-cols-2 hover:bg-[#252525] duration-200 rounded-md py-1 cursor-pointer text-center'>
           <div className='text-white text-md font-bold'><span className='text-yellow-400'>{date}</span>,<span>{time}</span></div>
           <div className='text-md font-bold text-green-300'>{infoString}</div>
       </div>
     )
-    if(regex && regex.test(item.data.patientName) && regexString!= "") stockItems.push(jsxElement)
+    let passRegex : boolean = regexUtil(regexString,item.data.patientName);
+    if(passRegex) stockItems.push(jsxElement)
   }
 
-    let grandFeeTotal = 0
-    let grandMTtotal = 0 
+  let grandFeeTotal = 0
+  let grandMTtotal = 0 
 
-    let billItems = billItemList.map((item)=>{
-      grandFeeTotal+= item.data.consultFee
-      let mtTotal = 0
-      for(let medicine of item.data.medicine){
-        mtTotal += medicine.price*medicine.multiplier
-      }
-      grandMTtotal+=mtTotal
-      return (
-          <div key={item.id} className="grid grid-cols-5 place-items-center hover:bg-[#252525] duration-200 rounded-md px-5 py-0 cursor-pointer text-center">
-            <div className='text-yellow-300 text-sm text-center font-bold'>{item.data.patientName}</div>
-            <div className='text-green-400 text-[1.2em] font-bold'>{mtTotal}</div>
-            <div className='text-yellow-400  text-[1.3em] font-bold'>{item.data.consultFee}</div>
-            <div className='text-yellow-400  text-[1.3em] font-bold'>{item.data.consultFee + mtTotal}</div>
-            <div className='text-white text-[1.2em] font-bold' onClick={()=>{
-              let newList = billItemList.filter(x=> x.id !== item.id)
-              setbillItemList([...newList]);
-            }}>{deleteSVG}</div>
-          </div>
-        )
+  let billItems = billItemList.map((item)=>{
+    grandFeeTotal+= item.data.consultFee
+    let mtTotal = 0
+    for(let medicine of item.data.medicine){
+      mtTotal += medicine.price*medicine.multiplier
+    }
+    grandMTtotal+=mtTotal
+    return (
+        <div key={item.id} className="grid grid-cols-5 place-items-center hover:bg-[#252525] duration-200 rounded-md px-5 py-0 cursor-pointer text-center">
+          <div className='text-yellow-300 text-sm text-center font-bold'>{item.data.patientName}</div>
+          <div className='text-green-400 text-[1.2em] font-bold'>{mtTotal}</div>
+          <div className='text-yellow-400  text-[1.3em] font-bold'>{item.data.consultFee}</div>
+          <div className='text-yellow-400  text-[1.3em] font-bold'>{item.data.consultFee + mtTotal}</div>
+          <div className='text-white text-[1.2em] font-bold' onClick={()=>{
+            let newList = billItemList.filter(x=> x.id !== item.id)
+            setbillItemList([...newList]);
+          }}>{deleteSVG}</div>
+        </div>
+      )
   })
-   function addevalString(){
+  function addevalString(){
     let sum = 0
     let vals = evalString.split(" ")
     for(let v of vals){
-      if (v == "") v = 0
-      sum += parseInt(v);
+      let res = v == "" ? 0 : parseInt(v)
+      sum += res;
     }
     return sum
   }

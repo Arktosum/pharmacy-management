@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { StockItem } from './stockSlice';
+import moment from 'moment';
 
 // Async thunk to read data
 
@@ -17,7 +18,7 @@ export const fetchLogs = createAsyncThunk('data/fetchLogs', async () => {
 });
 
 // Async thunk to update data
-export const updateLogItem = createAsyncThunk('data/updateLogItem', async (item : StockItem) => {
+export const updateLogItem = createAsyncThunk('data/updateLogItem', async (item : LogItem) => {
   try {
     const response = await axios.put(context+"/", item); // Adjust the URL as per your backend API
     return response.data;
@@ -28,7 +29,7 @@ export const updateLogItem = createAsyncThunk('data/updateLogItem', async (item 
 });
 
 // Async thunk to delete data
-export const deleteLogItem = createAsyncThunk('data/deleteLogItem', async (item : StockItem) => {
+export const deleteLogItem = createAsyncThunk('data/deleteLogItem', async (item : LogItem) => {
   try {
     const response = await axios.delete(context+"/"+item.id); 
     return response.data;
@@ -38,9 +39,9 @@ export const deleteLogItem = createAsyncThunk('data/deleteLogItem', async (item 
   }
 });
 
-export const addLogItem = createAsyncThunk('data/addLogItem', async (medicineName:string) => {
+export const addLogItem = createAsyncThunk('data/addLogItem', async (item:LogItem) => {
     try {
-      const response = await axios.post(context+"/",{name : medicineName});
+      const response = await axios.post(context+"/",item);
       return response.data
     } catch (error : any) {
         alert(error.response.data.error);
@@ -48,19 +49,18 @@ export const addLogItem = createAsyncThunk('data/addLogItem', async (medicineNam
     }
 });
 
-
 export type LogTypes = "TRANSACTION" | "ADD" | "UPDATE" | "DELETE"
 export interface LogItem  {
-  type : LogTypes
-  id : string
-  data : any
+  type : LogTypes,
+  id : string,
+  data? : any
 }
 
 export interface TransactionLog extends LogItem  {
   data : {
     patientName : string,
     consultFee : number,
-    medicines : [StockItem]
+    medicine : StockItem[]
   }
 }
 // Define initial state, reducers, and slice
@@ -70,14 +70,17 @@ const initialState : {
   data: [],
 };
 
+
 const logSlice = createSlice({
   name: 'log',
   initialState,
-  reducers: {},
+  reducers: {
+
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchLogs.fulfilled, (state, action) => {
-        state.data = action.payload;
+        state.data = action.payload.sort((a: { id: number; },b: { id: number; })=>b.id - a.id);
       })
       .addCase(addLogItem.fulfilled, (state, action) => {
         state.data = [action.payload,...state.data];

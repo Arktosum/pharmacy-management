@@ -25,7 +25,7 @@ export function regexUtil(regexPattern : string ,testString : string){
       regex = new RegExp(regexPattern,'i')
     }
     catch{
-      alert("Invalid regex expression!!! " + regexPattern);
+      // alert("Invalid regex expression!!! " + regexPattern);
       return false;
     }
     if(regex){

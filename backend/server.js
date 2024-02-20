@@ -7,11 +7,6 @@ const PORT = 3000;
 app.use(express.json());
 app.use(cors());
 
-// JSON_CRUD('stock','./databases/stock.json');
-// JSON_CRUD('logs','./databases/logs.json');
-// JSON_CRUD('daily','./databases/daily_count.json');
-// JSON_CRUD('excel','./databases/excel.json');
-
 const stockRouter = require("./routes/stock");
 const logRouter = require("./routes/log");
 const excelRouter = require("./routes/excel");
