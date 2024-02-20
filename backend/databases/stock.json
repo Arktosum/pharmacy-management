@@ -16,7 +16,7 @@
     {
         "id": "335",
         "name": "AI6  A6 IMP",
-        "thirtyml": 47,
+        "thirtyml": 46,
         "hundredml": 0,
         "price": 130
     },
@@ -30,7 +30,7 @@
     {
         "id": "338",
         "name": "A3 AI IMP",
-        "thirtyml": 169,
+        "thirtyml": 168,
         "hundredml": "828",
         "price": 130
     },
@@ -142,7 +142,7 @@
     {
         "id": "354",
         "name": "ALL SAT",
-        "thirtyml": 21,
+        "thirtyml": 20,
         "hundredml": 0,
         "price": 100
     },
@@ -170,7 +170,7 @@
     {
         "id": "358",
         "name": "ARALIA",
-        "thirtyml": 26,
+        "thirtyml": 25,
         "hundredml": "350",
         "price": 160
     },
@@ -1762,5 +1762,12 @@
         "hundredml": "0",
         "name": "AS",
         "id": "1708417272928"
+    },
+    {
+        "name": "CRUZ",
+        "thirtyml": 1000,
+        "hundredml": "0",
+        "price": 9999,
+        "id": "1708425653265"
     }
 ]

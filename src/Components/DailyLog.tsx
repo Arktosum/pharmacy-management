@@ -59,7 +59,7 @@ export default function LogData() {
     if(change == null) return;
 
     for(let changes of change){
-      let [x,y,from,to] = changes
+      let [x,y,,to] = changes
       excelData[x][y] = to;
     }
     let response = await axios.post(ORIGIN+"/api/excels/",[...excelData])

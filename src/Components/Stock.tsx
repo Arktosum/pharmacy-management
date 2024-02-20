@@ -52,20 +52,17 @@ export default function Stock() {
     resetModal();
   }
  
-  let rowElements = []
-  for(let item of stockData){
+  let rowElements = stockData.map((item)=>{
     let regex = new RegExp(regexString,'i')
-    let jsxElement = (
-      <div key={item.id} onClick={()=>{setselectedItem(item); setshowModal(true)}}
+    if(!(regex.test(item.name) && regexString!= "")) return;
+    return (<div key={item.id} onClick={()=>{setselectedItem(item); setshowModal(true)}}
       className='grid grid-cols-4 text-md hover:bg-[#252525] duration-200 rounded-md p-5 cursor-pointer text-center'>
-         <div className='text-yellow-300 text-md font-bold'>{item.name}</div>
+        <div className='text-yellow-300 text-md font-bold'>{item.name}</div>
           <div className={"text-md font-bold duration-[1ms] "  + `${(item.thirtyml) > 15 ? 'text-green-300':'pulse-text'}`}>{item.thirtyml}</div>
           <div className='text-white text-md font-bold'>{item.hundredml}</div>
           <div className='text-yellow-300 text-md font-bold'>{item.price}</div>
-      </div>
-    )
-    if(regex.test(item.name) && regexString!= "") rowElements.push(jsxElement)
-  }
+      </div>)
+  })
 
   return (
     <div className="bg-black h-[90vh] flex">
@@ -141,3 +138,4 @@ export default function Stock() {
     </div>
   )
 }
+

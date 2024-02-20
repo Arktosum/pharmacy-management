@@ -40,6 +40,8 @@ export default function Monthly() {
   return (
     <div className="h-[90vh] bg-black flex justify-start items-center flex-col relative">
       <h1 className='text-[3em] text-white text-bold text-center'>Monthly Count</h1>
+      <h1 className='text-[1.5em] text-white text-bold text-center'>Month : {moment(selectedDate).format('MMM YY')}</h1>
+
       <input type="date" value={selectedDate} min={"2023-03-30"} max={currentDate} onChange={(e)=>setselectedDate(e.target.value)} className='my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]'/>
         <div className='text-white grid grid-cols-2 text-center gap-y-5 p-5 h-[50vh] place-items-center overflow-y-auto'>
             {rowElements}

@@ -35,16 +35,16 @@ export default function MedicineCount() {
     let rowElements = rowItems.map((item: any[])=>{
         let name = item[0]
         let count = item[1]
-        return (
-          <div key={name} className="flex">
+        return (<>
             <div className="text-green-300 w-full p-5">{name}</div>
             <div className="text-yellow-300 text-[1.2em] w-full bg-[#212121] rounded-md p-5">{count}</div>
-          </div>
+            </>
           )
     })
   return (
     <div className="h-[90vh] bg-black flex justify-start items-center flex-col relative">
-      <h1 className='text-[3em] text-white text-bold text-center'>Medicine Count</h1>
+      <h1 className='text-[2em] text-white text-bold text-center'>Medicine Count (Monthly)</h1>
+      <h1 className='text-[1.5em] text-white text-bold text-center'>Month : {moment(selectedDate).format('MMM YY')}</h1>
       <div className="flex justify-evenly w-[50%]">
       <div className='flex justify-center items-center py-5 gap-5'>
           <input type="text" value={regexString} onChange={(e)=>{
@@ -57,10 +57,9 @@ export default function MedicineCount() {
           className='text-xl text-green-600 border-2 border-green-600 px-5 py-2 rounded-xl
           hover:bg-green-600 hover:text-black cursor-pointer duration-200'>Show Latest</div>
         </div>
-
         <input type="date" value={selectedDate} min={"2023-03-30"} max={currentDate} onChange={(e)=>setselectedDate(e.target.value)} className='my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]'/>
       </div>
-      <div className='text-white grid grid-cols-1 text-center gap-y-5 p-5 h-[50vh] place-items-center overflow-y-auto'>
+      <div className='text-white grid grid-cols-2 text-center gap-y-5 p-5 h-[50vh] place-items-center overflow-y-auto'>
           {rowElements}
       </div>
     </div>

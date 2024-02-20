@@ -70,6 +70,7 @@ export default function MonthlyLog() {
   return (
     <div className="h-[90vh] bg-black flex justify-start items-center flex-col relative">
         <h1 className='text-[3em] text-white text-bold text-center'>Monthly Log</h1>
+        <h1 className='text-[1.5em] text-white text-bold text-center'>Month : {moment(selectedDate).format('MMM YY')}</h1>
         <input type="date" value={selectedDate} min={"2023-03-30"} max={currentDate} onChange={(e)=>setselectedDate(e.target.value)} className='my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]'/>
         <div className='w-[80vw] overflow-y-auto h-[50vh]'>
             <div className="bg-slate-900 grid grid-cols-4 p-5">
