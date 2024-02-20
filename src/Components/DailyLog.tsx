@@ -31,6 +31,7 @@ export default function LogData() {
   },[])
   let LogData : LogItem[]  = useAppSelector((state) => state.logs.data)
   LogData = LogData.filter(item => isBetween(selectedDate,selectedDate,item.id))
+  LogData = LogData.sort((a : any,b : any)=> a.id - b.id);
 
   let grandMTtotal = 0
   let grandFeeTotal = 0
