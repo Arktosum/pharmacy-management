@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react'
 import { useAppSelector, useAppDispatch } from '../hooks'
 import { StockItem, addStockItem, deleteStockItem, fetchStock, updateStockItem } from '../features/stockSlice'
 
+import {ToastContainer} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 export default function Stock() {
-
 
   let [regexString,setregexString] = useState("")
   let [addMedicineName,setaddMedicineName] = useState("")
@@ -134,7 +136,8 @@ export default function Stock() {
           {rowElements}
         </div>
     </div>
-      {/*---------------------------------------------------------- Edit Stock ---------------------------------------------------------- */}
+    <ToastContainer />
+    {/*---------------------------------------------------------- Edit Stock ---------------------------------------------------------- */}
     </div>
   )
 }

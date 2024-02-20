@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { Slide, toast } from 'react-toastify';
 
 // Async thunk to read data
 
@@ -41,6 +42,17 @@ export const updateStockItems = createAsyncThunk('data/updateStockItems', async 
 export const deleteStockItem = createAsyncThunk('data/deleteStockItem', async (item : StockItem) => {
   try {
     const response = await axios.delete(context+"/"+item.id); 
+    toast.success('Deleted Item! : '+ item.name, {
+      position: "top-center",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: 0,
+      theme: "dark",
+      transition: Slide,
+    });
     return response.data;
   } catch (error : any) {
     alert(error.response.data.error);
@@ -51,9 +63,30 @@ export const deleteStockItem = createAsyncThunk('data/deleteStockItem', async (i
 export const addStockItem = createAsyncThunk('data/addStockItem', async (medicineName:string) => {
     try {
       const response = await axios.post(context+"/",{name : medicineName});
+      toast.success('Added new Item! : '+medicineName, {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: 0,
+        theme: "dark",
+        transition: Slide,
+      });
       return response.data
     } catch (error : any) {
-        alert(error.response.data.error);
+        toast.error(error.response.data.error+ " " + medicineName, {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: 0,
+          theme: "dark",
+          transition: Slide,
+        });
         throw error;
     }
 });

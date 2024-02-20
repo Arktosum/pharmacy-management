@@ -16,42 +16,42 @@
     {
         "id": "335",
         "name": "AI6  A6 IMP",
-        "thirtyml": 48,
+        "thirtyml": 47,
         "hundredml": 0,
         "price": 130
     },
     {
         "id": "336",
         "name": "ALFALFA",
-        "thirtyml": 19,
+        "thirtyml": 18,
         "hundredml": 175,
         "price": 110
     },
     {
         "id": "338",
         "name": "A3 AI IMP",
-        "thirtyml": 170,
+        "thirtyml": 169,
         "hundredml": "828",
         "price": 130
     },
     {
         "id": "339",
         "name": "ALETRIS",
-        "thirtyml": 3,
+        "thirtyml": 2,
         "hundredml": 0,
         "price": 190
     },
     {
         "id": "340",
         "name": "ALL URS ALLU",
-        "thirtyml": 18,
+        "thirtyml": 17,
         "hundredml": 0,
         "price": 180
     },
     {
         "id": "341",
         "name": "AM 3 IMP",
-        "thirtyml": 173,
+        "thirtyml": 172,
         "hundredml": 828,
         "price": 130
     },
@@ -1748,5 +1748,19 @@
         "hundredml": "0",
         "price": 0,
         "id": "1708241312074"
+    },
+    {
+        "thirtyml": 0,
+        "price": 0,
+        "hundredml": "0",
+        "name": "A",
+        "id": "1708416986066"
+    },
+    {
+        "thirtyml": 0,
+        "price": 0,
+        "hundredml": "0",
+        "name": "AS",
+        "id": "1708417272928"
     }
 ]
