@@ -44,7 +44,7 @@ export const deleteStockItem = createAsyncThunk('data/deleteStockItem', async (i
     const response = await axios.delete(context+"/"+item.id); 
     toast.success('Deleted Item! : '+ item.name, {
       position: "top-center",
-      autoClose: 3000,
+      autoClose: 500,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -65,7 +65,7 @@ export const addStockItem = createAsyncThunk('data/addStockItem', async (medicin
       const response = await axios.post(context+"/",{name : medicineName});
       toast.success('Added new Item! : '+medicineName, {
         position: "top-center",
-        autoClose: 3000,
+        autoClose: 500,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -78,7 +78,7 @@ export const addStockItem = createAsyncThunk('data/addStockItem', async (medicin
     } catch (error : any) {
         toast.error(error.response.data.error+ " " + medicineName, {
           position: "top-center",
-          autoClose: 3000,
+          autoClose: 500,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,

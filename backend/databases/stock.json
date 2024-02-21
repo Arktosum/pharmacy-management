@@ -9,7 +9,7 @@
     {
         "id": "332",
         "name": "ABROMA RAD",
-        "thirtyml": 3,
+        "thirtyml": 2,
         "hundredml": 20,
         "price": 100
     },
@@ -23,14 +23,14 @@
     {
         "id": "334",
         "name": "AGNUS",
-        "thirtyml": 19,
+        "thirtyml": 17,
         "hundredml": 0,
         "price": 140
     },
     {
         "id": "335",
         "name": "AI6  A6 IMP",
-        "thirtyml": 49,
+        "thirtyml": 48,
         "hundredml": 0,
         "price": 130
     },
@@ -107,7 +107,7 @@
     {
         "id": "347",
         "name": "ARJUNA",
-        "thirtyml": 8,
+        "thirtyml": 7,
         "hundredml": 0,
         "price": 100
     },
