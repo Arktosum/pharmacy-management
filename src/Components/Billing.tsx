@@ -7,7 +7,7 @@ import {
   updateStockItems,
 } from "../features/stockSlice";
 import { isBetween, regexUtil } from "./Utils";
-import { Slide, ToastContainer, toast } from "react-toastify";
+import { Slide, ToastContainer, Zoom, toast } from "react-toastify";
 import moment from "moment";
 
 const deleteSVG = (
@@ -96,14 +96,14 @@ export default function Billing() {
     localStorage.removeItem("bill-items");
     toast.success("Transaction success!", {
       position: "top-center",
-      autoClose: 500,
-      hideProgressBar: false,
+      autoClose: 300,
+      hideProgressBar: true,
       closeOnClick: true,
       pauseOnHover: true,
-      draggable: true,
+      draggable: false,
       progress: 0,
       theme: "dark",
-      transition: Slide,
+      transition: Zoom,
     });
     setbillItemList([]);
     setregexString("");
@@ -123,28 +123,28 @@ export default function Billing() {
           if (index != -1) {
             toast.error("Item already in cart", {
               position: "top-center",
-              autoClose: 3000,
-              hideProgressBar: false,
+              autoClose: 300,
+              hideProgressBar: true,
               closeOnClick: true,
               pauseOnHover: true,
-              draggable: true,
+              draggable: false,
               progress: 0,
               theme: "dark",
-              transition: Slide,
+              transition: Zoom,
             });
             return;
           }
           if (item.thirtyml == 0) {
             toast.error("Cannot add Item! | Zero Left!", {
               position: "top-center",
-              autoClose: 3000,
-              hideProgressBar: false,
+              autoClose: 300,
+              hideProgressBar: true,
               closeOnClick: true,
               pauseOnHover: true,
-              draggable: true,
+              draggable: false,
               progress: 0,
               theme: "dark",
-              transition: Slide,
+              transition: Zoom,
             });
             return;
           }

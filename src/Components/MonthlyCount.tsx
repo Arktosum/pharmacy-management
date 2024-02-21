@@ -14,6 +14,7 @@ export default function Monthly() {
   }, [currentDate, dispatch]);
   let LogData: LogItem[] = useAppSelector((state) => state.logs.data);
   LogData = LogData.filter((item) => isInMonth(selectedDate, item.id));
+  LogData = LogData.sort((a: LogItem , b: LogItem) => parseInt(a.id) - parseInt(b.id));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dailyTally : any = {};
   let monthlyCount = 0;
