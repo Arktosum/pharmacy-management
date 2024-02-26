@@ -9,7 +9,7 @@ const deleteSVG = <svg xmlns="http://www.w3.org/2000/svg" fill="rgb(237, 149, 15
 </svg>
 
 export default function SearchLog() {
-  const [regexString,setregexString] = useState("")
+  const [regexString,setregexString] = useState(".*")
   const [billItemList,setbillItemList] = useState<LogItem[] |[]>([])
   const [receivedAmt,setreceivedAmt] = useState(0)
   const [evalString,setevalString] = useState("")

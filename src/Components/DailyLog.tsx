@@ -77,7 +77,7 @@ export default function LogData() {
   }
   return (
     <div className="h-[90vh] bg-black flex">
-      <div className="w-[20vw] h-full overflow-auto">
+      <div className="w-[25vw] h-full overflow-auto">
         <HotTable
           data={excelData}
           rowHeaders={true}
@@ -108,6 +108,7 @@ export default function LogData() {
             },
           ]}
           manualRowResize={true}
+          manualColumnResize={true}
           copyPaste={{
             copyColumnHeaders: true,
             copyColumnGroupHeaders: true,

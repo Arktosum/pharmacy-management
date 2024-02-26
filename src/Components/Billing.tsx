@@ -121,17 +121,7 @@ export default function Billing() {
             (billItem) => billItem.id == item.id
           );
           if (index != -1) {
-            toast.error("Item already in cart", {
-              position: "top-center",
-              autoClose: 300,
-              hideProgressBar: true,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: false,
-              progress: 0,
-              theme: "dark",
-              transition: Zoom,
-            });
+            alert("Item already in cart!")
             return;
           }
           if (item.thirtyml == 0) {
