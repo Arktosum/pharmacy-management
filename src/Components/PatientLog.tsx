@@ -14,20 +14,26 @@ export default function Log() {
   const [showModal, setshowModal] = useState(false);
   const [selectedItem, setselectedItem] = useState<LogItem | null>(null);
   const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [seekDate, setseekDate] = useState("");
+  const [chooseState,setchooseDate] = useState("SEEK");
 
   const LogData: LogItem[] = useAppSelector((state) => state.logs.data);
   const dispatch = useAppDispatch();
+  const currentDate = moment().format("YYYY-MM-DD");
 
   useEffect(() => {
-    const currentDate = moment().format("YYYY-MM-DD");
     setFromDate(currentDate);
-    setToDate(currentDate);
+    setseekDate(currentDate);
     dispatch(fetchLogs());
   }, [dispatch]);
 
   const logElements = LogData.map((item) => {
-    if (!isBetween(fromDate, toDate, item.id)) return;
+    if(chooseState == 'RANGE'){
+      if (!isBetween(fromDate, currentDate, item.id)) return;
+    }
+    else if(chooseState == 'SEEK'){
+      if (!isBetween(seekDate, seekDate, item.id)) return;
+    }
     const id = item.id;
     let infoString = "Something went wrong";
     const [date, time] = moment(parseInt(id))
@@ -59,6 +65,8 @@ export default function Log() {
   });
 
   function undoItem(logItem: TransactionLog, stockItem: StockItem) {
+    const choice = prompt("Sure to undo? (y/n)");
+    if(choice && choice.toLowerCase() !== "y") return;
     const newStockItem = { ...stockItem, updateType: "UNDO" } as StockItem;
     dispatch(updateStockItems([newStockItem]));
     const newlogItem = {
@@ -171,21 +179,31 @@ export default function Log() {
       <h1 className="text-[3em] text-white text-bold text-center">
         Patient Logs
       </h1>
-      <div className="flex justify-between text-white">
-        <label>From Date:</label>
-        <input
-          type="date"
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-          className="text-black"
-        />
-        <label>To Date:</label>
-        <input
-          type="date"
-          value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
-          className="text-black"
-        />
+      <div className="flex justify-around text-white">
+        <div className="flex gap-5 items-center">
+          <label>From Date:</label>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => {
+              setchooseDate("RANGE");
+              setFromDate(e.target.value);
+            }}
+            className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
+          />
+        </div>
+        <div className="flex gap-5 items-center">
+          <label>Seek Date:</label>
+          <input
+            type="date"
+            value={seekDate}
+            onChange={(e) => {
+              setchooseDate("SEEK");
+              setseekDate(e.target.value)
+            }}
+            className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
+          />
+        </div>
       </div>
       <div className="grid grid-cols-3 bg-slate-600 p-5 text-center">
         <div className="text-white text-md font-bold">DateTime</div>
