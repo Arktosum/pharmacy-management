@@ -14,11 +14,11 @@
         "price": 100
     },
     {
-        "id": "333",
-        "name": "AC3",
+        "name": "AC3  NT",
         "thirtyml": 170,
         "hundredml": "972",
-        "price": 130
+        "price": 130,
+        "id": "333"
     },
     {
         "id": "334",
@@ -42,11 +42,11 @@
         "price": 110
     },
     {
-        "id": "338",
-        "name": "A3 AI IMP",
-        "thirtyml": 150,
+        "name": "A3 AI IMP  NT",
+        "thirtyml": 149,
         "hundredml": "828",
-        "price": 130
+        "price": 130,
+        "id": "338"
     },
     {
         "name": "ALETRIS",
@@ -65,7 +65,7 @@
     {
         "id": "341",
         "name": "AM 3 IMP",
-        "thirtyml": 165,
+        "thirtyml": 164,
         "hundredml": 828,
         "price": 130
     },
@@ -98,11 +98,11 @@
         "id": "345"
     },
     {
-        "id": "346",
-        "name": "AMN 3X IMP",
+        "name": "AMN 3X IMP  NT",
         "thirtyml": 56,
-        "hundredml": 0,
-        "price": 130
+        "hundredml": "0",
+        "price": 130,
+        "id": "346"
     },
     {
         "id": "347",
@@ -114,13 +114,13 @@
     {
         "id": "348",
         "name": "ARN AQ IMP",
-        "thirtyml": 43,
+        "thirtyml": 37,
         "hundredml": "290  325",
         "price": 150
     },
     {
         "name": "AESC IMP",
-        "thirtyml": 20,
+        "thirtyml": 19,
         "hundredml": "210",
         "price": 120,
         "id": "349"
@@ -128,7 +128,7 @@
     {
         "id": "350",
         "name": "ASF 3",
-        "thirtyml": 135,
+        "thirtyml": 132,
         "hundredml": 900,
         "price": 130
     },
@@ -184,14 +184,14 @@
     {
         "id": "358",
         "name": "ARALIA",
-        "thirtyml": 25,
+        "thirtyml": 24,
         "hundredml": "350",
         "price": 160
     },
     {
         "id": "359",
         "name": "BER V  BQ IMP",
-        "thirtyml": 22,
+        "thirtyml": 21,
         "hundredml": 175,
         "price": 110
     },
@@ -205,7 +205,7 @@
     {
         "id": "361",
         "name": "BC3 IMP",
-        "thirtyml": 65,
+        "thirtyml": 64,
         "hundredml": 828,
         "price": 130
     },
@@ -289,7 +289,7 @@
     {
         "id": "373",
         "name": "CEPHAL",
-        "thirtyml": 26,
+        "thirtyml": 25,
         "hundredml": 170,
         "price": 100
     },
@@ -310,7 +310,7 @@
     {
         "id": "376",
         "name": "CHELL CQ  IMP",
-        "thirtyml": 50,
+        "thirtyml": 46,
         "hundredml": "325",
         "price": 160
     },
@@ -352,13 +352,13 @@
     {
         "id": "382",
         "name": "CLEM CQ   IMP",
-        "thirtyml": 18,
+        "thirtyml": 17,
         "hundredml": 210,
         "price": 120
     },
     {
         "name": "COLCH CQQ  IMP",
-        "thirtyml": 53,
+        "thirtyml": 51,
         "hundredml": "350",
         "price": 160,
         "id": "383"
@@ -373,7 +373,7 @@
     {
         "id": "385",
         "name": "ABROMA  AGUST",
-        "thirtyml": 29,
+        "thirtyml": 28,
         "hundredml": 175,
         "price": 100
     },
@@ -387,20 +387,20 @@
     {
         "id": "387",
         "name": "CARD IMP",
-        "thirtyml": 24,
+        "thirtyml": 23,
         "hundredml": "325",
         "price": 150
     },
     {
         "name": "BOV  BQ  IMP",
-        "thirtyml": 52,
+        "thirtyml": 48,
         "hundredml": "250",
         "price": 130,
         "id": "388"
     },
     {
         "name": "COLOCY CQQ  IMP",
-        "thirtyml": 57,
+        "thirtyml": 55,
         "hundredml": "250 ",
         "price": 130,
         "id": "389"
@@ -443,7 +443,7 @@
     {
         "id": "395",
         "name": "DIGIT DQ IMP",
-        "thirtyml": 56,
+        "thirtyml": 55,
         "hundredml": "325",
         "price": 150
     },
@@ -464,14 +464,14 @@
     {
         "id": "398",
         "name": "ECHI",
-        "thirtyml": 9,
+        "thirtyml": 8,
         "hundredml": "325",
         "price": 150
     },
     {
         "id": "399",
         "name": "EQUI",
-        "thirtyml": 7,
+        "thirtyml": 6,
         "hundredml": 0,
         "price": 100
     },
@@ -709,7 +709,7 @@
     {
         "id": "434",
         "name": "HYDRAS HDS HQ IMP",
-        "thirtyml": 54,
+        "thirtyml": 53,
         "hundredml": "350   aftt 64  160",
         "price": 180
     },
@@ -793,7 +793,7 @@
     {
         "id": "446",
         "name": "KALMIA IMP",
-        "thirtyml": 44,
+        "thirtyml": 45,
         "hundredml": "410",
         "price": 180
     },
@@ -821,20 +821,20 @@
     {
         "id": "450",
         "name": "LEM MIN",
-        "thirtyml": 19,
+        "thirtyml": 18,
         "hundredml": 0,
         "price": 120
     },
     {
-        "id": "452",
-        "name": "K3  KARS  IMP",
+        "name": "K3  KARS  IMP  NT",
         "thirtyml": 75,
-        "hundredml": 972,
-        "price": 130
+        "hundredml": "972",
+        "price": 130,
+        "id": "452"
     },
     {
         "name": "HYDRO COT  HQ  IMP",
-        "thirtyml": 54,
+        "thirtyml": 53,
         "hundredml": "175",
         "price": 110,
         "id": "453"
@@ -849,7 +849,7 @@
     {
         "id": "455",
         "name": "MEZ MQ IMP",
-        "thirtyml": 13,
+        "thirtyml": 11,
         "hundredml": "410",
         "price": 180
     },
@@ -912,7 +912,7 @@
     {
         "id": "464",
         "name": "OCI SAN OCS",
-        "thirtyml": 10,
+        "thirtyml": 9,
         "hundredml": 0,
         "price": 100
     },
@@ -926,7 +926,7 @@
     {
         "id": "466",
         "name": "OLENADER OQ IMP",
-        "thirtyml": 22,
+        "thirtyml": 20,
         "hundredml": 210,
         "price": 120
     },
@@ -940,7 +940,7 @@
     {
         "id": "468",
         "name": "IRIS VER  IQ IMP",
-        "thirtyml": 49,
+        "thirtyml": 48,
         "hundredml": "210",
         "price": 120
     },
@@ -968,7 +968,7 @@
     {
         "id": "472",
         "name": "PHD PQ  IMP",
-        "thirtyml": 20,
+        "thirtyml": 18,
         "hundredml": "290",
         "price": 140
     },
@@ -996,7 +996,7 @@
     {
         "id": "476",
         "name": "PLANT",
-        "thirtyml": 13,
+        "thirtyml": 12,
         "hundredml": 210,
         "price": 110
     },
@@ -1030,7 +1030,7 @@
     },
     {
         "name": "RAN B RQ IMP",
-        "thirtyml": 80,
+        "thirtyml": 77,
         "hundredml": "250",
         "price": 130,
         "id": "482"
@@ -1121,7 +1121,7 @@
     },
     {
         "name": "SARAS SQ IMP",
-        "thirtyml": 64,
+        "thirtyml": 60,
         "hundredml": "290",
         "price": 140,
         "id": "495"
@@ -1157,7 +1157,7 @@
     {
         "id": "500",
         "name": "SKOO",
-        "thirtyml": 40,
+        "thirtyml": 38,
         "hundredml": "972",
         "price": 130
     },
@@ -1261,7 +1261,7 @@
     },
     {
         "name": "THUJ  TQ  IMP",
-        "thirtyml": 14,
+        "thirtyml": 10,
         "hundredml": "290",
         "price": 140,
         "id": "515"
@@ -1269,7 +1269,7 @@
     {
         "id": "516",
         "name": "RAU",
-        "thirtyml": 15,
+        "thirtyml": 14,
         "hundredml": 0,
         "price": 100
     },
@@ -1297,14 +1297,14 @@
     {
         "id": "520",
         "name": "SANG   SQ IMP",
-        "thirtyml": 12,
+        "thirtyml": 11,
         "hundredml": 480,
         "price": 200
     },
     {
         "id": "521",
         "name": "URA N  U3 IMP",
-        "thirtyml": 118,
+        "thirtyml": 116,
         "hundredml": "972",
         "price": 150
     },
@@ -1360,7 +1360,7 @@
     {
         "id": "529",
         "name": "PSOR  PQ",
-        "thirtyml": 50,
+        "thirtyml": 49,
         "hundredml": "210",
         "price": 120
     },
@@ -1401,7 +1401,7 @@
     },
     {
         "name": "TEUC",
-        "thirtyml": 8,
+        "thirtyml": 7,
         "hundredml": "310",
         "price": 150,
         "id": "535"
@@ -1409,7 +1409,7 @@
     {
         "id": "536",
         "name": "ZINGIBAR ING",
-        "thirtyml": 12,
+        "thirtyml": 11,
         "hundredml": 0,
         "price": 100
     },
@@ -1514,7 +1514,7 @@
     {
         "id": "1680242473080",
         "name": "PHAC PHQ PQ IMP",
-        "thirtyml": 20,
+        "thirtyml": 19,
         "hundredml": "175",
         "price": 110
     },
@@ -1542,7 +1542,7 @@
     {
         "id": "1682320779445",
         "name": "SUGAR  TEST  SSS",
-        "thirtyml": 889,
+        "thirtyml": 887,
         "hundredml": 0,
         "price": 30
     },
@@ -1605,7 +1605,7 @@
     {
         "id": "1689952853992",
         "name": "C8",
-        "thirtyml": 110,
+        "thirtyml": 108,
         "hundredml": 0,
         "price": 180
     },
@@ -1639,7 +1639,7 @@
     },
     {
         "name": "TT  29 22",
-        "thirtyml": 221,
+        "thirtyml": 219,
         "hundredml": "630",
         "price": 110,
         "id": "1699892693514"
@@ -1668,16 +1668,16 @@
     {
         "id": "1701161335567",
         "name": "KALI BRO 3X KB3 NT",
-        "thirtyml": 44,
+        "thirtyml": 42,
         "hundredml": 828,
         "price": 130
     },
     {
-        "id": "1701161400145",
         "name": "KALI CHLOR 3X KC3  NT",
         "thirtyml": 0,
-        "hundredml": 828,
-        "price": 130
+        "hundredml": "828",
+        "price": 130,
+        "id": "1701161400145"
     },
     {
         "name": "CALC SIL 3X  CS3 NT",
@@ -1689,21 +1689,21 @@
     {
         "id": "1701161545133",
         "name": "AM ACET 3X  AMA3 NT",
-        "thirtyml": 74,
+        "thirtyml": 73,
         "hundredml": 972,
         "price": 130
     },
     {
-        "id": "1701161602772",
         "name": "KALI IOD 3X KI3 NT",
-        "thirtyml": 117,
+        "thirtyml": 116,
         "hundredml": "828",
-        "price": 130
+        "price": 130,
+        "id": "1701161602772"
     },
     {
         "id": "1701161766822",
         "name": "SUL IOD 3X SI3 NT",
-        "thirtyml": 10,
+        "thirtyml": 6,
         "hundredml": "0",
         "price": 160
     },
@@ -1743,11 +1743,11 @@
         "price": 130
     },
     {
-        "id": "1703250754183",
-        "name": "CI3  CI",
+        "name": "CALC IOD  3X CI3  CI  NT",
         "thirtyml": 27,
         "hundredml": "975",
-        "price": 140
+        "price": 140,
+        "id": "1703250754183"
     },
     {
         "id": "1707730837088",
@@ -1757,64 +1757,64 @@
         "price": 260
     },
     {
-        "id": "1707736782394",
-        "name": "FER SUL  3X FS",
+        "name": "FER SUL  3X FS  NT",
         "thirtyml": 39,
         "hundredml": "828",
-        "price": 130
+        "price": 130,
+        "id": "1707736782394"
     },
     {
-        "name": "KALI NIT 6X KN",
+        "name": "KALI NIT 6X KN  NT",
         "thirtyml": 36,
         "hundredml": "828",
         "price": 130,
         "id": "1708943396877"
     },
     {
-        "name": "BEN AC  3X  BEN",
-        "thirtyml": 32,
+        "name": "BEN AC  3X  BEN NT",
+        "thirtyml": 30,
         "hundredml": "828",
         "price": 130,
         "id": "1708943517699"
     },
     {
-        "name": "ADRENAL 3X  AD3",
+        "name": "ADRENAL 3X  AD3  NT",
         "thirtyml": 37,
         "hundredml": "972",
         "price": 140,
         "id": "1708943574526"
     },
     {
-        "name": "ANT CR 3X  AT3",
-        "thirtyml": 48,
+        "name": "ANT CR 3X  AT3 NT",
+        "thirtyml": 40,
         "hundredml": "828",
         "price": 130,
         "id": "1708943670631"
     },
     {
-        "name": "MERC IOD FLA 3X MI3",
+        "name": "MERC IOD FLA 3X MI3 NT",
         "thirtyml": 19,
         "hundredml": "972",
         "price": 140,
         "id": "1708943797007"
     },
     {
-        "name": "ZINC PHOS  6X IP6",
-        "thirtyml": 59,
+        "name": "ZINC PHOS  6X IP6 NT",
+        "thirtyml": 58,
         "hundredml": "828",
         "price": 130,
         "id": "1708943971536"
     },
     {
-        "name": "CINNABARIS 3X CIN",
-        "thirtyml": 16,
+        "name": "CINNABARIS 3X CIN NT",
+        "thirtyml": 15,
         "hundredml": "972",
         "price": 140,
         "id": "1708944061255"
     },
     {
-        "name": "AUR MUR 3X AU3",
-        "thirtyml": 36,
+        "name": "AUR MUR 3X AU3 NT",
+        "thirtyml": 34,
         "hundredml": "972",
         "price": 140,
         "id": "1709192551463"

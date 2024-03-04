@@ -32,7 +32,7 @@ export default function Monthly() {
   for (const date in dailyTally) {
     rowElements.push(
       <>
-        <div className="text-green-300 w-full p-5">{date}</div>
+        <div className="text-green-300 w-full p-5">{moment(date).format('DD-MM-YYYY')}</div>
         <div className="text-yellow-300 text-[1.2em] w-full bg-[#212121] rounded-md p-5">
           {dailyTally[date]}
         </div>

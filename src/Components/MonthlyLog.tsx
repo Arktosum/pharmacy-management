@@ -58,7 +58,7 @@ export default function MonthlyLog() {
     totalGrand += item.total;
     ROWS.push(
       <div key={date} className="bg-black grid grid-cols-4 gap-5 p-5 my-5">
-        <div className="text-yellow-300 text-[1.2em]">{date}</div>
+        <div className="text-yellow-300 text-[1.2em]">{moment(date).format('DD-MM-YYYY')}</div>
         <div className="text-orange-500 text-[1.2em]">{item.MTtotal}</div>
         <div className="text-green-500 text-[1.2em]">{item.consultFee}</div>
         <div className="text-pink-500 text-[1.2em]">{item.total}</div>
