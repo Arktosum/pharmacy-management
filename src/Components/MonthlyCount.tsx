@@ -20,16 +20,13 @@ export default function Monthly() {
   let monthlyCount = 0;
   for (const item of LogData) {
     const thisDate = moment(parseInt(item.id)).format("YYYY-MM-DD");
-    let transactionCount = 0;
     for (const medicine of item.data.medicine) {
-      transactionCount += medicine.multiplier;
-      dailyTally[thisDate] = (dailyTally[thisDate] || 0) + 1;
+      dailyTally[thisDate] = (dailyTally[thisDate] || 0) + medicine.multiplier;
     }
-    monthlyCount += transactionCount;
   }
-
   const rowElements = [];
   for (const date in dailyTally) {
+    monthlyCount += dailyTally[date]
     rowElements.push(
       <>
         <div className="text-green-300 w-full p-5">{moment(date).format('DD-MM-YYYY')}</div>
