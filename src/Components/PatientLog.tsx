@@ -15,7 +15,8 @@ export default function Log() {
   const [selectedItem, setselectedItem] = useState<LogItem | null>(null);
   const [fromDate, setFromDate] = useState("");
   const [seekDate, setseekDate] = useState("");
-  const [chooseState,setchooseDate] = useState("SEEK");
+  const [chooseState,setChooseState] = useState("SEEK");
+  const [patientName, setpatientName] = useState("");
 
   const LogData: LogItem[] = useAppSelector((state) => state.logs.data);
   const dispatch = useAppDispatch();
@@ -33,6 +34,11 @@ export default function Log() {
     }
     else if(chooseState == 'SEEK'){
       if (!isBetween(seekDate, seekDate, item.id)) return;
+    }
+    else if(chooseState == 'SEARCH'){
+      if(patientName == "") return;
+      const regex = new RegExp(patientName);
+      if(!regex.test(item.data.patientName)) return;
     }
     const id = item.id;
     let infoString = "Something went wrong";
@@ -186,7 +192,7 @@ export default function Log() {
             type="date"
             value={fromDate}
             onChange={(e) => {
-              setchooseDate("RANGE");
+              setChooseState("RANGE");
               setFromDate(e.target.value);
             }}
             className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
@@ -198,8 +204,20 @@ export default function Log() {
             type="date"
             value={seekDate}
             onChange={(e) => {
-              setchooseDate("SEEK");
+              setChooseState("SEEK");
               setseekDate(e.target.value)
+            }}
+            className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
+          />
+        </div>
+        <div className="flex gap-5 items-center">
+          <label>Search Patient: </label>
+          <input
+            type="text"
+            value={patientName}
+            onChange={(e) => {
+              setChooseState("SEARCH");
+              setpatientName(e.target.value)
             }}
             className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
           />

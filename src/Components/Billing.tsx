@@ -7,7 +7,7 @@ import {
   updateStockItems,
 } from "../features/stockSlice";
 import { isBetween, regexUtil } from "./Utils";
-import { Slide, ToastContainer, Zoom, toast } from "react-toastify";
+import { ToastContainer, Zoom, toast } from "react-toastify";
 import moment from "moment";
 
 const deleteSVG = (
