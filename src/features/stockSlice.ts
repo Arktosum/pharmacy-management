@@ -99,7 +99,8 @@ export type StockItem = {
   price : number,
   id : string,
   multiplier? : number,
-  updateType?: string
+  updateType?: string,
+  limit : number,
 }
 // Define initial state, reducers, and slice
 const initialState : {

@@ -47,6 +47,7 @@ export default function Stock() {
       hundredml: data.hundredml,
       price: parseInt(data.price),
       id: selectedItem.id,
+      limit : parseInt(data.limit)
     };
     dispatch(updateStockItem(payload));
     e.target.reset();
@@ -97,7 +98,7 @@ export default function Stock() {
         <div
           className={
             "text-md font-bold duration-[1ms] " +
-            `${item.thirtyml > 15 ? "text-green-300" : "pulse-text"}`
+            `${item.thirtyml <= item.limit ? "pulse-text" : "text-green-300"}`
           }
         >
           {item.thirtyml}
@@ -150,6 +151,14 @@ export default function Stock() {
                 name="price"
                 className="px-5 py-2 text-yellow-300 no-arrow text-[1.2em] bg-black"
                 defaultValue={selectedItem.price}
+                required
+              />
+              <div className="text-yellow-300 text-xl uppercase">Limit </div>
+              <input
+                type="number"
+                name="limit"
+                className="px-5 py-2 text-yellow-300 no-arrow text-[1.2em] bg-black"
+                defaultValue={selectedItem.limit}
                 required
               />
               <div

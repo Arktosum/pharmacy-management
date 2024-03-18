@@ -21,7 +21,8 @@ router.post("/", (req, res) => {
     newItem.price = 0;
     newItem.hundredml = "0";
     newItem.name = req.body.name.toUpperCase();
-    newItem.id = id
+    newItem.id = id;
+    newItem.limit = 0;
     for (let item of items) {
       if (item.name == newItem.name) {
         res.status(401).json({ error: "Item with name already exists!" });
@@ -37,15 +38,15 @@ router.post("/", (req, res) => {
 
 // PUT update item by ID
 router.put("/", (req, res) => {
-  let newItem = req.body
+  let newItem = req.body;
   readJSON(filePath, (items) => {
-    let itemIndex = items.findIndex(item => item.id === newItem.id);
-    if(itemIndex === -1){
+    let itemIndex = items.findIndex((item) => item.id === newItem.id);
+    if (itemIndex === -1) {
       res.status(404).json({ error: "Item not found" });
       return;
     }
-    let oldName = items[itemIndex].name
-    if(oldName !== newItem.name){
+    let oldName = items[itemIndex].name;
+    if (oldName !== newItem.name) {
       for (let item of items) {
         if (item.name == newItem.name) {
           res.status(401).json({ error: "Item with name already exists!" });
@@ -61,11 +62,13 @@ router.put("/", (req, res) => {
 });
 
 router.put("/many", (req, res) => {
-  let newItems = req.body
+  let newItems = req.body;
   readJSON(filePath, (items) => {
-    for(let newItem of newItems) {
-      let itemIndex = items.findIndex(item => item.id === newItem.id);
-      items[itemIndex].thirtyml = items[itemIndex].thirtyml + newItem.multiplier*(newItem.updateType == 'UNDO' ? 1 : -1);
+    for (let newItem of newItems) {
+      let itemIndex = items.findIndex((item) => item.id === newItem.id);
+      items[itemIndex].thirtyml =
+        items[itemIndex].thirtyml +
+        newItem.multiplier * (newItem.updateType == "UNDO" ? 1 : -1);
     }
     writeJSON(filePath, items, () => {
       res.status(200).json(items);
@@ -77,9 +80,9 @@ router.put("/many", (req, res) => {
 router.delete("/:id", (req, res) => {
   const itemId = req.params.id;
   readJSON(filePath, (items) => {
-    items = items.filter(item => item.id !== itemId);
+    items = items.filter((item) => item.id !== itemId);
     writeJSON(filePath, items, () => {
-      res.status(200).json({id : itemId});
+      res.status(200).json({ id: itemId });
     });
   });
 });

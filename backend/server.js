@@ -26,13 +26,11 @@ app.listen(PORT, () => {
 });
 
 // readJSON('./databases/stock.json', (items) => {
-//     let Items = [];
-
-//     for(let id in items){
-//         let item = {id,...items[id]}
-//         Items.push(item);
-//     }
-//     writeJSON('./databases/stock.json',Items,()=>{
+//     items.forEach((item) => {
+//       item.limit = 15
+//       return item;
+//     })
+//     writeJSON('./databases/stock.json',items,()=>{
 //         console.log("Done!");
 //     })
 // })
