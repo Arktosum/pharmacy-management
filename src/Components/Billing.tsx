@@ -127,7 +127,6 @@ export default function Billing() {
           if (item.thirtyml == 0) {
             toast.error("Cannot add Item! | Zero Left!", {
               position: "top-center",
-              autoClose: 300,
               hideProgressBar: true,
               closeOnClick: true,
               pauseOnHover: true,

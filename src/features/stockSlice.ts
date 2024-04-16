@@ -78,7 +78,6 @@ export const addStockItem = createAsyncThunk('data/addStockItem', async (medicin
     } catch (error : any) {
         toast.error(error.response.data.error+ " " + medicineName, {
           position: "top-center",
-          autoClose: 300,
           hideProgressBar: true,
           closeOnClick: true,
           pauseOnHover: true,
@@ -90,7 +89,6 @@ export const addStockItem = createAsyncThunk('data/addStockItem', async (medicin
         throw error;
     }
 });
-
 
 export type StockItem = {
   name : string,
