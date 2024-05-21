@@ -71,44 +71,13 @@ export default function Billing() {
   const LogData: LogItem[] = useAppSelector((state) => state.logs.data);
   const StockData: StockItem[] = useAppSelector((state) => state.stocks.data);
   let dailyCount = 0;
+
   for (const logItem of LogData) {
     if (isBetween(currentDate, currentDate, logItem.id)) {
       for (const item of logItem.data.medicine) {
         dailyCount += item.multiplier;
       }
     }
-  }
-  function handleTransaction() {
-    if (billItemList.length == 0) return;
-    const transactionItem = {
-      type: "TRANSACTION",
-      data: {
-        patientName,
-        consultFee,
-        medicine: [],
-      },
-    } as LogItem;
-    for (const item of billItemList) {
-      transactionItem.data.medicine.push(item);
-    }
-    dispatch(addLogItem(transactionItem));
-    dispatch(updateStockItems(transactionItem.data.medicine));
-    localStorage.removeItem("bill-items");
-    toast.success("Transaction success!", {
-      position: "top-center",
-      autoClose: 300,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: false,
-      progress: 0,
-      theme: "dark",
-      transition: Zoom,
-    });
-    setbillItemList([]);
-    setregexString("");
-    setpatientName("");
-    setconsultFee(0);
   }
 
   const editItems = StockData.map((item) => {
@@ -121,12 +90,13 @@ export default function Billing() {
             (billItem) => billItem.id == item.id
           );
           if (index != -1) {
-            alert("Item already in cart!")
+            alert("Item already in cart!");
             return;
           }
           if (item.thirtyml == 0) {
             toast.error("Cannot add Item! | Zero Left!", {
               position: "top-center",
+              autoClose: 300,
               hideProgressBar: true,
               closeOnClick: true,
               pauseOnHover: true,
@@ -233,6 +203,42 @@ export default function Billing() {
       </div>
     );
   });
+  const Gtotal = total + consultFee;
+  const change = Gtotal % 100;
+  const hasChange =
+    change == 20 || change == 40 || change == 70 || change == 90;
+  function handleTransaction() {
+    if (billItemList.length == 0) return;
+    const transactionItem = {
+      type: "TRANSACTION",
+      data: {
+        patientName,
+        consultFee: hasChange ? consultFee + 10 : consultFee ,
+        medicine: [],
+      },
+    } as LogItem;
+    for (const item of billItemList) {
+      transactionItem.data.medicine.push(item);
+    }
+    dispatch(addLogItem(transactionItem));
+    dispatch(updateStockItems(transactionItem.data.medicine));
+    localStorage.removeItem("bill-items");
+    toast.success("Transaction success!", {
+      position: "top-center",
+      autoClose: 300,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: false,
+      progress: 0,
+      theme: "dark",
+      transition: Zoom,
+    });
+    setbillItemList([]);
+    setregexString("");
+    setpatientName("");
+    setconsultFee(0);
+  }
   function addevalString() {
     if (evalString == "") return 0;
     const vals = evalString.replaceAll(" ", "+");
@@ -245,6 +251,7 @@ export default function Billing() {
       return 0;
     }
   }
+
   return (
     <div className="bg-black h-[90vh] flex">
       {/*---------------------------------------------------------- Transaction ---------------------------------------------------------- */}
@@ -399,6 +406,14 @@ export default function Billing() {
             />
             <div className="text-black font-bold text-[1.4em] bg-yellow-300 px-5 rounded-md">
               {addevalString()}
+            </div>
+            <div className="text-white flex">Rounded</div>
+            <div
+              className={`text-black font-bold text-[1.4em] ${
+                hasChange ? "pulse-red-green" : ""
+              } bg-[#f886dd] w-[10%] px-5 rounded-md`}
+            >
+              {hasChange ? Gtotal + 10 : Gtotal}
             </div>
           </div>
         </div>
