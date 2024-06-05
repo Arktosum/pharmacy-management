@@ -2,8 +2,17 @@ import { useEffect, useState } from "react";
 import { fetchLogs, LogItem } from "../features/logSlice";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import moment from "moment";
-import { isInMonth } from "./Utils";
+function isInMonth(date: string, current: string) {
+  const currentMonth = moment(date).month();
+  const timestampMonth = moment(parseInt(current)).month();
+  return currentMonth === timestampMonth;
+}
 
+function isInYear(date: string, current: string) {
+  const currentYear = moment(date).year();
+  const timestampYear = moment(parseInt(current)).year();
+  return currentYear === timestampYear;
+}
 export default function Monthly() {
   const [selectedDate, setselectedDate] = useState("");
   const dispatch = useAppDispatch();
@@ -13,7 +22,10 @@ export default function Monthly() {
     dispatch(fetchLogs());
   }, [currentDate, dispatch]);
   let LogData: LogItem[] = useAppSelector((state) => state.logs.data);
-  LogData = LogData.filter((item) => isInMonth(selectedDate, item.id));
+  LogData = LogData.filter(
+    (item) =>
+      isInMonth(selectedDate, item.id) && isInYear(selectedDate, item.id)
+  );
   LogData = LogData.sort((a: LogItem , b: LogItem) => parseInt(a.id) - parseInt(b.id));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dailyTally : any = {};

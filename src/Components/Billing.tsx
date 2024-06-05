@@ -213,7 +213,7 @@ export default function Billing() {
       type: "TRANSACTION",
       data: {
         patientName,
-        consultFee: hasChange ? consultFee + 10 : consultFee ,
+        consultFee,
         medicine: [],
       },
     } as LogItem;

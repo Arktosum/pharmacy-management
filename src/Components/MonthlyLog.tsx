@@ -8,6 +8,13 @@ function isInMonth(date: string, current: string) {
   const timestampMonth = moment(parseInt(current)).month();
   return currentMonth === timestampMonth;
 }
+
+function isInYear(date: string, current: string) {
+  const currentYear = moment(date).year();
+  const timestampYear = moment(parseInt(current)).year();
+  return currentYear === timestampYear;
+}
+
 export default function MonthlyLog() {
   const [selectedDate, setselectedDate] = useState("");
   const dispatch = useAppDispatch();
@@ -16,15 +23,20 @@ export default function MonthlyLog() {
     setselectedDate(currentDate);
     dispatch(fetchLogs());
   }, [currentDate, dispatch]);
+
   let LogData: LogItem[] = useAppSelector((state) => state.logs.data);
-  LogData = LogData.filter((item) => isInMonth(selectedDate, item.id));
-  LogData = LogData.sort((a: LogItem , b: LogItem) => parseInt(a.id) - parseInt(b.id));
+  LogData = LogData.filter(
+    (item) =>
+      isInMonth(selectedDate, item.id) && isInYear(selectedDate, item.id)
+  );
+  LogData = LogData.sort(
+    (a: LogItem, b: LogItem) => parseInt(a.id) - parseInt(b.id)
+  );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rowItem: any = {};
   for (const item of LogData) {
     if (item.type.toUpperCase() != "TRANSACTION") continue;
     const thisDate = moment(parseInt(item.id)).format("YYYY-MM-DD");
-
     if (!(thisDate in rowItem)) {
       rowItem[thisDate] = {
         MTtotal: 0,
@@ -32,19 +44,19 @@ export default function MonthlyLog() {
         total: 0,
       };
     }
-
-    let mtTotal = 0;
-    for (const medicine of item.data.medicine) {
-      mtTotal += medicine.price * medicine.multiplier;
-    }
+    let MTtotal = 0;
     const consultFee = item.data.consultFee;
-    const total = mtTotal + consultFee;
+    for (const medicine of item.data.medicine) {
+      const amount = medicine.multiplier * medicine.price;
+      MTtotal += amount;
+    }
     rowItem[thisDate] = {
-      MTtotal: rowItem[thisDate].MTtotal + mtTotal,
+      MTtotal: rowItem[thisDate].MTtotal + MTtotal,
       consultFee: rowItem[thisDate].consultFee + consultFee,
-      total: rowItem[thisDate].total + total,
+      total: rowItem[thisDate].total + MTtotal + consultFee,
     };
   }
+  // console.log(rowItem);
 
   let MTGrand = 0;
   let consultGrand = 0;
@@ -56,9 +68,12 @@ export default function MonthlyLog() {
     MTGrand += item.MTtotal;
     consultGrand += item.consultFee;
     totalGrand += item.total;
+
     ROWS.push(
       <div key={date} className="bg-black grid grid-cols-4 gap-5 p-5 my-5">
-        <div className="text-yellow-300 text-[1.2em]">{moment(date).format('DD-MM-YYYY')}</div>
+        <div className="text-yellow-300 text-[1.2em]">
+          {moment(date).format("DD-MM-YYYY")}
+        </div>
         <div className="text-orange-500 text-[1.2em]">{item.MTtotal}</div>
         <div className="text-green-500 text-[1.2em]">{item.consultFee}</div>
         <div className="text-pink-500 text-[1.2em]">{item.total}</div>
