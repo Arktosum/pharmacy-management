@@ -1,32 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { LogItem, addLogItem, fetchLogs } from "../features/logSlice";
+import { LogItem, addLogItem, fetchDailyCount } from "../features/logSlice";
 import {
   StockItem,
   fetchStock,
   updateStockItems,
 } from "../features/stockSlice";
-import { isBetween, regexUtil } from "./Utils";
-import { ToastContainer, Zoom, toast } from "react-toastify";
-import moment from "moment";
+import { regexUtil } from "./Utils";
+import { ToastContainer, ToastOptions, Zoom, toast } from "react-toastify";
+import { deleteSVG } from "../assets/assets";
 
-const deleteSVG = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="rgb(237, 149, 151)"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="black"
-    className="w-6 h-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-    />
-  </svg>
-);
-
+const toastOptions: ToastOptions<unknown> = {
+  position: "top-center",
+  autoClose: 300,
+  hideProgressBar: true,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: false,
+  progress: 0,
+  theme: "dark",
+  transition: Zoom,
+};
 function updateLocalStorage(
   billItemList: StockItem[],
   patientName: string,
@@ -49,14 +43,12 @@ export default function Billing() {
   const [consultFee, setconsultFee] = useState(0);
   const [evalString, setevalString] = useState("");
   const [receivedAmt, setreceivedAmt] = useState(0);
-
   const regexInput = useRef<HTMLInputElement>(null);
+  const [dailyCount, setdailyCount] = useState(0);
   // let [selectedDate,setselectedDate] = useState("");
   const dispatch = useAppDispatch();
-  const currentDate = moment().format("YYYY-MM-DD");
   useEffect(() => {
     // setselectedDate(currentDate);
-    dispatch(fetchLogs());
     dispatch(fetchStock());
     const localStorageData = localStorage.getItem("bill-items");
     if (!localStorageData) {
@@ -67,19 +59,13 @@ export default function Billing() {
     setbillItemList(localData["item-list"]);
     setpatientName(localData["patient-name"]);
     setconsultFee(localData["consult-fee"]);
-  }, [dispatch]);
-  const LogData: LogItem[] = useAppSelector((state) => state.logs.data);
+
+    dispatch(fetchDailyCount()).then((action) => {
+      setdailyCount(action.payload);
+    });
+  }, []);
+
   const StockData: StockItem[] = useAppSelector((state) => state.stocks.data);
-  let dailyCount = 0;
-
-  for (const logItem of LogData) {
-    if (isBetween(currentDate, currentDate, logItem.id)) {
-      for (const item of logItem.data.medicine) {
-        dailyCount += item.multiplier;
-      }
-    }
-  }
-
   const editItems = StockData.map((item) => {
     if (!regexUtil(regexString, item.name)) return;
     return (
@@ -94,26 +80,16 @@ export default function Billing() {
             return;
           }
           if (item.thirtyml == 0) {
-            toast.error("Cannot add Item! | Zero Left!", {
-              position: "top-center",
-              autoClose: 300,
-              hideProgressBar: true,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: false,
-              progress: 0,
-              theme: "dark",
-              transition: Zoom,
-            });
+            toast.error("Cannot add Item! | Zero Left!");
             return;
           }
           const newItem = { ...item, multiplier: 1 } as StockItem;
-          setbillItemList((prev) => [...prev, newItem]);
           updateLocalStorage(
             [...billItemList, newItem],
             patientName,
             consultFee
           );
+          setbillItemList((prev) => [...prev, newItem]);
           setregexString("");
           if (regexInput && regexInput.current) regexInput.current.focus();
         }}
@@ -166,8 +142,8 @@ export default function Billing() {
         <input
           onChange={(e) => {
             item.multiplier = parseInt(e.target.value);
+            updateLocalStorage([...billItemList], patientName, consultFee);
             setbillItemList((prev) => [...prev]);
-            updateLocalStorage(billItemList, patientName, consultFee);
           }}
           type="number"
           min="1"
@@ -178,8 +154,8 @@ export default function Billing() {
         <input
           onChange={(e) => {
             item.price = parseInt(e.target.value);
+            updateLocalStorage([...billItemList], patientName, consultFee);
             setbillItemList((prev) => [...prev]);
-            updateLocalStorage(billItemList, patientName, consultFee);
           }}
           type="number"
           defaultValue={item.price}
@@ -194,8 +170,8 @@ export default function Billing() {
           className="text-white text-[1.2em] font-bold"
           onClick={() => {
             const newList = billItemList.filter((x) => x.id !== item.id);
+            updateLocalStorage([...newList], patientName, consultFee);
             setbillItemList([...newList]);
-            updateLocalStorage(newList, patientName, consultFee);
           }}
         >
           {deleteSVG}
@@ -207,8 +183,17 @@ export default function Billing() {
   const change = Gtotal % 100;
   const hasChange =
     change == 20 || change == 40 || change == 70 || change == 90;
+  const enableTransaction = patientName != "" && billItemList.length > 0;
   function handleTransaction() {
-    if (billItemList.length == 0) return;
+    if (billItemList.length == 0) {
+      toast.error("Bill Item List is empty!", toastOptions);
+      return;
+    }
+    if (patientName == "") {
+      toast.error("Patient name is empty!", toastOptions);
+      return;
+    }
+
     const transactionItem = {
       type: "TRANSACTION",
       data: {
@@ -220,20 +205,14 @@ export default function Billing() {
     for (const item of billItemList) {
       transactionItem.data.medicine.push(item);
     }
-    dispatch(addLogItem(transactionItem));
+    dispatch(addLogItem(transactionItem)).then(() => {
+      dispatch(fetchDailyCount()).then((action) => {
+        setdailyCount(action.payload);
+      });
+    });
     dispatch(updateStockItems(transactionItem.data.medicine));
     localStorage.removeItem("bill-items");
-    toast.success("Transaction success!", {
-      position: "top-center",
-      autoClose: 300,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: false,
-      progress: 0,
-      theme: "dark",
-      transition: Zoom,
-    });
+    toast.success("Transaction success!", toastOptions);
     setbillItemList([]);
     setregexString("");
     setpatientName("");
@@ -272,7 +251,7 @@ export default function Billing() {
           <div
             onClick={handleTransaction}
             className={
-              billItemList.length > 0
+              enableTransaction
                 ? `duration-200 cursor-pointer uppercase border-2 px-5 py-2 rounded-xl pulse-red-green`
                 : "duration-200 cursor-pointer uppercase border-2 px-5 py-2 rounded-xl border-green-600 hover:bg-green-600 text-green-600 hover:text-black"
             }
@@ -325,7 +304,6 @@ export default function Billing() {
             <div className="flex items-center text-center gap-5 ">
               <span className="text-white">Patient Name: </span>
               <input
-                autoComplete="new-password"
                 type="text"
                 className="bg-green-300 w-full text-black font-bold text-[1.4em] rounded-lg px-5"
                 value={patientName}
@@ -352,8 +330,8 @@ export default function Billing() {
                   let res;
                   if (val == "") res = 0;
                   else res = parseInt(val);
-                  updateLocalStorage(billItemList, patientName, res);
                   setconsultFee(res);
+                  updateLocalStorage(billItemList, patientName, res);
                 }}
                 className="text-black no-arrow font-bold text-[1.4em] w-[75%] bg-blue-300 px-5 rounded-md"
               />

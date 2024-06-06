@@ -15,7 +15,7 @@ export default function Log() {
   const [selectedItem, setselectedItem] = useState<LogItem | null>(null);
   const [fromDate, setFromDate] = useState("");
   const [seekDate, setseekDate] = useState("");
-  const [chooseState,setChooseState] = useState("SEEK");
+  const [chooseState, setChooseState] = useState("SEEK");
   const [patientName, setpatientName] = useState("");
 
   const LogData: LogItem[] = useAppSelector((state) => state.logs.data);
@@ -29,16 +29,14 @@ export default function Log() {
   }, [dispatch]);
 
   const logElements = LogData.map((item) => {
-    if(chooseState == 'RANGE'){
+    if (chooseState == "RANGE") {
       if (!isBetween(fromDate, currentDate, item.id)) return;
-    }
-    else if(chooseState == 'SEEK'){
+    } else if (chooseState == "SEEK") {
       if (!isBetween(seekDate, seekDate, item.id)) return;
-    }
-    else if(chooseState == 'SEARCH'){
-      if(patientName == "") return;
+    } else if (chooseState == "SEARCH") {
+      if (patientName == "") return;
       const regex = new RegExp(patientName);
-      if(!regex.test(item.data.patientName)) return;
+      if (!regex.test(item.data.patientName)) return;
     }
     const id = item.id;
     let infoString = "Something went wrong";
@@ -72,7 +70,7 @@ export default function Log() {
 
   function undoItem(logItem: TransactionLog, stockItem: StockItem) {
     const choice = prompt("Sure to undo? (y/n)");
-    if(choice && choice.toLowerCase() !== "y") return;
+    if (choice && choice.toLowerCase() !== "y") return;
     const newStockItem = { ...stockItem, updateType: "UNDO" } as StockItem;
     dispatch(updateStockItems([newStockItem]));
     const newlogItem = {
@@ -205,7 +203,7 @@ export default function Log() {
             value={seekDate}
             onChange={(e) => {
               setChooseState("SEEK");
-              setseekDate(e.target.value)
+              setseekDate(e.target.value);
             }}
             className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
           />
@@ -217,7 +215,7 @@ export default function Log() {
             value={patientName}
             onChange={(e) => {
               setChooseState("SEARCH");
-              setpatientName(e.target.value)
+              setpatientName(e.target.value);
             }}
             className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
           />

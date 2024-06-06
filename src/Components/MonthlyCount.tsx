@@ -26,9 +26,11 @@ export default function Monthly() {
     (item) =>
       isInMonth(selectedDate, item.id) && isInYear(selectedDate, item.id)
   );
-  LogData = LogData.sort((a: LogItem , b: LogItem) => parseInt(a.id) - parseInt(b.id));
+  LogData = LogData.sort(
+    (a: LogItem, b: LogItem) => parseInt(a.id) - parseInt(b.id)
+  );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dailyTally : any = {};
+  const dailyTally: any = {};
   let monthlyCount = 0;
   for (const item of LogData) {
     const thisDate = moment(parseInt(item.id)).format("YYYY-MM-DD");
@@ -38,10 +40,12 @@ export default function Monthly() {
   }
   const rowElements = [];
   for (const date in dailyTally) {
-    monthlyCount += dailyTally[date]
+    monthlyCount += dailyTally[date];
     rowElements.push(
       <>
-        <div className="text-green-300 w-full p-5">{moment(date).format('DD-MM-YYYY')}</div>
+        <div className="text-green-300 w-full p-5">
+          {moment(date).format("DD-MM-YYYY")}
+        </div>
         <div className="text-yellow-300 text-[1.2em] w-full bg-[#212121] rounded-md p-5">
           {dailyTally[date]}
         </div>

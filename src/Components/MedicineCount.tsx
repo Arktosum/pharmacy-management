@@ -28,13 +28,15 @@ export default function MedicineCount() {
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let rowItems: [string,number][] = [];
+  let rowItems: [string, number][] = [];
   for (const name in medicineCounts) {
     if (regexUtil(regexString, name))
       rowItems.push([name, medicineCounts[name]]);
   }
-  rowItems = rowItems.sort((a: [string,number], b: [string,number]) => b[1] - a[1]);
-  const rowElements = rowItems.map((item: [string,number]) => {
+  rowItems = rowItems.sort(
+    (a: [string, number], b: [string, number]) => b[1] - a[1]
+  );
+  const rowElements = rowItems.map((item: [string, number]) => {
     const name = item[0];
     const count = item[1];
     return (

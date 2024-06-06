@@ -47,7 +47,7 @@ export default function Stock() {
       hundredml: data.hundredml,
       price: parseInt(data.price),
       id: selectedItem.id,
-      limit : parseInt(data.limit)
+      limit: parseInt(data.limit),
     };
     dispatch(updateStockItem(payload));
     e.target.reset();

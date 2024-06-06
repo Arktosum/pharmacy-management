@@ -16,7 +16,7 @@ import { LogItem, fetchLogs } from "../features/logSlice";
 import moment from "moment";
 
 export default function LogData() {
-  const [excelData, setexcelData] = useState<[[string],[string]] | []>([]);
+  const [excelData, setexcelData] = useState<[[string], [string]] | []>([]);
   const [selectedDate, setselectedDate] = useState("");
   const currentDate = moment().format("YYYY-MM-DD");
 
@@ -32,7 +32,9 @@ export default function LogData() {
   LogData = LogData.filter((item) =>
     isBetween(selectedDate, selectedDate, item.id)
   );
-  LogData = LogData.sort((a: LogItem , b: LogItem) => parseInt(a.id) - parseInt(b.id));
+  LogData = LogData.sort(
+    (a: LogItem, b: LogItem) => parseInt(a.id) - parseInt(b.id)
+  );
 
   let grandMTtotal = 0;
   let grandFeeTotal = 0;

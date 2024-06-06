@@ -6,65 +6,79 @@ import { StockItem } from './stockSlice';
 
 const ORIGIN = 'http://localhost:3000/api'
 
-const context = ORIGIN+"/logs"
+const context = ORIGIN + "/logs"
 export const fetchLogs = createAsyncThunk('data/fetchLogs', async () => {
   try {
-    const response = await axios.get(context+"/"); // Adjust the URL as per your backend API
+    const response = await axios.get(context + "/"); // Adjust the URL as per your backend API
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
+    alert(error.response.data.error);
     throw error;
   }
 });
 
-// Async thunk to update data
-export const updateLogItem = createAsyncThunk('data/updateLogItem', async (item : LogItem) => {
+
+
+export const fetchDailyCount = createAsyncThunk('data/fetchDailyCount', async () => {
   try {
-    const response = await axios.put(context+"/", item); // Adjust the URL as per your backend API
+    const response = await axios.get(context + "/dailyCount"); // Adjust the URL as per your backend API
     return response.data;
-  } catch (error : any) {
+  } catch (error: any) {
+    alert(error.response.data.error);
+    throw error;
+  }
+});
+
+
+// Async thunk to update data
+export const updateLogItem = createAsyncThunk('data/updateLogItem', async (item: LogItem) => {
+  try {
+    const response = await axios.put(context + "/", item); // Adjust the URL as per your backend API
+    return response.data;
+  } catch (error: any) {
     alert(error.response.data.error);
     throw error;
   }
 });
 
 // Async thunk to delete data
-export const deleteLogItem = createAsyncThunk('data/deleteLogItem', async (item : LogItem) => {
+export const deleteLogItem = createAsyncThunk('data/deleteLogItem', async (item: LogItem) => {
   try {
-    const response = await axios.delete(context+"/"+item.id); 
+    const response = await axios.delete(context + "/" + item.id);
     return response.data;
-  } catch (error : any) {
+  } catch (error: any) {
     alert(error.response.data.error);
     throw error;
   }
 });
 
-export const addLogItem = createAsyncThunk('data/addLogItem', async (item:LogItem) => {
-    try {
-      const response = await axios.post(context+"/",item);
-      return response.data
-    } catch (error : any) {
-        alert(error.response.data.error);
-        throw error;
-    }
+export const addLogItem = createAsyncThunk('data/addLogItem', async (item: LogItem) => {
+  try {
+    const response = await axios.post(context + "/", item);
+    return response.data
+  } catch (error: any) {
+    alert(error.response.data.error);
+    throw error;
+  }
 });
 
 export type LogTypes = "TRANSACTION" | "ADD" | "UPDATE" | "DELETE"
-export interface LogItem  {
-  type : LogTypes,
-  id : string,
-  data? : any
+export interface LogItem {
+  type: LogTypes,
+  id: string,
+  data?: any
 }
 
-export interface TransactionLog extends LogItem  {
-  data : {
-    patientName : string,
-    consultFee : number,
-    medicine : StockItem[]
+export interface TransactionLog extends LogItem {
+  data: {
+    patientName: string,
+    consultFee: number,
+    medicine: StockItem[]
   }
 }
 // Define initial state, reducers, and slice
-const initialState : {
-    data : LogItem[],
+const initialState: {
+  data: LogItem[],
 } = {
   data: [],
 };
@@ -79,10 +93,10 @@ const logSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchLogs.fulfilled, (state, action) => {
-        state.data = action.payload.sort((a: { id: number; },b: { id: number; })=>b.id - a.id);
+        state.data = action.payload.sort((a: { id: number; }, b: { id: number; }) => b.id - a.id);
       })
       .addCase(addLogItem.fulfilled, (state, action) => {
-        state.data = [action.payload,...state.data];
+        state.data = [action.payload, ...state.data];
       })
       .addCase(updateLogItem.fulfilled, (state, action) => {
         // Update the data in the state

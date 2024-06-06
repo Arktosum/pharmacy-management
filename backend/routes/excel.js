@@ -14,7 +14,7 @@ router.get("/", (req, res) => {
 
 // POST new item
 router.post("/", (req, res) => {
-  let db = req.body
+  let db = req.body;
   writeJSON(filePath, db, () => {
     res.status(201).json(db);
   });
