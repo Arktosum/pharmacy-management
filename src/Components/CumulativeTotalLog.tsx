@@ -3,6 +3,7 @@ import { LogItem, fetchLogs } from "../features/logSlice";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import moment from "moment";
 import { regexUtil } from "./Utils";
+import { StockItem } from "../features/stockSlice";
 
 const deleteSVG = (
   <svg
@@ -26,6 +27,9 @@ export default function SearchLog() {
   const [billItemList, setbillItemList] = useState<LogItem[] | []>([]);
   const [receivedAmt, setreceivedAmt] = useState(0);
   const [evalString, setevalString] = useState("");
+
+  const [showModal, setshowModal] = useState(false);
+  const [selectedItem, setselectedItem] = useState<LogItem | null>(null);
 
   const dispatch = useAppDispatch();
   useEffect(() => {
@@ -80,6 +84,10 @@ export default function SearchLog() {
     return (
       <div
         key={item.id}
+        onClick={() => {
+          setselectedItem(item);
+          setshowModal(true);
+        }}
         className="grid grid-cols-5 place-items-center hover:bg-[#252525] duration-200 rounded-md px-5 py-0 cursor-pointer text-center"
       >
         <div className="text-yellow-300 text-sm text-center font-bold">
@@ -113,9 +121,90 @@ export default function SearchLog() {
     }
     return sum;
   }
+
+  const infoItems = selectedItem
+    ? selectedItem.data.medicine.map((item: StockItem) => {
+        return (
+          <div
+            key={item.id}
+            className="grid grid-cols-5 duration-200 h-[8%] rounded-md cursor-pointer place-items-center"
+          >
+            <div className="text-yellow-300 text-md font-bold">{item.name}</div>
+            <div className="text-pink-400 text-[1.2em] font-bold">
+              {item.thirtyml}
+            </div>
+            <div className="text-blue-400 text-[1.2em] font-bold">
+              {item.multiplier}
+            </div>
+            <div className="text-green-400 text-[1.2em] font-bold">
+              {item.price}
+            </div>
+          </div>
+        );
+      })
+    : [];
+
+  let feeTotal = 0;
+  let MTTotal = 0;
+  let itemCount = 0;
+  if (selectedItem) {
+    for (const item of selectedItem.data.medicine) {
+      MTTotal += item.multiplier * item.price;
+      itemCount += item.multiplier;
+    }
+    feeTotal = selectedItem.data.consultFee;
+  }
   return (
     <div className="bg-black h-[90vh] flex">
       {/*---------------------------------------------------------- Transaction ---------------------------------------------------------- */}
+      {showModal && selectedItem ? (
+        <div className="w-full h-full bg-[#000000a0] absolute flex justify-center items-center">
+          <div className="bg-gray-600 h-[75%] w-[75%] rounded-xl">
+            <div className="grid grid-cols-5 bg-slate-900 place-items-center">
+              <div className="text-orange-400 uppercase text-sm font-bold">
+                Name
+              </div>
+              <div className="text-orange-400 uppercase text-sm font-bold">
+                30ml
+              </div>
+              <div className="text-orange-400 uppercase text-sm font-bold">
+                Multiplier
+              </div>
+              <div className="text-orange-400 uppercase text-sm font-bold">
+                Price
+              </div>
+              <div
+                onClick={() => {
+                  setselectedItem(null);
+                  setshowModal(false);
+                }}
+                className="text-green-600 uppercase px-5 py-5 m-5 border-2 border-green-600 rounded-xl hover:bg-green-600 duration-200 hover:text-white text-center cursor-pointer"
+              >
+                Cancel
+              </div>
+            </div>
+            <div className="h-[50vh] overflow-y-auto">{infoItems}</div>
+            <div className="grid grid-cols-5 place-items-center">
+              <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+                Item Count: <span className="text-green-300 ">{itemCount}</span>
+              </div>
+              <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+                Fee Total: <span className="text-green-300">{feeTotal}</span>
+              </div>
+              <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+                MT Total: <span className="text-green-300">{MTTotal}</span>
+              </div>
+              <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+                Grand Total:{" "}
+                <span className="text-green-300">{feeTotal + MTTotal}</span>
+              </div>
+              <div></div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <></>
+      )}
       <div className="border-black w-[50vw] h-full">
         <h1 className="text-[3em] text-white text-bold text-center">
           Cumulative Total

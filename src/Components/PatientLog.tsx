@@ -173,7 +173,6 @@ export default function Log() {
               </div>
               <div></div>
             </div>
-            {}
           </div>
         </div>
       ) : (
