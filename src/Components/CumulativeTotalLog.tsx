@@ -102,13 +102,14 @@ export default function SearchLog() {
         </div>
         <div
           className="text-white text-[1.2em] font-bold"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             const newList = billItemList.filter((x) => x.id !== item.id);
             setbillItemList([...newList]);
           }}
         >
           {deleteSVG}
-        </div>
+        </div>in
       </div>
     );
   });
