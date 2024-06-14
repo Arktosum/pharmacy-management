@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { LogItem, fetchLogs } from "../features/logSlice";
-import { useAppDispatch, useAppSelector } from "../hooks";
+import {  useState } from "react";
+import { LogItem, } from "../features/logSlice";
+import {  useAppSelector } from "../hooks";
 import moment from "moment";
 import { regexUtil } from "./Utils";
 
@@ -30,24 +30,22 @@ export default function SearchLog() {
   const [showModal, setshowModal] = useState(false);
   const [selectedItem, setselectedItem] = useState<LogItem | null>(null);
 
-  const dispatch = useAppDispatch();
-  useEffect(() => {
-    dispatch(fetchLogs());
-  }, [dispatch]);
-
   const LogData: LogItem[] = useAppSelector((state) => state.logs.data);
 
-  const stockItems = [];
+  let stockItems = [];
   for (const item of LogData) {
     let infoString = "Something went wrong";
     const [date, time] = moment(parseInt(item.id))
       .format("DD-MM-YYYY HH:mm:ss")
       .split(" ");
+    const ind = billItemList.findIndex((x)=>x.id == item.id);
+    if(ind != -1) continue;
     if (item.type.toUpperCase() == "TRANSACTION") {
       infoString = `${item.data.patientName} || ${item.data.medicines.length}`;
     }
     if (item.data.patientName == "") continue;
-
+    const passRegex: boolean = regexUtil(regexString, item.data.patientName);
+    if (!passRegex) continue;
     const jsxElement = (
       <div
         key={item.id}
@@ -66,20 +64,17 @@ export default function SearchLog() {
         <div className="text-md font-bold text-green-300">{infoString}</div>
       </div>
     );
-    const passRegex: boolean = regexUtil(regexString, item.data.patientName);
-    if (passRegex) stockItems.push(jsxElement);
+    stockItems.push(jsxElement);
   }
+  stockItems = stockItems.slice(0,100); // Show only best 100
+
 
   let grandFeeTotal = 0;
   let grandMTtotal = 0;
 
   const billItems = billItemList.map((item) => {
     grandFeeTotal += item.data.consultFee;
-    let mtTotal = 0;
-    for (const medicine of item.data.medicines) {
-      mtTotal += medicine.price * medicine.multiplier;
-    }
-    grandMTtotal += mtTotal;
+    grandMTtotal += item.data.MTtotal;
     return (
       <div
         key={item.id}
@@ -92,12 +87,12 @@ export default function SearchLog() {
         <div className="text-yellow-300 text-sm text-center font-bold">
           {item.data.patientName}
         </div>
-        <div className="text-green-400 text-[1.2em] font-bold">{mtTotal}</div>
+        <div className="text-green-400 text-[1.2em] font-bold">{item.data.MTtotal}</div>
         <div className="text-yellow-400  text-[1.3em] font-bold">
           {item.data.consultFee}
         </div>
         <div className="text-yellow-400  text-[1.3em] font-bold">
-          {item.data.consultFee + mtTotal}
+          {item.data.consultFee + item.data.MTtotal}
         </div>
         <div
           className="text-white text-[1.2em] font-bold"
@@ -109,7 +104,6 @@ export default function SearchLog() {
         >
           {deleteSVG}
         </div>
-        in
       </div>
     );
   });
@@ -143,15 +137,14 @@ export default function SearchLog() {
     : [];
 
   let feeTotal = 0;
-  let MTTotal = 0;
+  let MTtotal = 0;
   let itemCount = 0;
   if (selectedItem) {
-    for (const item of selectedItem.data.medicines) {
-      MTTotal += item.multiplier * item.price;
-      itemCount += item.multiplier;
-    }
     feeTotal = selectedItem.data.consultFee;
+    MTtotal = selectedItem.data.MTtotal;
+    itemCount = selectedItem.data.itemCount;
   }
+    
   return (
     <div className="bg-black h-[90vh] flex">
       {/*---------------------------------------------------------- Transaction ---------------------------------------------------------- */}
@@ -190,11 +183,11 @@ export default function SearchLog() {
                 Fee Total: <span className="text-green-300">{feeTotal}</span>
               </div>
               <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
-                MT Total: <span className="text-green-300">{MTTotal}</span>
+                MT Total: <span className="text-green-300">{MTtotal}</span>
               </div>
               <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
                 Grand Total:{" "}
-                <span className="text-green-300">{feeTotal + MTTotal}</span>
+                <span className="text-green-300">{feeTotal + MTtotal}</span>
               </div>
               <div></div>
             </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import moment from "moment";
-import { LogItem, fetchLogs } from "../features/logSlice";
+import { LogItem } from "../features/logSlice";
 import { isInMonth, regexUtil } from "./Utils";
 
 export default function MedicineCount() {
@@ -11,7 +11,6 @@ export default function MedicineCount() {
   const currentDate = moment().format("YYYY-MM-DD");
   useEffect(() => {
     setselectedDate(currentDate);
-    dispatch(fetchLogs());
   }, [currentDate, dispatch]);
   let LogData: LogItem[] = useAppSelector((state) => state.logs.data);
   LogData = LogData.filter((item) => isInMonth(selectedDate, item.id));
@@ -27,7 +26,7 @@ export default function MedicineCount() {
       }
     }
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let rowItems: [string, number][] = [];
   for (const name in medicineCounts) {
     if (regexUtil(regexString, name))

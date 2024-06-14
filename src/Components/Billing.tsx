@@ -7,11 +7,7 @@ import {
   addLogItem,
   fetchDailyCount,
 } from "../features/logSlice";
-import {
-  StockItem,
-  fetchStock,
-  updateStockItems,
-} from "../features/stockSlice";
+import { StockItem, updateStockItems } from "../features/stockSlice";
 import { regexUtil, toastOptions } from "./Utils";
 import { ToastContainer, toast } from "react-toastify";
 import { deleteSVG } from "../assets/assets";
@@ -44,7 +40,6 @@ export default function Billing() {
   const dispatch = useAppDispatch();
   useEffect(() => {
     // setselectedDate(currentDate);
-    dispatch(fetchStock());
     const localStorageData = localStorage.getItem("bill-items");
     if (!localStorageData) {
       updateLocalStorage(billItemList, patientName, consultFee);
@@ -58,7 +53,7 @@ export default function Billing() {
     dispatch(fetchDailyCount()).then((action) => {
       setdailyCount(action.payload);
     });
-  }, []);
+  }, [dispatch]);
 
   const StockData: StockItem[] = useAppSelector((state) => state.stocks.data);
   const editItems = StockData.map((item) => {

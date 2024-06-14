@@ -57,3 +57,21 @@ app.listen(PORT, () => {
 //     console.log("Done!");
 //   });
 // });
+
+
+
+// const file = "stock.json";
+// readJSON(`./databases/${file}`, (items) => {
+//   items.forEach((item) => {
+//     const hundredml = item.hundredml
+//     const thirtyml = item.thirtyml
+//     delete item.hundredml
+//     delete item.thirtyml
+//     item.count = thirtyml
+//     item.remarks = hundredml.toString()
+//   });
+
+//   writeJSON(`./databases/${file}`, items, () => {
+//     console.log("Done!");
+//   });
+// });

@@ -3,7 +3,6 @@ import {
   LogItem,
   StockLog,
   deleteLogItem,
-  fetchLogs,
   updateLogItem,
 } from "../features/logSlice";
 import { useAppSelector, useAppDispatch } from "../hooks";
@@ -26,7 +25,6 @@ export default function Log() {
   useEffect(() => {
     setFromDate(currentDate);
     setseekDate(currentDate);
-    dispatch(fetchLogs());
   }, [currentDate, dispatch]);
 
   const logElements = LogData.map((item) => {
@@ -187,6 +185,8 @@ export default function Log() {
           <input
             type="date"
             value={fromDate}
+            min={"2023-03-30"}
+            max={currentDate}
             onChange={(e) => {
               setChooseState("RANGE");
               setFromDate(e.target.value);
@@ -199,6 +199,8 @@ export default function Log() {
           <input
             type="date"
             value={seekDate}
+            min={"2023-03-30"}
+            max={currentDate}
             onChange={(e) => {
               setChooseState("SEEK");
               setseekDate(e.target.value);

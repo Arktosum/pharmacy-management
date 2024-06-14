@@ -6,6 +6,7 @@ import { StockItem } from './stockSlice';
 
 const context = ORIGIN + "/logs"
 export const fetchLogs = createAsyncThunk('data/fetchLogs', async () => {
+  console.log("Fetching logs!");
   try {
     const response = await axios.get(context + "/"); // Adjust the URL as per your backend API
     return response.data;

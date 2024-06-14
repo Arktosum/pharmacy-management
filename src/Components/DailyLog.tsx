@@ -12,7 +12,7 @@ registerAllModules();
 import { HotTable } from "@handsontable/react";
 import axios from "axios";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { LogItem, fetchLogs } from "../features/logSlice";
+import { LogItem } from "../features/logSlice";
 import moment from "moment";
 
 export default function LogData() {
@@ -23,11 +23,11 @@ export default function LogData() {
   const dispatch = useAppDispatch();
   useEffect(() => {
     setselectedDate(currentDate);
-    dispatch(fetchLogs());
     axios.get(ORIGIN + "/excels/").then((response) => {
       setexcelData(response.data);
     });
   }, [currentDate, dispatch]);
+  
   let LogData: LogItem[] = useAppSelector((state) => state.logs.data);
   LogData = LogData.filter((item) =>
     isBetween(selectedDate, selectedDate, item.id)
@@ -74,7 +74,7 @@ export default function LogData() {
       const [x, y, , to] = change;
       excelData[x][y] = to;
     }
-    const response = await axios.post(ORIGIN + "/api/excels/", [...excelData]);
+    const response = await axios.post(ORIGIN + "/excels/", [...excelData]);
     setexcelData(response.data);
   }
   return (
@@ -125,6 +125,8 @@ export default function LogData() {
         <input
           type="date"
           value={selectedDate}
+          min={"2023-03-30"}
+          max={currentDate}
           onChange={(e) => setselectedDate(e.target.value)}
           className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
         />

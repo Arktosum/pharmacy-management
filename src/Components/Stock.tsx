@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useAppSelector, useAppDispatch } from "../hooks";
 import {
   StockItem,
   addStockItem,
   deleteStockItem,
-  fetchStock,
   updateStockItem,
 } from "../features/stockSlice";
 
@@ -21,10 +20,6 @@ export default function Stock() {
 
   let stockData: StockItem[] = useAppSelector((state) => state.stocks.data);
   const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    dispatch(fetchStock());
-  }, [dispatch]);
 
   function resetModal() {
     setshowModal(false);

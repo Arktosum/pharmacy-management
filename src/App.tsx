@@ -9,8 +9,17 @@ import Monthly from "./Components/MonthlyCount";
 import MonthlyLog from "./Components/MonthlyLog";
 import SearchLog from "./Components/CumulativeTotalLog";
 import MedicineCount from "./Components/MedicineCount";
+import { useEffect } from "react";
+import { useAppDispatch } from "./hooks";
+import { fetchStock } from "./features/stockSlice";
+import { fetchLogs } from "./features/logSlice";
 
 function App() {
+  const dispatch = useAppDispatch();
+  useEffect(()=>{
+    dispatch(fetchStock());
+    dispatch(fetchLogs());
+  },[dispatch])
   return (
     <>
       <Navbar />

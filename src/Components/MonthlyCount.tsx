@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchLogs, LogItem } from "../features/logSlice";
+import { LogItem } from "../features/logSlice";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import moment from "moment";
 import { isInMonth, isInYear } from "./Utils";
@@ -10,7 +10,6 @@ export default function Monthly() {
   const currentDate = moment().format("YYYY-MM-DD");
   useEffect(() => {
     setselectedDate(currentDate);
-    dispatch(fetchLogs());
   }, [currentDate, dispatch]);
   let LogData: LogItem[] = useAppSelector((state) => state.logs.data);
   LogData = LogData.filter(
