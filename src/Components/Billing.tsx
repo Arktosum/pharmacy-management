@@ -1,26 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { LogItem, addLogItem, fetchDailyCount } from "../features/logSlice";
+import {
+  LogItem,
+  StockLog,
+  TransactionLog,
+  addLogItem,
+  fetchDailyCount,
+} from "../features/logSlice";
 import {
   StockItem,
   fetchStock,
   updateStockItems,
 } from "../features/stockSlice";
-import { regexUtil } from "./Utils";
-import { ToastContainer, ToastOptions, Zoom, toast } from "react-toastify";
+import { regexUtil, toastOptions } from "./Utils";
+import { ToastContainer, toast } from "react-toastify";
 import { deleteSVG } from "../assets/assets";
 
-const toastOptions: ToastOptions<unknown> = {
-  position: "top-center",
-  autoClose: 300,
-  hideProgressBar: true,
-  closeOnClick: true,
-  pauseOnHover: true,
-  draggable: false,
-  progress: 0,
-  theme: "dark",
-  transition: Zoom,
-};
 function updateLocalStorage(
   billItemList: StockItem[],
   patientName: string,
@@ -38,7 +33,7 @@ function clearlocalStorage() {
 }
 export default function Billing() {
   const [regexString, setregexString] = useState("");
-  const [billItemList, setbillItemList] = useState<StockItem[] | []>([]);
+  const [billItemList, setbillItemList] = useState<StockLog[] | []>([]);
   const [patientName, setpatientName] = useState("");
   const [consultFee, setconsultFee] = useState(0);
   const [evalString, setevalString] = useState("");
@@ -79,11 +74,11 @@ export default function Billing() {
             alert("Item already in cart!");
             return;
           }
-          if (item.thirtyml == 0) {
+          if (item.count == 0) {
             toast.error("Cannot add Item! | Zero Left!");
             return;
           }
-          const newItem = { ...item, multiplier: 1 } as StockItem;
+          const newItem = { ...item, multiplier: 1 };
           updateLocalStorage(
             [...billItemList, newItem],
             patientName,
@@ -99,14 +94,12 @@ export default function Billing() {
         <div
           className={
             "text-[1.2em] font-bold duration-[1ms] " +
-            `${item.thirtyml > 15 ? "text-green-300" : "pulse-text"}`
+            `${item.count > 15 ? "text-green-300" : "pulse-text"}`
           }
         >
-          {item.thirtyml}
+          {item.count}
         </div>
-        <div className="text-white text-[1.2em] font-bold">
-          {item.hundredml}
-        </div>
+        <div className="text-white text-[1.2em] font-bold">{item.remarks}</div>
         <div className={`text-yellow-300 text-[1.2em] font-bold`}>
           {item.price}
         </div>
@@ -116,7 +109,6 @@ export default function Billing() {
   let itemCount = 0;
   let total = 0;
   const billItems = billItemList.map((item) => {
-    if (!item.multiplier) return;
     itemCount += item.multiplier;
     total += item.multiplier * item.price;
     return (
@@ -131,23 +123,29 @@ export default function Billing() {
           className={
             "text-[1.2em] font-bold duration-[1ms] " +
             `${
-              item.thirtyml - item.multiplier > 15
+              item.count - item.multiplier > 15
                 ? "text-green-600"
                 : "pulse-text"
             }`
           }
         >
-          {item.thirtyml - item.multiplier}
+          {item.count - item.multiplier}
         </div>
         <input
           onChange={(e) => {
-            item.multiplier = parseInt(e.target.value);
-            updateLocalStorage([...billItemList], patientName, consultFee);
-            setbillItemList((prev) => [...prev]);
+            if (e.target.value == "") {
+              item.multiplier = 0;
+            } else {
+              item.multiplier = parseInt(e.target.value);
+            }
+            // Remove all where multiplier is less than zero from billItemsList
+            const newList = billItemList.filter((item) => item.multiplier > 0);
+            updateLocalStorage(newList, patientName, consultFee);
+            setbillItemList(newList);
           }}
           type="number"
           min="1"
-          max={item.thirtyml}
+          max={item.count}
           defaultValue={item.multiplier}
           className="text-[1.2em]  bg-[#131313] rounded-xl text-yellow-300 text-center"
         />
@@ -184,6 +182,7 @@ export default function Billing() {
   const hasChange =
     change == 20 || change == 40 || change == 70 || change == 90;
   const enableTransaction = patientName != "" && billItemList.length > 0;
+
   function handleTransaction() {
     if (billItemList.length == 0) {
       toast.error("Bill Item List is empty!", toastOptions);
@@ -193,24 +192,37 @@ export default function Billing() {
       toast.error("Patient name is empty!", toastOptions);
       return;
     }
-
+    const transactionLog = {
+      patientName,
+      consultFee,
+      MTtotal: 0,
+      itemCount: 0,
+      medicines: [] as StockLog[],
+    } as TransactionLog;
     const transactionItem = {
       type: "TRANSACTION",
-      data: {
-        patientName,
-        consultFee,
-        medicine: [],
-      },
+      id: Date.now().toString(),
+      data: transactionLog,
     } as LogItem;
+
     for (const item of billItemList) {
-      transactionItem.data.medicine.push(item);
+      const stockLog = {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        multiplier: item.multiplier,
+      } as StockLog;
+      transactionItem.data.medicines.push(stockLog);
+      transactionItem.data.MTtotal += item.multiplier * item.price;
+      transactionItem.data.itemCount += item.multiplier;
     }
+
     dispatch(addLogItem(transactionItem)).then(() => {
       dispatch(fetchDailyCount()).then((action) => {
         setdailyCount(action.payload);
       });
     });
-    dispatch(updateStockItems(transactionItem.data.medicine));
+    dispatch(updateStockItems(transactionItem.data.medicines));
     localStorage.removeItem("bill-items");
     toast.success("Transaction success!", toastOptions);
     setbillItemList([]);
@@ -259,7 +271,7 @@ export default function Billing() {
             update
           </div>
           <div className="text-white text-center">
-            Daily Count :{" "}
+            Daily Count :
             <span className="text-[2em]  text-yellow-300 font-bold">
               {dailyCount}
             </span>

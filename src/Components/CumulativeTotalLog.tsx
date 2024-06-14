@@ -3,7 +3,6 @@ import { LogItem, fetchLogs } from "../features/logSlice";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import moment from "moment";
 import { regexUtil } from "./Utils";
-import { StockItem } from "../features/stockSlice";
 
 const deleteSVG = (
   <svg
@@ -45,7 +44,7 @@ export default function SearchLog() {
       .format("DD-MM-YYYY HH:mm:ss")
       .split(" ");
     if (item.type.toUpperCase() == "TRANSACTION") {
-      infoString = `${item.data.patientName} || ${item.data.medicine.length}`;
+      infoString = `${item.data.patientName} || ${item.data.medicines.length}`;
     }
     if (item.data.patientName == "") continue;
 
@@ -77,7 +76,7 @@ export default function SearchLog() {
   const billItems = billItemList.map((item) => {
     grandFeeTotal += item.data.consultFee;
     let mtTotal = 0;
-    for (const medicine of item.data.medicine) {
+    for (const medicine of item.data.medicines) {
       mtTotal += medicine.price * medicine.multiplier;
     }
     grandMTtotal += mtTotal;
@@ -109,7 +108,8 @@ export default function SearchLog() {
           }}
         >
           {deleteSVG}
-        </div>in
+        </div>
+        in
       </div>
     );
   });
@@ -124,16 +124,13 @@ export default function SearchLog() {
   }
 
   const infoItems = selectedItem
-    ? selectedItem.data.medicine.map((item: StockItem) => {
+    ? selectedItem.data.medicines.map((item) => {
         return (
           <div
             key={item.id}
             className="grid grid-cols-5 duration-200 h-[8%] rounded-md cursor-pointer place-items-center"
           >
             <div className="text-yellow-300 text-md font-bold">{item.name}</div>
-            <div className="text-pink-400 text-[1.2em] font-bold">
-              {item.thirtyml}
-            </div>
             <div className="text-blue-400 text-[1.2em] font-bold">
               {item.multiplier}
             </div>
@@ -149,7 +146,7 @@ export default function SearchLog() {
   let MTTotal = 0;
   let itemCount = 0;
   if (selectedItem) {
-    for (const item of selectedItem.data.medicine) {
+    for (const item of selectedItem.data.medicines) {
       MTTotal += item.multiplier * item.price;
       itemCount += item.multiplier;
     }

@@ -24,13 +24,36 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`listening on port | http://localhost:${PORT}`);
 });
-
-// readJSON('./databases/stock.json', (items) => {
-//     items.forEach((item) => {
-//       item.limit = 15
-//       return item;
-//     })
-//     writeJSON('./databases/stock.json',items,()=>{
-//         console.log("Done!");
-//     })
-// })
+// const file = "logs.json";
+// readJSON(`./databases/${file}`, (items) => {
+//   items.forEach((item) => {
+//     item.type = "TRANSACTION";
+//     item.data = {
+//       patientName: item.data.patientName,
+//       consultFee: item.data.consultFee,
+//       MTtotal: 0,
+//       itemCount: 0,
+//       medicines: [],
+//       medicine : item.data.medicine
+//     };
+//     try{
+//       for (let medicine of item.data.medicine) {
+//         item.data.MTtotal += medicine.price * medicine.multiplier;
+//         item.data.itemCount += medicine.multiplier;
+//         item.data.medicines.push({
+//           id: medicine.id,
+//           name: medicine.name,
+//           price: medicine.price,
+//           multiplier: medicine.multiplier,
+//         });
+//       }
+//     }
+//     catch(err){
+//       console.log(item.data);
+//     }
+//     delete item.data.medicine;
+//   });
+//   writeJSON(`./databases/${file}`, items, () => {
+//     console.log("Done!");
+//   });
+// });

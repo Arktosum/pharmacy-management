@@ -27,7 +27,7 @@ router.get("/dailyCount", (req, res) => {
     const currentDate = moment().format("YYYY-MM-DD");
     for (const logItem of LogData) {
       if (isBetween(currentDate, currentDate, logItem.id)) {
-        for (const item of logItem.data.medicine) {
+        for (const item of logItem.data.medicines) {
           dailyCount += item.multiplier;
         }
       }
@@ -68,15 +68,15 @@ router.put("/", (req, res) => {
   });
 });
 
-// // DELETE item by ID
-// router.delete("/:id", (req, res) => {
-//   const itemId = req.params.id;
-//   readJSON(filePath, (items) => {
-//     items = items.filter(item => item.id !== itemId);
-//     writeJSON(filePath, items, () => {
-//       res.status(200).json({id : itemId});
-//     });
-//   });
-// });
+// DELETE item by ID
+router.delete("/:id", (req, res) => {
+  const itemId = req.params.id;
+  readJSON(filePath, (items) => {
+    items = items.filter(item => item.id !== itemId);
+    writeJSON(filePath, items, () => {
+      res.status(200).json({id : itemId});
+    });
+  });
+});
 
 module.exports = router;

@@ -17,7 +17,7 @@ export default function Stock() {
   const [addMedicineName, setaddMedicineName] = useState("");
   const [showModal, setshowModal] = useState(false);
   const [selectedItem, setselectedItem] = useState<StockItem | null>(null);
-  const [filter, setFilter] = useState({ type: "thirtyml", order: "asc" });
+  const [filter, setFilter] = useState({ type: "count", order: "asc" });
 
   let stockData: StockItem[] = useAppSelector((state) => state.stocks.data);
   const dispatch = useAppDispatch();
@@ -25,32 +25,34 @@ export default function Stock() {
   useEffect(() => {
     dispatch(fetchStock());
   }, [dispatch]);
+
   function resetModal() {
     setshowModal(false);
     setselectedItem(null);
   }
-  // console.log(stockData)
   function addStock() {
     if (addMedicineName == "") return;
     dispatch(addStockItem(addMedicineName));
     setaddMedicineName("");
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function updateStock(e: any) {
+
+  function updateStock(e: React.FormEvent<HTMLFormElement>) {
     if (!selectedItem) return;
     e.preventDefault();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data: any = Object.fromEntries(new FormData(e.target));
+    const data = Object.fromEntries(new FormData(e.currentTarget)) as Record<
+      string,
+      string
+    >;
     const payload: StockItem = {
       name: data.name.toUpperCase(),
-      thirtyml: parseInt(data.thirtyml),
-      hundredml: data.hundredml,
+      count: parseInt(data.count),
+      remarks: data.remarks,
       price: parseInt(data.price),
       id: selectedItem.id,
       limit: parseInt(data.limit),
     };
     dispatch(updateStockItem(payload));
-    e.target.reset();
+    e.currentTarget.reset();
     resetModal();
   }
   function deleteStock() {
@@ -58,19 +60,17 @@ export default function Stock() {
     dispatch(deleteStockItem(selectedItem));
     resetModal();
   }
+
   stockData = [...stockData].sort((a, b) => {
-    // Hundred ml might not be a string.
-    const a_hundredml = a.hundredml.toString();
-    const b_hundredml = b.hundredml.toString();
+    const a_remarks = a.remarks;
+    const b_remarks = b.remarks;
     switch (filter.type) {
-      case "thirtyml":
+      case "count":
+        return filter.order == "asc" ? a.count - b.count : b.count - a.count;
+      case "remarks":
         return filter.order == "asc"
-          ? a.thirtyml - b.thirtyml
-          : b.thirtyml - a.thirtyml;
-      case "hundredml":
-        return filter.order == "asc"
-          ? a_hundredml.localeCompare(b_hundredml)
-          : b_hundredml.localeCompare(a_hundredml);
+          ? a_remarks.localeCompare(b_remarks)
+          : b_remarks.localeCompare(a_remarks);
       case "price":
         return filter.order == "asc" ? a.price - b.price : b.price - a.price;
       case "name":
@@ -98,12 +98,14 @@ export default function Stock() {
         <div
           className={
             "text-md font-bold duration-[1ms] " +
-            `${item.thirtyml <= item.limit ? "pulse-text" : "text-green-300"}`
+            `${
+              item.count <= (item.limit ?? 15) ? "pulse-text" : "text-green-300"
+            }`
           }
         >
-          {item.thirtyml}
+          {item.count}
         </div>
-        <div className="text-white text-md font-bold">{item.hundredml}</div>
+        <div className="text-white text-md font-bold">{item.remarks}</div>
         <div className="text-yellow-300 text-md font-bold">{item.price}</div>
       </div>
     );
@@ -132,17 +134,17 @@ export default function Stock() {
               <div className="text-yellow-300 text-xl uppercase">30ml </div>
               <input
                 type="number"
-                name="thirtyml"
+                name="count"
                 className="px-5 py-2 text-yellow-300 text-[1.2em] no-arrow bg-black"
-                defaultValue={selectedItem.thirtyml}
+                defaultValue={selectedItem.count}
                 required
               />
               <div className="text-yellow-300 text-xl uppercase">100ml </div>
               <input
                 type="text"
-                name="hundredml"
+                name="remarks"
                 className="px-5 py-2 text-green-300 text-[1.2em] no-arrow bg-black"
-                defaultValue={selectedItem.hundredml}
+                defaultValue={selectedItem.remarks}
                 required
               />
               <div className="text-yellow-300 text-xl uppercase">Price </div>
@@ -225,9 +227,9 @@ export default function Stock() {
                 setFilter({ ...filter, type: e.target.value });
               }}
             >
-              <option value="thirtyml">30ml</option>
+              <option value="count">30ml</option>
               <option value="name">Name</option>
-              <option value="hundredml">100ml</option>
+              <option value="remarks">100ml</option>
               <option value="price">Price</option>
             </select>
             <select

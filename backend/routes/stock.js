@@ -17,9 +17,9 @@ router.post("/", (req, res) => {
   readJSON(filePath, (items) => {
     let newItem = {};
     let id = Date.now().toString(); // Generate unique ID as string
-    newItem.thirtyml = 0;
+    newItem.count = 0;
     newItem.price = 0;
-    newItem.hundredml = "0";
+    newItem.remarks = "0";
     newItem.name = req.body.name.toUpperCase();
     newItem.id = id;
     newItem.limit = 0;
@@ -61,14 +61,13 @@ router.put("/", (req, res) => {
   });
 });
 
-router.put("/many", (req, res) => {
+// Update count of many
+router.put("/count/many", (req, res) => {
   let newItems = req.body;
   readJSON(filePath, (items) => {
     for (let newItem of newItems) {
       let itemIndex = items.findIndex((item) => item.id === newItem.id);
-      items[itemIndex].thirtyml =
-        items[itemIndex].thirtyml +
-        newItem.multiplier * (newItem.updateType == "UNDO" ? 1 : -1);
+      items[itemIndex].count -= newItem.multiplier;
     }
     writeJSON(filePath, items, () => {
       res.status(200).json(items);

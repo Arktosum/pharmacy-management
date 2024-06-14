@@ -24,7 +24,7 @@ export default function LogData() {
   useEffect(() => {
     setselectedDate(currentDate);
     dispatch(fetchLogs());
-    axios.get(ORIGIN + "/api/excels/").then((response) => {
+    axios.get(ORIGIN + "/excels/").then((response) => {
       setexcelData(response.data);
     });
   }, [currentDate, dispatch]);
@@ -42,7 +42,7 @@ export default function LogData() {
 
   const rowData = LogData.map((item) => {
     let mtTotal = 0;
-    for (const medicine of item.data.medicine) {
+    for (const medicine of item.data.medicines) {
       mtTotal += medicine.price * medicine.multiplier;
     }
     grandMTtotal += mtTotal;
@@ -66,12 +66,12 @@ export default function LogData() {
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function updateExcel(change: any, source: string) {
+  async function updateExcel(changes: any, source: string) {
     if (source === "loadData") return;
-    if (change == null) return;
+    if (changes == null) return;
 
-    for (const changes of change) {
-      const [x, y, , to] = changes;
+    for (const change of changes) {
+      const [x, y, , to] = change;
       excelData[x][y] = to;
     }
     const response = await axios.post(ORIGIN + "/api/excels/", [...excelData]);

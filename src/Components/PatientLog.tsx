@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import {
   LogItem,
-  TransactionLog,
+  StockLog,
+  deleteLogItem,
   fetchLogs,
   updateLogItem,
 } from "../features/logSlice";
 import { useAppSelector, useAppDispatch } from "../hooks";
-import { StockItem, updateStockItems } from "../features/stockSlice";
+import { updateStockItems } from "../features/stockSlice";
 import moment from "moment";
 import { isBetween } from "./Utils";
 
@@ -26,7 +27,7 @@ export default function Log() {
     setFromDate(currentDate);
     setseekDate(currentDate);
     dispatch(fetchLogs());
-  }, [dispatch]);
+  }, [currentDate, dispatch]);
 
   const logElements = LogData.map((item) => {
     if (chooseState == "RANGE") {
@@ -44,8 +45,7 @@ export default function Log() {
       .format("DD-MM-YYYY HH:mm:ss")
       .split(" ");
     if (item.type.toUpperCase() == "TRANSACTION") {
-      let itemCount = 0;
-      for (const med of item.data.medicine) itemCount += med.multiplier;
+      const itemCount = item.data.itemCount;
       infoString = `${item.data.patientName} || ${itemCount}`;
     }
     return (
@@ -68,35 +68,36 @@ export default function Log() {
     );
   });
 
-  function undoItem(logItem: TransactionLog, stockItem: StockItem) {
+  function undoItem(logItem: LogItem, stockItem: StockLog) {
     const choice = prompt("Sure to undo? (y/n)");
     if (choice && choice.toLowerCase() !== "y") return;
-    const newStockItem = { ...stockItem, updateType: "UNDO" } as StockItem;
-    dispatch(updateStockItems([newStockItem]));
+    dispatch(updateStockItems([stockItem])); // use UpdateMany since it re-uses code.
     const newlogItem = {
       ...logItem,
       data: {
         ...logItem.data,
-        medicine: logItem.data.medicine.filter(
+        medicines: logItem.data.medicines.filter(
           (item) => item.id != stockItem.id
         ),
       },
-    } as TransactionLog;
-    dispatch(updateLogItem(newlogItem));
+    };
+    if(newlogItem.data.medicines.length == 0){
+      dispatch(deleteLogItem(newlogItem));
+    }
+    else{
+      dispatch(updateLogItem(newlogItem));
+    }
     setselectedItem(null);
     setshowModal(false);
   }
   const infoItems = selectedItem
-    ? selectedItem.data.medicine.map((item: StockItem) => {
+    ? selectedItem.data.medicines.map((item) => {
         return (
           <div
             key={item.id}
             className="grid grid-cols-5 duration-200 h-[8%] rounded-md cursor-pointer place-items-center"
           >
             <div className="text-yellow-300 text-md font-bold">{item.name}</div>
-            <div className="text-pink-400 text-[1.2em] font-bold">
-              {item.thirtyml}
-            </div>
             <div className="text-blue-400 text-[1.2em] font-bold">
               {item.multiplier}
             </div>
@@ -105,7 +106,7 @@ export default function Log() {
             </div>
             <div
               onClick={() => {
-                undoItem(selectedItem as TransactionLog, item);
+                undoItem(selectedItem, item);
               }}
               className="text-red-600 uppercase px-5 m-5 border-2 border-red-600 rounded-xl hover:bg-red-600 duration-200 hover:text-black text-center cursor-pointer"
             >
@@ -120,11 +121,9 @@ export default function Log() {
   let MTTotal = 0;
   let itemCount = 0;
   if (selectedItem) {
-    for (const item of selectedItem.data.medicine) {
-      MTTotal += item.multiplier * item.price;
-      itemCount += item.multiplier;
-    }
-    feeTotal = selectedItem.data.consultFee;
+    (MTTotal = selectedItem.data.MTtotal),
+      (itemCount = selectedItem.data.itemCount),
+      (feeTotal = selectedItem.data.consultFee);
   }
   return (
     <div className="bg-black h-[90vh] flex flex-col">

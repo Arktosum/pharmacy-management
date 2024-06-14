@@ -19,7 +19,7 @@ export default function MedicineCount() {
   const medicineCounts: { [key: string]: number } = {};
   for (const log of LogData) {
     if (log.type.toUpperCase() == "TRANSACTION") {
-      const medicines = log.data.medicine;
+      const medicines = log.data.medicines;
       for (const medicine of medicines) {
         const name = medicine.name;
         const multiplier = medicine.multiplier;
@@ -40,12 +40,12 @@ export default function MedicineCount() {
     const name = item[0];
     const count = item[1];
     return (
-      <>
+      <div key={name} className="grid grid-cols-2 w-full">
         <div className="text-green-300 w-full p-5">{name}</div>
         <div className="text-yellow-300 text-[1.2em] w-full bg-[#212121] rounded-md p-5">
           {count}
         </div>
-      </>
+      </div>
     );
   });
   return (
@@ -85,7 +85,7 @@ export default function MedicineCount() {
           className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
         />
       </div>
-      <div className="text-white grid grid-cols-2 text-center gap-y-5 p-5 h-[50vh] place-items-center overflow-y-auto">
+      <div className="text-white flex flex-col text-center gap-5 p-5 h-[50vh] place-items-center overflow-y-auto">
         {rowElements}
       </div>
     </div>

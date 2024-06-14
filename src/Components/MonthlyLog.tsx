@@ -2,18 +2,7 @@ import moment from "moment";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { LogItem, fetchLogs } from "../features/logSlice";
-
-function isInMonth(date: string, current: string) {
-  const currentMonth = moment(date).month();
-  const timestampMonth = moment(parseInt(current)).month();
-  return currentMonth === timestampMonth;
-}
-
-function isInYear(date: string, current: string) {
-  const currentYear = moment(date).year();
-  const timestampYear = moment(parseInt(current)).year();
-  return currentYear === timestampYear;
-}
+import { isInMonth, isInYear } from "./Utils";
 
 export default function MonthlyLog() {
   const [selectedDate, setselectedDate] = useState("");
@@ -44,12 +33,8 @@ export default function MonthlyLog() {
         total: 0,
       };
     }
-    let MTtotal = 0;
     const consultFee = item.data.consultFee;
-    for (const medicine of item.data.medicine) {
-      const amount = medicine.multiplier * medicine.price;
-      MTtotal += amount;
-    }
+    const MTtotal = item.data.MTtotal;
     rowItem[thisDate] = {
       MTtotal: rowItem[thisDate].MTtotal + MTtotal,
       consultFee: rowItem[thisDate].consultFee + consultFee,
