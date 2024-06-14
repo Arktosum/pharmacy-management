@@ -49,3 +49,4 @@ export function regexUtil(regexPattern: string, testString: string) {
   }
   return false;
 }
+

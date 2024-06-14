@@ -40,7 +40,6 @@ export default function MonthlyLog() {
       total: rowItem[thisDate].total + MTtotal + consultFee,
     };
   }
-  // console.log(rowItem);
 
   let MTGrand = 0;
   let consultGrand = 0;
@@ -52,7 +51,6 @@ export default function MonthlyLog() {
     MTGrand += item.MTtotal;
     consultGrand += item.consultFee;
     totalGrand += item.total;
-
     ROWS.push(
       <div key={date} className="bg-black grid grid-cols-4 gap-5 p-5 my-5">
         <div className="text-yellow-300 text-[1.2em]">
@@ -91,15 +89,15 @@ export default function MonthlyLog() {
       </div>
       <div className="flex gap-10">
         <div className="text-white my-5">
-          MT Total :{" "}
+          MT Total :
           <span className="text-orange-500 text-[1.4em]">{MTGrand}</span>
         </div>
         <div className="text-white my-5">
-          Fee Total :{" "}
+          Fee Total :
           <span className="text-orange-500 text-[1.4em]">{consultGrand}</span>
         </div>
         <div className="text-white my-5">
-          Grand Monthly Total :{" "}
+          Grand Monthly Total :
           <span className="text-orange-500 text-[1.4em]">{totalGrand}</span>
         </div>
       </div>

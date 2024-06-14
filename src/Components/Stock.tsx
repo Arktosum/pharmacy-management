@@ -8,7 +8,6 @@ import {
   updateStockItem,
 } from "../features/stockSlice";
 
-import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function Stock() {
@@ -108,7 +107,6 @@ export default function Stock() {
 
   return (
     <div className="bg-black h-[90vh] flex">
-      {/*---------------------------------------------------------- InfoModal ---------------------------------------------------------- */}
       {showModal && selectedItem ? (
         <div className="w-full h-full bg-[#000000a0] absolute flex justify-center items-center z-10">
           <div className="bg-gray-800 w-[50%] p-5 rounded-xl border-gray-600 border-2">
@@ -181,8 +179,6 @@ export default function Stock() {
       ) : (
         <></>
       )}
-      {/*---------------------------------------------------------- InfoModal ---------------------------------------------------------- */}
-      {/*---------------------------------------------------------- Edit Stock ---------------------------------------------------------- */}
       <div className="border-black w-full h-full">
         <h1 className="text-[2.5em] text-yellow-300 font-bold text-center uppercase">
           Stock
@@ -247,8 +243,6 @@ export default function Stock() {
         </div>
         <div className="h-[50vh] overflow-y-auto">{rowElements}</div>
       </div>
-      <ToastContainer />
-      {/*---------------------------------------------------------- Edit Stock ---------------------------------------------------------- */}
     </div>
   );
 }

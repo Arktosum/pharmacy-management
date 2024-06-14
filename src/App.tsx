@@ -13,13 +13,14 @@ import { useEffect } from "react";
 import { useAppDispatch } from "./hooks";
 import { fetchStock } from "./features/stockSlice";
 import { fetchLogs } from "./features/logSlice";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   const dispatch = useAppDispatch();
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(fetchStock());
     dispatch(fetchLogs());
-  },[dispatch])
+  }, [dispatch]);
   return (
     <>
       <Navbar />
@@ -33,6 +34,7 @@ function App() {
         <Route path="/searchlog" element={<SearchLog />}></Route>
         <Route path="/medicineCount" element={<MedicineCount />}></Route>
       </Routes>
+      <ToastContainer />
     </>
   );
 }
