@@ -1,8 +1,8 @@
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { LogItem } from "../features/logSlice";
-import { isInMonth, isInYear } from "./Utils";
+import { LogItem } from "../redux/logSlice";
+import { isInMonth, isInYear } from "../components/Utils";
 
 export default function MonthlyLog() {
   const [selectedDate, setselectedDate] = useState("");

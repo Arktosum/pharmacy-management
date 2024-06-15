@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ORIGIN, isBetween } from "./Utils";
+import { ORIGIN, isBetween } from "../components/Utils";
 import "handsontable/dist/handsontable.full.min.css";
 import { registerAllModules } from "handsontable/registry";
 import { HyperFormula } from "hyperformula";
@@ -12,7 +12,7 @@ registerAllModules();
 import { HotTable } from "@handsontable/react";
 import axios from "axios";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { LogItem } from "../features/logSlice";
+import { LogItem } from "../redux/logSlice";
 import moment from "moment";
 
 export default function LogData() {
@@ -27,7 +27,7 @@ export default function LogData() {
       setexcelData(response.data);
     });
   }, [currentDate, dispatch]);
-  
+
   let LogData: LogItem[] = useAppSelector((state) => state.logs.data);
   LogData = LogData.filter((item) =>
     isBetween(selectedDate, selectedDate, item.id)

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import moment from "moment";
-import { LogItem } from "../features/logSlice";
-import { isInMonth, regexUtil } from "./Utils";
+import { LogItem } from "../redux/logSlice";
+import { isInMonth, regexUtil } from "../components/Utils";
 
 export default function MedicineCount() {
   const [regexString, setregexString] = useState(".*");

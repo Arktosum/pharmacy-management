@@ -20,7 +20,9 @@ body{
 /* Firefox */
 .no-arrow {
     -moz-appearance: textfield;
-  }
+}
+
+
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -69,3 +71,5 @@ input::-webkit-inner-spin-button {
     scale:1.3;
   }
 }
+
+

@@ -1,12 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import stockSlice from "./features/stockSlice";
-import logSlice from "./features/logSlice";
+import stockSlice from "./redux/stockSlice";
+import logSlice from "./redux/logSlice";
 
 
 export const store = configureStore({
-    reducer : {
-        stocks : stockSlice,
-        logs : logSlice
+    reducer: {
+        stocks: stockSlice,
+        logs: logSlice
     },
 })
 

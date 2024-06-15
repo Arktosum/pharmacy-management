@@ -1,5 +1,6 @@
 import moment from "moment";
 import { ToastOptions, Zoom } from "react-toastify";
+import { StockLog } from "../redux/logSlice";
 
 export const ORIGIN = `http://localhost:3000/api`;
 // export let ORIGIN = `https://pharmacy-database.blazingknightog.repl.co/api`
@@ -22,6 +23,8 @@ export function isBetween(from: string, to: string, current: string) {
   const timestampMoment = moment(parseInt(current));
   return timestampMoment.isBetween(fromDateMoment, toDateMoment, null, "[]");
 }
+
+export type setState<T> = React.Dispatch<React.SetStateAction<T>>;
 
 export const toastOptions: ToastOptions<unknown> = {
   position: "top-center",
@@ -50,3 +53,19 @@ export function regexUtil(regexPattern: string, testString: string) {
   return false;
 }
 
+export interface BillingStateType {
+  itemList: StockLog[];
+  patientName: string;
+  consultFee: number;
+}
+export const BILLING_STATE_INITIAL = {
+  itemList: [],
+  patientName: "",
+  consultFee: 0,
+};
+export function updateLocalStorage(billingState: BillingStateType) {
+  localStorage.setItem("bill-items", JSON.stringify(billingState));
+}
+export function clearlocalStorage() {
+  updateLocalStorage(BILLING_STATE_INITIAL);
+}

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios, { AxiosError } from 'axios';
-import { ORIGIN, toastOptions } from '../Components/Utils';
+import { ORIGIN, toastOptions } from '../components/Utils';
 import { toast } from 'react-toastify';
 import { StockItem } from './stockSlice';
 
@@ -65,7 +65,7 @@ export const addLogItem = createAsyncThunk('data/addLogItem', async (item: LogIt
 
 export type LogTypes = "TRANSACTION" | "ADD" | "UPDATE" | "DELETE"
 
-export interface StockLog extends StockItem{
+export interface StockLog extends StockItem {
   id: string,
   name: string,
   price: number,

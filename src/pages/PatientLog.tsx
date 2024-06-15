@@ -4,11 +4,11 @@ import {
   StockLog,
   deleteLogItem,
   updateLogItem,
-} from "../features/logSlice";
+} from "../redux/logSlice";
 import { useAppSelector, useAppDispatch } from "../hooks";
-import { updateStockItems } from "../features/stockSlice";
+import { updateStockCount } from "../redux/stockSlice";
 import moment from "moment";
-import { isBetween } from "./Utils";
+import { isBetween } from "../components/Utils";
 
 export default function Log() {
   const [showModal, setshowModal] = useState(false);
@@ -69,20 +69,22 @@ export default function Log() {
   function undoItem(logItem: LogItem, stockItem: StockLog) {
     const choice = prompt("Sure to undo? (y/n)");
     if (choice && choice.toLowerCase() !== "y") return;
-    dispatch(updateStockItems([stockItem])); // use UpdateMany since it re-uses code.
+    dispatch(updateStockCount({ items: [stockItem], type: "UNDO" })); // use UpdateMany since it re-uses code.
+
     const newlogItem = {
       ...logItem,
       data: {
-        ...logItem.data,
+        ...logItem.data, // Patient name doesn't change
+        itemCount: logItem.data.itemCount - stockItem.multiplier,
+        MTtotal: logItem.data.MTtotal - stockItem.price * stockItem.multiplier,
         medicines: logItem.data.medicines.filter(
           (item) => item.id != stockItem.id
         ),
       },
     };
-    if(newlogItem.data.medicines.length == 0){
+    if (newlogItem.data.medicines.length == 0) {
       dispatch(deleteLogItem(newlogItem));
-    }
-    else{
+    } else {
       dispatch(updateLogItem(newlogItem));
     }
     setselectedItem(null);
@@ -93,7 +95,7 @@ export default function Log() {
         return (
           <div
             key={item.id}
-            className="grid grid-cols-5 duration-200 h-[8%] rounded-md cursor-pointer place-items-center"
+            className="grid grid-cols-4 duration-200 h-[8%] rounded-md cursor-pointer place-items-center"
           >
             <div className="text-yellow-300 text-md font-bold">{item.name}</div>
             <div className="text-blue-400 text-[1.2em] font-bold">
@@ -106,7 +108,7 @@ export default function Log() {
               onClick={() => {
                 undoItem(selectedItem, item);
               }}
-              className="text-red-600 uppercase px-5 m-5 border-2 border-red-600 rounded-xl hover:bg-red-600 duration-200 hover:text-black text-center cursor-pointer"
+              className="text-red-600 uppercase px-5 py-2 my-5 border-2 border-red-600 rounded-xl hover:bg-red-600 duration-200 hover:text-black text-center cursor-pointer"
             >
               undo
             </div>
@@ -129,18 +131,15 @@ export default function Log() {
       {/*---------------------------------------------------------- InfoModal ---------------------------------------------------------- */}
       {showModal && selectedItem ? (
         <div className="w-full h-full bg-[#000000a0] absolute flex justify-center items-center">
-          <div className="bg-gray-600 h-[75%] w-[75%] rounded-xl">
-            <div className="grid grid-cols-5 bg-slate-900 place-items-center">
-              <div className="text-orange-400 uppercase text-sm font-bold">
+          <div className="bg-gray-800 h-[75%] w-[75%] rounded-lg">
+            <div className="grid grid-cols-4 bg-slate-900 place-items-center rounded-lg text-xl">
+              <div className="text-orange-400 uppercase text-md font-bold">
                 Name
               </div>
-              <div className="text-orange-400 uppercase text-sm font-bold">
-                30ml
-              </div>
-              <div className="text-orange-400 uppercase text-sm font-bold">
+              <div className="text-orange-400 uppercase text-md font-bold">
                 Multiplier
               </div>
-              <div className="text-orange-400 uppercase text-sm font-bold">
+              <div className="text-orange-400 uppercase text-md font-bold">
                 Price
               </div>
               <div
@@ -148,13 +147,15 @@ export default function Log() {
                   setselectedItem(null);
                   setshowModal(false);
                 }}
-                className="text-green-600 uppercase px-5 py-5 m-5 border-2 border-green-600 rounded-xl hover:bg-green-600 duration-200 hover:text-white text-center cursor-pointer"
+                className="text-green-600  uppercase px-5 py-5 m-5 border-2 border-green-600 rounded-xl hover:bg-green-600 duration-200 hover:text-white text-center cursor-pointer"
               >
                 Cancel
               </div>
             </div>
-            <div className="h-[50vh] overflow-y-auto">{infoItems}</div>
-            <div className="grid grid-cols-5 place-items-center">
+            <div className="h-[50vh] overflow-y-auto flex flex-col gap-5">
+              {infoItems}
+            </div>
+            <div className="grid grid-cols-4 place-items-center">
               <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
                 Item Count: <span className="text-green-300 ">{itemCount}</span>
               </div>
@@ -168,7 +169,6 @@ export default function Log() {
                 Grand Total:{" "}
                 <span className="text-green-300">{feeTotal + MTTotal}</span>
               </div>
-              <div></div>
             </div>
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function Log() {
           />
         </div>
       </div>
-      <div className="grid grid-cols-3 bg-slate-600 p-5 text-center">
+      <div className="grid grid-cols-3 bg-slate-900 p-5 text-center">
         <div className="text-white text-md font-bold">DateTime</div>
         <div className="text-white text-md font-bold">Type</div>
         <div className="text-white text-md font-bold">Info</div>

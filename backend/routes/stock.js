@@ -62,12 +62,16 @@ router.put("/", (req, res) => {
 });
 
 // Update count of many
-router.put("/count/many", (req, res) => {
+router.put("/count/many/:type", (req, res) => {
   let newItems = req.body;
+  const type = req.params.type;
+  if (type !== "UNDO" && type !== "REMOVE") {
+    res.status(401).json("Param type must be 'UNDO' or 'REMOVE!");
+  }
   readJSON(filePath, (items) => {
     for (let newItem of newItems) {
       let itemIndex = items.findIndex((item) => item.id === newItem.id);
-      items[itemIndex].count -= newItem.multiplier;
+      items[itemIndex].count += newItem.multiplier*(type == 'UNDO' ? 1 : -1);
     }
     writeJSON(filePath, items, () => {
       res.status(200).json(items);

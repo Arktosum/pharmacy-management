@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { LogItem } from "../features/logSlice";
+import { LogItem } from "../redux/logSlice";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import moment from "moment";
-import { isInMonth, isInYear } from "./Utils";
+import { isInMonth, isInYear } from "../components/Utils";
 
 export default function Monthly() {
   const [selectedDate, setselectedDate] = useState("");
@@ -27,7 +27,7 @@ export default function Monthly() {
       dailyTally[thisDate] = (dailyTally[thisDate] || 0) + medicine.multiplier;
     }
   }
-  const rowElements : JSX.Element[] = [];
+  const rowElements: JSX.Element[] = [];
   for (const date in dailyTally) {
     monthlyCount += dailyTally[date];
     rowElements.push(

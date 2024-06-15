@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
-import { ORIGIN, toastOptions } from '../Components/Utils';
+import { ORIGIN, toastOptions } from '../components/Utils';
 import { StockLog } from './logSlice';
 
 // Async thunk to read data
@@ -18,6 +18,17 @@ export const fetchStock = createAsyncThunk('data/fetchStock', async () => {
     throw error;
   }
 });
+export const createStockItem = createAsyncThunk('data/createStockItem', async (medicineName: string) => {
+  try {
+    const response = await axios.post(context + "/", { name: medicineName });
+    toast.success('Added new Item! : ' + medicineName, toastOptions);
+    return response.data
+  } catch (e) {
+    const error = e as AxiosError;
+    toast.error(error.message + " " + medicineName, toastOptions);
+    throw error;
+  }
+});
 
 // Async thunk to update data
 export const updateStockItem = createAsyncThunk('data/updateStockItem', async (item: StockItem) => {
@@ -31,10 +42,10 @@ export const updateStockItem = createAsyncThunk('data/updateStockItem', async (i
   }
 });
 
-export const updateStockItems = createAsyncThunk('data/updateStockItems', async (items: StockLog[]) => {
+export const updateStockCount = createAsyncThunk('data/updateStockCount', async ({ items, type }: { items: StockLog[], type: "UNDO" | "REMOVE" }) => {
   // Will update the count of the stock item by "Multiplier". Always subtracts!
   try {
-    const response = await axios.put(context + "/count/many", items);
+    const response = await axios.put(context + `/count/many/${type}`, items);
     return response.data;
   } catch (e) {
     const error = e as AxiosError;
@@ -57,17 +68,6 @@ export const deleteStockItem = createAsyncThunk('data/deleteStockItem', async (i
   }
 });
 
-export const addStockItem = createAsyncThunk('data/addStockItem', async (medicineName: string) => {
-  try {
-    const response = await axios.post(context + "/", { name: medicineName });
-    toast.success('Added new Item! : ' + medicineName, toastOptions);
-    return response.data
-  } catch (e) {
-    const error = e as AxiosError;
-    toast.error(error.message + " " + medicineName, toastOptions);
-    throw error;
-  }
-});
 
 export type StockItem = {
   name: string,
@@ -93,7 +93,7 @@ const stockSlice = createSlice({
       .addCase(fetchStock.fulfilled, (state, action) => {
         state.data = action.payload;
       })
-      .addCase(addStockItem.fulfilled, (state, action) => {
+      .addCase(createStockItem.fulfilled, (state, action) => {
         state.data = [action.payload, ...state.data];
       })
       .addCase(updateStockItem.fulfilled, (state, action) => {
@@ -102,7 +102,7 @@ const stockSlice = createSlice({
           state.data[updatedDataIndex] = action.payload;
         }
       })
-      .addCase(updateStockItems.fulfilled, (state, action) => {
+      .addCase(updateStockCount.fulfilled, (state, action) => {
         state.data = action.payload;
       })
       .addCase(deleteStockItem.fulfilled, (state, action) => {

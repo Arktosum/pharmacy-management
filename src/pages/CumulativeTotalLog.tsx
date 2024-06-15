@@ -1,11 +1,9 @@
-import {  useState } from "react";
-import { LogItem, } from "../features/logSlice";
-import {  useAppSelector } from "../hooks";
+import { useState } from "react";
+import { LogItem } from "../redux/logSlice";
+import { useAppSelector } from "../hooks";
 import moment from "moment";
-import { regexUtil } from "./Utils";
+import { regexUtil } from "../components/Utils";
 import { deleteSVG } from "../assets/assets";
-
-
 
 export default function SearchLog() {
   const [regexString, setregexString] = useState(".*");
@@ -24,8 +22,8 @@ export default function SearchLog() {
     const [date, time] = moment(parseInt(item.id))
       .format("DD-MM-YYYY HH:mm:ss")
       .split(" ");
-    const ind = billItemList.findIndex((x)=>x.id == item.id);
-    if(ind != -1) continue;
+    const ind = billItemList.findIndex((x) => x.id == item.id);
+    if (ind != -1) continue;
     if (item.type.toUpperCase() == "TRANSACTION") {
       infoString = `${item.data.patientName} || ${item.data.medicines.length}`;
     }
@@ -52,7 +50,7 @@ export default function SearchLog() {
     );
     stockItems.push(jsxElement);
   }
-  stockItems = stockItems.slice(0,100); // Show only best 100
+  stockItems = stockItems.slice(0, 100); // Show only best 100
   let grandFeeTotal = 0;
   let grandMTtotal = 0;
 
@@ -71,7 +69,9 @@ export default function SearchLog() {
         <div className="text-yellow-300 text-sm text-center font-bold">
           {item.data.patientName}
         </div>
-        <div className="text-green-400 text-[1.2em] font-bold">{item.data.MTtotal}</div>
+        <div className="text-green-400 text-[1.2em] font-bold">
+          {item.data.MTtotal}
+        </div>
         <div className="text-yellow-400  text-[1.3em] font-bold">
           {item.data.consultFee}
         </div>
@@ -128,7 +128,7 @@ export default function SearchLog() {
     MTtotal = selectedItem.data.MTtotal;
     itemCount = selectedItem.data.itemCount;
   }
-    
+
   return (
     <div className="bg-black h-[90vh] flex">
       {/*---------------------------------------------------------- Transaction ---------------------------------------------------------- */}
@@ -204,7 +204,7 @@ export default function SearchLog() {
             Show Latest
           </div>
         </div>
-        <div className="grid grid-cols-2 bg-slate-600 p-5 text-center">
+        <div className="grid grid-cols-2 bg-slate-900 p-5 text-center">
           <div className="text-white text-md font-bold">DateTime</div>
           <div className="text-white text-md font-bold">Name</div>
         </div>
@@ -213,7 +213,7 @@ export default function SearchLog() {
       <div className="border-2 border-l-green-600 border-black w-[50vw] h-full">
         {/*---------------------------------------------------------- LogSearch ---------------------------------------------------------- */}
         <h1 className="text-[3em] text-white text-bold text-center"></h1>
-        <div className="grid grid-cols-5 bg-slate-600 p-5 text-center">
+        <div className="grid grid-cols-5 bg-slate-900 p-5 text-center">
           <div className="text-white text-md font-bold">Name</div>
           <div className="text-white text-md font-bold">MT Total</div>
           <div className="text-white text-md font-bold">Fee</div>

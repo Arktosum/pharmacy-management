@@ -1,18 +1,18 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import Billing from "./Components/Billing";
-import Log from "./Components/PatientLog";
-import Navbar from "./Components/Navbar";
-import Stock from "./Components/Stock";
-import DailyLog from "./Components/DailyLog";
-import Monthly from "./Components/MonthlyCount";
-import MonthlyLog from "./Components/MonthlyLog";
-import SearchLog from "./Components/CumulativeTotalLog";
-import MedicineCount from "./Components/MedicineCount";
+import Billing from "./pages/Billing";
+import Log from "./pages/PatientLog";
+import Navbar from "./pages/Navbar";
+import Stock from "./pages/Stock";
+import DailyLog from "./pages/DailyLog";
+import Monthly from "./pages/MonthlyCount";
+import MonthlyLog from "./pages/MonthlyLog";
+import SearchLog from "./pages/CumulativeTotalLog";
+import MedicineCount from "./pages/MedicineCount";
 import { useEffect } from "react";
 import { useAppDispatch } from "./hooks";
-import { fetchStock } from "./features/stockSlice";
-import { fetchLogs } from "./features/logSlice";
+import { fetchStock } from "./redux/stockSlice";
+import { fetchLogs } from "./redux/logSlice";
 import { ToastContainer } from "react-toastify";
 
 function App() {
