@@ -148,9 +148,9 @@ export function Checkout({ props }: { props: CheckoutProps }) {
           </div>
           <div className="text-white flex">Rounded</div>
           <div
-            className={`text-black font-bold text-[1.4em] ${
-              hasChange ? "pulse-red-green" : ""
-            } bg-[#f886dd] w-[10%] px-5 rounded-md`}
+            className={`text-black font-bold text-[1.2em] ${
+              hasChange ? "fade-out-in" : ""
+            } bg-[#f886dd] text-center px-5 rounded-md`}
           >
             {hasChange ? Gtotal + 10 : Gtotal}
           </div>

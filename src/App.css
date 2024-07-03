@@ -73,3 +73,24 @@ input::-webkit-inner-spin-button {
 }
 
 
+
+.fade-out-in{
+  animation: pulse-fade-out-in 0.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-fade-out-in{
+  from{
+    background-color: black;
+    opacity: 0;
+  }
+  to{
+    background-color: yellow;
+    
+    opacity:1;
+  
+  }
+}
+
+.borderize{
+  border : 1px solid white;
+}
