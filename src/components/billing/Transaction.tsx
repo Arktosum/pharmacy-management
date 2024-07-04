@@ -40,10 +40,10 @@ export function Transaction({ props }: { props: TransactionProps }) {
   const StockData: StockItem[] = useAppSelector((state) => state.stocks.data);
   const editItems = StockData.map((item) => {
     if (!regexUtil(regexString, item.name)) return;
-    const index = billingState.itemList.findIndex(
-      (billItem) => billItem.id == item.id
-    );
-    if (index != -1) return; // Item already in cart.
+    // const index = billingState.itemList.findIndex(
+    //   (billItem) => billItem.id == item.id
+    // );
+    // if (index != -1) return; // Item already in cart.
     return (
       <EditItem
         props={{
@@ -66,6 +66,7 @@ export function Transaction({ props }: { props: TransactionProps }) {
       toast.error("Patient name is empty!", toastOptions);
       return;
     }
+    
     const transactionLog = {
       patientName: billingState.patientName,
       consultFee: billingState.consultFee,
@@ -108,7 +109,6 @@ export function Transaction({ props }: { props: TransactionProps }) {
         type: "REMOVE",
       })
     );
-    console.log("here");
     updateLocalStorage(BILLING_STATE_INITIAL);
     toast.success("Transaction success!", toastOptions);
     setbillingState({ ...BILLING_STATE_INITIAL });

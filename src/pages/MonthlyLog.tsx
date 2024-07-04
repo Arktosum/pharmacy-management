@@ -56,9 +56,9 @@ export default function MonthlyLog() {
         <div className="text-yellow-300 text-[1.2em]">
           {moment(date).format("DD-MM-YYYY")}
         </div>
-        <div className="text-orange-500 text-[1.2em]">{item.MTtotal}</div>
-        <div className="text-green-500 text-[1.2em]">{item.consultFee}</div>
-        <div className="text-pink-500 text-[1.2em]">{item.total}</div>
+        <div className="text-orange-500 text-[1.2em]">{item.MTtotal.toLocaleString("hi-in")}</div>
+        <div className="text-green-500 text-[1.2em]">{item.consultFee.toLocaleString("hi-in")}</div>
+        <div className="text-pink-500 text-[1.2em]">{item.total.toLocaleString("hi-in")}</div>
       </div>
     );
   }
@@ -90,15 +90,15 @@ export default function MonthlyLog() {
       <div className="flex gap-10">
         <div className="text-white my-5">
           MT Total :
-          <span className="text-orange-500 text-[1.4em]">{MTGrand}</span>
+          <span className="text-orange-500 text-[1.4em]">{MTGrand.toLocaleString("hi-in")}</span>
         </div>
         <div className="text-white my-5">
           Fee Total :
-          <span className="text-orange-500 text-[1.4em]">{consultGrand}</span>
+          <span className="text-orange-500 text-[1.4em]">{consultGrand.toLocaleString("hi-in")}</span>
         </div>
         <div className="text-white my-5">
           Grand Monthly Total :
-          <span className="text-orange-500 text-[1.4em]">{totalGrand}</span>
+          <span className="text-orange-500 text-[1.4em]">{totalGrand.toLocaleString("hi-in")}</span>
         </div>
       </div>
     </div>

@@ -2,8 +2,9 @@ import { useState } from "react";
 import { LogItem } from "../redux/logSlice";
 import { useAppSelector } from "../hooks";
 import moment from "moment";
-import { regexUtil } from "../components/Utils";
+import { regexUtil, toastOptions } from "../components/Utils";
 import { deleteSVG } from "../assets/assets";
+import { toast } from "react-toastify";
 
 export default function SearchLog() {
   const [regexString, setregexString] = useState(".*");
@@ -22,8 +23,7 @@ export default function SearchLog() {
     const [date, time] = moment(parseInt(item.id))
       .format("DD-MM-YYYY HH:mm:ss")
       .split(" ");
-    const ind = billItemList.findIndex((x) => x.id == item.id);
-    if (ind != -1) continue;
+
     if (item.type.toUpperCase() == "TRANSACTION") {
       infoString = `${item.data.patientName} || ${item.data.medicines.length}`;
     }
@@ -35,10 +35,12 @@ export default function SearchLog() {
         key={item.id}
         onClick={() => {
           // Add if item not already exists
-          const index = billItemList.findIndex(
-            (billItem) => billItem.id == item.id
-          );
-          if (index == -1) setbillItemList((prev) => [...prev, item]);
+          const ind = billItemList.findIndex((x) => x.id == item.id);
+          if (ind != -1) {
+            toast.error("Item already exists!", toastOptions);
+            return;
+          }
+          setbillItemList((prev) => [...prev, item]);
         }}
         className="grid grid-cols-2 hover:bg-[#252525] duration-200 rounded-md py-1 cursor-pointer text-center"
       >

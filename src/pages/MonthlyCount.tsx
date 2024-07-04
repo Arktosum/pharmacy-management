@@ -64,7 +64,7 @@ export default function Monthly() {
       </div>
       <div className="text-white my-5">
         Monthly Total :
-        <span className="text-[#ff00ff] text-[1.2em]">{monthlyCount}</span>
+        <span className="text-[#ff00ff] text-[1.2em]">{monthlyCount.toLocaleString("hi-in")}</span>
       </div>
     </div>
   );
