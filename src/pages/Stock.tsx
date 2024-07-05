@@ -129,7 +129,7 @@ function StockModal({
             defaultValue={selectedItem.name}
             required
           />
-          <div className="text-yellow-300 text-xl uppercase">30ml </div>
+          <div className="text-yellow-300 text-xl uppercase">30ml STOCK</div>
           <input
             type="number"
             name="count"
@@ -137,7 +137,7 @@ function StockModal({
             defaultValue={selectedItem.count}
             required
           />
-          <div className="text-yellow-300 text-xl uppercase">100ml </div>
+          <div className="text-yellow-300 text-xl uppercase">100ml PRICE</div>
           <input
             type="text"
             name="remarks"
@@ -145,7 +145,7 @@ function StockModal({
             defaultValue={selectedItem.remarks}
             required
           />
-          <div className="text-yellow-300 text-xl uppercase">Price </div>
+          <div className="text-yellow-300 text-xl uppercase">Price 30ml</div>
           <input
             type="number"
             name="price"
@@ -247,7 +247,7 @@ function SearchSection({
           });
         }}
       >
-        <option value="count">30ml</option>
+        <option value="count">30ml </option>
         <option value="name">Name</option>
         <option value="remarks">100ml</option>
         <option value="price">Price</option>

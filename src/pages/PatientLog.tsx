@@ -103,7 +103,7 @@ export default function Log() {
               onClick={() => {
                 undoItem(selectedItem, item);
               }}
-              className="text-red-600 uppercase px-5 py-2 my-5 border-2 border-red-600 rounded-xl hover:bg-red-600 duration-200 hover:text-black text-center cursor-pointer"
+              className="text-red-600 uppercase px-5 py-2 border-2 border-red-600 rounded-xl hover:bg-red-600 duration-200 hover:text-black text-center cursor-pointer"
             >
               undo
             </div>
