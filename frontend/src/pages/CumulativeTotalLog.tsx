@@ -25,7 +25,7 @@ export default function SearchLog() {
       .split(" ");
 
     if (item.type.toUpperCase() == "TRANSACTION") {
-      infoString = `${item.data.patientName} || ${item.data.medicines.length}`;
+      infoString = `${item.data.patientName} || ${item.data.itemCount}`;
     }
     if (item.data.patientName == "") continue;
     const passRegex: boolean = regexUtil(regexString, item.data.patientName);
