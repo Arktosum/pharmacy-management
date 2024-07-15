@@ -1,6 +1,6 @@
 import { toast } from "react-toastify";
 import { StockItem } from "../../redux/stockSlice";
-import { BillingStateType, setState, toastOptions, updateLocalStorage } from "../Utils";
+import { BillingStateType, setState, toastErroroptions, updateLocalStorage } from "../Utils";
 
 interface EditItemProps {
   billingState: BillingStateType;
@@ -17,14 +17,14 @@ export function EditItem({ props }: { props: EditItemProps }) {
     <div
       onClick={() => {
         if (item.count == 0) {
-          toast.error("Cannot add Item! | Zero Left!",toastOptions);
+          toast.error("Cannot add Item! | Zero Left!",toastErroroptions);
           return;
         }
         const index = billingState.itemList.findIndex(
           (billItem) => billItem.id == item.id
         );
         if (index != -1) {
-          toast.error("Cannot add Item! | Item already in cart!",toastOptions);
+          toast.error("Cannot add Item! | Item already in cart!",toastErroroptions);
           return; // Item already in cart.
         }
         const newItem = { ...item, multiplier: 1 };

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios, { AxiosError } from 'axios';
-import { ORIGIN, toastOptions } from '../components/Utils';
+import { ORIGIN, toastErroroptions } from '../components/Utils';
 import { toast } from 'react-toastify';
 import { StockItem } from './stockSlice';
 
@@ -12,7 +12,7 @@ export const fetchLogs = createAsyncThunk('data/fetchLogs', async () => {
     return response.data;
   } catch (e) {
     const error = e as AxiosError;
-    toast.error(error.message, toastOptions);
+    toast.error(error.message, toastErroroptions);
     throw error;
   }
 });
@@ -23,7 +23,7 @@ export const fetchDailyCount = createAsyncThunk('data/fetchDailyCount', async ()
     return response.data;
   } catch (e) {
     const error = e as AxiosError;
-    toast.error(error.message, toastOptions);
+    toast.error(error.message, toastErroroptions);
     throw error;
   }
 });
@@ -36,7 +36,7 @@ export const updateLogItem = createAsyncThunk('data/updateLogItem', async (item:
     return response.data;
   } catch (e) {
     const error = e as AxiosError;
-    toast.error(error.message, toastOptions);
+    toast.error(error.message, toastErroroptions);
     throw error;
   }
 });
@@ -47,7 +47,7 @@ export const deleteLogItem = createAsyncThunk('data/deleteLogItem', async (item:
     return response.data;
   } catch (e) {
     const error = e as AxiosError;
-    toast.error(error.message, toastOptions);
+    toast.error(error.message, toastErroroptions);
     throw error;
   }
 });
@@ -58,7 +58,7 @@ export const addLogItem = createAsyncThunk('data/addLogItem', async (item: LogIt
     return response.data
   } catch (e) {
     const error = e as AxiosError;
-    toast.error(error.message, toastOptions);
+    toast.error(error.message, toastErroroptions);
     throw error;
   }
 });

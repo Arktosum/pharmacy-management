@@ -26,7 +26,18 @@ export function isBetween(from: string, to: string, current: string) {
 
 export type setState<T> = React.Dispatch<React.SetStateAction<T>>;
 
-export const toastOptions: ToastOptions<unknown> = {
+export const toastSuccessoptions: ToastOptions<unknown> = {
+  position: "top-center",
+  autoClose: 300,
+  hideProgressBar: true,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: false,
+  progress: 0,
+  theme: "dark",
+  transition: Zoom,
+};
+export const toastErroroptions: ToastOptions<unknown> = {
   position: "top-center",
   autoClose: 0,
   hideProgressBar: true,
@@ -37,7 +48,6 @@ export const toastOptions: ToastOptions<unknown> = {
   theme: "dark",
   transition: Zoom,
 };
-
 export function regexUtil(regexPattern: string, testString: string) {
   if (regexPattern == "") return false;
   let regex;

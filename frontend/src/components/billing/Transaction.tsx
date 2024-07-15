@@ -13,10 +13,11 @@ import {
   BillingStateType,
   setState,
   regexUtil,
-  toastOptions,
   BILLING_STATE_INITIAL,
   clearlocalStorage,
   updateLocalStorage,
+  toastSuccessoptions,
+  toastErroroptions,
 } from "../Utils";
 import { EditItem } from "./EditItem";
 
@@ -59,11 +60,11 @@ export function Transaction({ props }: { props: TransactionProps }) {
   });
   function handleTransaction() {
     if (billingState.itemList.length == 0) {
-      toast.error("Bill Item List is empty!", toastOptions);
+      toast.error("Bill Item List is empty!", toastErroroptions);
       return;
     }
     if (billingState.patientName == "") {
-      toast.error("Patient name is empty!", toastOptions);
+      toast.error("Patient name is empty!", toastErroroptions);
       return;
     }
     
@@ -93,7 +94,7 @@ export function Transaction({ props }: { props: TransactionProps }) {
 
       const isExceedingStock = item.count - item.multiplier < 0;
       if (isExceedingStock) {
-        toast.error(`Stock Item ${item.name} is negative!`, toastOptions);
+        toast.error(`Stock Item ${item.name} is negative!`, toastErroroptions);
         return;
       }
     }
@@ -110,7 +111,7 @@ export function Transaction({ props }: { props: TransactionProps }) {
       })
     );
     updateLocalStorage(BILLING_STATE_INITIAL);
-    toast.success("Transaction success!", toastOptions);
+    toast.success("Transaction success!", toastSuccessoptions);
     setbillingState({ ...BILLING_STATE_INITIAL });
     setregexString("");
   }

@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
-import { ORIGIN, toastOptions } from '../components/Utils';
+import { ORIGIN, toastErroroptions, toastSuccessoptions } from '../components/Utils';
 import { StockLog } from './logSlice';
 
 // Async thunk to read data
@@ -14,18 +14,18 @@ export const fetchStock = createAsyncThunk('data/fetchStock', async () => {
     return response.data;
   } catch (e) {
     const error = e as AxiosError;
-    toast.error(error.message, toastOptions);
+    toast.error(error.message, toastErroroptions);
     throw error;
   }
 });
 export const createStockItem = createAsyncThunk('data/createStockItem', async (medicineName: string) => {
   try {
     const response = await axios.post(context + "/", { name: medicineName });
-    toast.success('Added new Item! : ' + medicineName, toastOptions);
+    toast.success('Added new Item! : ' + medicineName, toastSuccessoptions);
     return response.data
   } catch (e) {
     const error = e as AxiosError;
-    toast.error(error.message + " " + medicineName, toastOptions);
+    toast.error(error.message + " " + medicineName, toastErroroptions);
     throw error;
   }
 });
@@ -37,7 +37,7 @@ export const updateStockItem = createAsyncThunk('data/updateStockItem', async (i
     return response.data;
   } catch (e) {
     const error = e as AxiosError;
-    toast.error(error.message, toastOptions);
+    toast.error(error.message, toastErroroptions);
     throw error;
   }
 });
@@ -49,7 +49,7 @@ export const updateStockCount = createAsyncThunk('data/updateStockCount', async 
     return response.data;
   } catch (e) {
     const error = e as AxiosError;
-    toast.error(error.message, toastOptions);
+    toast.error(error.message, toastErroroptions);
     throw error;
   }
 });
@@ -59,11 +59,11 @@ export const updateStockCount = createAsyncThunk('data/updateStockCount', async 
 export const deleteStockItem = createAsyncThunk('data/deleteStockItem', async (item: StockItem) => {
   try {
     const response = await axios.delete(context + "/" + item.id);
-    toast.success('Deleted Item! : ' + item.name, toastOptions);
+    toast.success('Deleted Item! : ' + item.name, toastSuccessoptions);
     return response.data;
   } catch (e) {
     const error = e as AxiosError;
-    toast.error(error.message, toastOptions);
+    toast.error(error.message, toastErroroptions);
     throw error;
   }
 });

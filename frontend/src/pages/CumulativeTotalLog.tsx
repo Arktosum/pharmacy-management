@@ -2,7 +2,7 @@ import { useState } from "react";
 import { LogItem } from "../redux/logSlice";
 import { useAppSelector } from "../hooks";
 import moment from "moment";
-import { regexUtil, toastOptions } from "../components/Utils";
+import { regexUtil, toastErroroptions } from "../components/Utils";
 import { deleteSVG } from "../assets/assets";
 import { toast } from "react-toastify";
 
@@ -37,7 +37,7 @@ export default function SearchLog() {
           // Add if item not already exists
           const ind = billItemList.findIndex((x) => x.id == item.id);
           if (ind != -1) {
-            toast.error("Item already exists!", toastOptions);
+            toast.error("Item already exists!", toastErroroptions);
             return;
           }
           setbillItemList((prev) => [...prev, item]);
