@@ -28,7 +28,7 @@ export type setState<T> = React.Dispatch<React.SetStateAction<T>>;
 
 export const toastOptions: ToastOptions<unknown> = {
   position: "top-center",
-  autoClose: 300,
+  autoClose: 0,
   hideProgressBar: true,
   closeOnClick: true,
   pauseOnHover: true,
