@@ -2,18 +2,20 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import moment from "moment";
 import { LogItem } from "../redux/logSlice";
-import { isInMonth, regexUtil } from "../components/Utils";
+import { isBetween, regexUtil } from "../components/Utils";
 
 export default function MedicineCount() {
   const [regexString, setregexString] = useState(".*");
-  const [selectedDate, setselectedDate] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const dispatch = useAppDispatch();
   const currentDate = moment().format("YYYY-MM-DD");
   useEffect(() => {
-    setselectedDate(currentDate);
+    setFromDate(currentDate);
+    setToDate(currentDate);
   }, [currentDate, dispatch]);
   let LogData: LogItem[] = useAppSelector((state) => state.logs.data);
-  LogData = LogData.filter((item) => isInMonth(selectedDate, item.id));
+  LogData = LogData.filter((item) => isBetween(fromDate,toDate,item.id));
 
   const medicineCounts: { [key: string]: number } = {};
   for (const log of LogData) {
@@ -50,10 +52,7 @@ export default function MedicineCount() {
   return (
     <div className="h-[90vh] bg-black flex justify-start items-center flex-col relative">
       <h1 className="text-[2em] text-white text-bold text-center">
-        Medicine Count (Monthly)
-      </h1>
-      <h1 className="text-[1.5em] text-white text-bold text-center">
-        Month : {moment(selectedDate).format("MMM YY")}
+        Medicine Count
       </h1>
       <div className="flex justify-evenly w-[50%]">
         <div className="flex justify-center items-center py-5 gap-5">
@@ -69,20 +68,32 @@ export default function MedicineCount() {
             onClick={() => {
               setregexString(".*");
             }}
-            className="text-xl text-green-600 border-2 border-green-600 px-5 py-2 rounded-xl
+            className="text-xl text-green-600 border-2 border-green-600 mx-5 px-5 py-2 rounded-xl
           hover:bg-green-600 hover:text-black cursor-pointer duration-200"
           >
             Show Latest
           </div>
         </div>
-        <input
-          type="date"
-          value={selectedDate}
-          min={"2023-03-30"}
-          max={currentDate}
-          onChange={(e) => setselectedDate(e.target.value)}
-          className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
-        />
+        <div className="flex items-center gap-5">
+          <div className="text-white font-bold">From: </div>
+          <input
+            type="date"
+            value={fromDate}
+            min={"2023-03-30"}
+            max={currentDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
+          />
+          <div className="text-white font-bold">To: </div>
+          <input
+            type="date"
+            value={toDate}
+            min={"2023-03-30"}
+            max={currentDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
+          />
+        </div>
       </div>
       <div className="text-white flex flex-col text-center gap-5 p-5 h-[50vh] place-items-center overflow-y-auto">
         {rowElements}
