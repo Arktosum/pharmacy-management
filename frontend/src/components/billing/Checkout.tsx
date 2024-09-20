@@ -116,7 +116,7 @@ export function Checkout({ props }: { props: CheckoutProps }) {
             <span className="text-white">Received: </span>
             <input
               type="text"
-              className="text-black text-center font-bold text-[1.4em] bg-green-300 w-full px-1 rounded-md"
+              className={`text-black text-center font-bold text-[1.4em] ${receivedAmt > 0 ? 'pulse-red-green' : 'bg-green-300'} w-full px-1 rounded-md`}
               value={receivedAmt}
               onChange={(e) => {
                 const val = e.target.value;
