@@ -25,10 +25,13 @@ interface TransactionProps {
   billingState: BillingStateType;
   setbillingState: setState<BillingStateType>;
   enableTransaction: boolean;
+  setreceivedAmt: setState<number>;
+  receivedAmt: number;
 }
 
 export function Transaction({ props }: { props: TransactionProps }) {
-  const { billingState, setbillingState, enableTransaction } = props;
+  const { billingState, setbillingState, enableTransaction, setreceivedAmt } =
+    props;
   const [dailyCount, setdailyCount] = useState(0);
   const [regexString, setregexString] = useState("");
   const regexInput = useRef<HTMLInputElement>(null);
@@ -67,7 +70,7 @@ export function Transaction({ props }: { props: TransactionProps }) {
       toast.error("Patient name is empty!", toastErroroptions);
       return;
     }
-    
+
     const transactionLog = {
       patientName: billingState.patientName,
       consultFee: billingState.consultFee,
@@ -113,6 +116,7 @@ export function Transaction({ props }: { props: TransactionProps }) {
     updateLocalStorage(BILLING_STATE_INITIAL);
     toast.success("Transaction success!", toastSuccessoptions);
     setbillingState({ ...BILLING_STATE_INITIAL });
+    setreceivedAmt(0);
     setregexString("");
   }
   return (

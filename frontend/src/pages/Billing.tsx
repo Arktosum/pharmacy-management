@@ -10,6 +10,7 @@ import {
 export default function Billing() {
   const [billingState, setbillingState] = useState<BillingStateType>(BILLING_STATE_INITIAL);
   const enableTransaction = billingState.patientName != "" && billingState.itemList.length > 0;
+  const [receivedAmt, setreceivedAmt] = useState(0);
 
   useEffect(() => {
     const localStorageData = localStorage.getItem("bill-items");
@@ -23,8 +24,8 @@ export default function Billing() {
 
   return (
     <div className="bg-black h-[90vh] flex">
-      <Transaction props={{ billingState, setbillingState, enableTransaction }}/>
-      <Checkout props={{ billingState, setbillingState, enableTransaction }} />
+      <Transaction props={{ billingState, setbillingState, enableTransaction ,receivedAmt,setreceivedAmt}}/>
+      <Checkout props={{ billingState, setbillingState, enableTransaction,receivedAmt,setreceivedAmt}} />
     </div>
   );
 }

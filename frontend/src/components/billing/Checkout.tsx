@@ -5,11 +5,12 @@ interface CheckoutProps {
   billingState: BillingStateType;
   setbillingState: setState<BillingStateType>;
   enableTransaction: boolean;
+  receivedAmt : number,
+  setreceivedAmt : setState<number>;
 }
 export function Checkout({ props }: { props: CheckoutProps }) {
-  const { billingState, setbillingState } = props;
+  const { billingState, setbillingState,receivedAmt,setreceivedAmt } = props;
   const [evalString, setevalString] = useState("");
-  const [receivedAmt, setreceivedAmt] = useState(0);
 
   function addevalString() {
     if (evalString == "") return 0;
