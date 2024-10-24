@@ -185,7 +185,7 @@ export default function Log() {
             onChange={(e) => {
               setFromDate(e.target.value);
             }}
-            className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
+            className="my-2 px-5 py-2 rounded-xl text-[#00ff00] bg-[#212121]"
           />
         </div>
         <div className="flex gap-5 items-center">
@@ -198,7 +198,7 @@ export default function Log() {
             onChange={(e) => {
               settoDate(e.target.value);
             }}
-            className="my-2 px-5 py-2 rounded-xl text-[#ff00ff] bg-[#212121]"
+            className="my-2 px-5 py-2 rounded-xl text-[#00ff00] bg-[#212121]"
           />
         </div>
         <div className="flex gap-5 items-center">
