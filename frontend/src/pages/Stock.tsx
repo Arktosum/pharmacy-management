@@ -8,6 +8,7 @@ import {
 } from "../redux/stockSlice";
 import "react-toastify/dist/ReactToastify.css";
 import { setState } from "../components/Utils";
+import moment from "moment";
 
 function sortStockItems(
   stockData: StockItem[],
@@ -29,6 +30,10 @@ function sortStockItems(
         return filter.order == "asc"
           ? a.name.localeCompare(b.name)
           : b.name.localeCompare(a.name);
+      case "updatedAt":
+        return filter.order == "asc"
+          ? a.updatedAt.localeCompare(b.updatedAt)
+          : b.updatedAt.localeCompare(a.updatedAt);
       default:
         return -1;
     }
@@ -103,6 +108,7 @@ function StockModal({
     const payload: StockItem = {
       name: data.name.toUpperCase(),
       count: parseInt(data.count),
+      updatedAt : data.updatedAt,
       remarks: data.remarks,
       price: parseInt(data.price),
       id: selectedItem.id,
@@ -251,11 +257,11 @@ function SearchSection({
         <option value="name">Name</option>
         <option value="remarks">100ml</option>
         <option value="price">Price</option>
+        <option value="updatedAt">Updated</option>
       </select>
       <select
-      className="my-2 px-5 py-2 rounded-xl text-[#f2ff00] bg-[#212121]"
+        className="my-2 px-5 py-2 rounded-xl text-[#f2ff00] bg-[#212121]"
         onChange={(e) => {
-        
           setFilter((prev) => {
             return { ...prev, order: e.target.value };
           });
@@ -292,11 +298,12 @@ function StockTable(props: StockTableProps) {
   });
   return (
     <>
-      <div className="grid grid-cols-4 bg-slate-900 p-5 text-center">
+      <div className="grid grid-cols-5 bg-slate-900 p-5 text-center">
         <div className="text-white text-lg font-bold">Name</div>
         <div className="text-white text-lg font-bold">30ml</div>
         <div className="text-white text-lg font-bold">100ml</div>
         <div className="text-white text-lg font-bold">Price</div>
+        <div className="text-white text-lg font-bold">UpdateAt</div>
       </div>
       <div className="h-[50vh] overflow-y-auto">{rowElements}</div>
     </>
@@ -319,7 +326,7 @@ function StockRowItem({
         setselectedItem(item);
         setshowModal(true);
       }}
-      className="grid grid-cols-4 text-md hover:bg-[#252525] duration-200 rounded-md p-5 cursor-pointer text-center"
+      className="grid grid-cols-5 text-md hover:bg-[#252525] duration-200 rounded-md p-5 cursor-pointer text-center"
     >
       <div className="text-yellow-300 text-md font-bold">{item.name}</div>
       <div
@@ -334,6 +341,7 @@ function StockRowItem({
       </div>
       <div className="text-white text-md font-bold">{item.remarks}</div>
       <div className="text-yellow-300 text-md font-bold">{item.price}</div>
+      <div className="text-yellow-300 text-md font-bold">{moment(new Date(parseInt(item.updatedAt))).format("YYYY-MM-DD || HH:mm:ss")}</div>
     </div>
   );
 }

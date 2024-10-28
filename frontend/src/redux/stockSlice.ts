@@ -18,6 +18,7 @@ export const fetchStock = createAsyncThunk('data/fetchStock', async () => {
     throw error;
   }
 });
+
 export const createStockItem = createAsyncThunk('data/createStockItem', async (medicineName: string) => {
   try {
     const response = await axios.post(context + "/", { name: medicineName });
@@ -70,11 +71,12 @@ export const deleteStockItem = createAsyncThunk('data/deleteStockItem', async (i
 
 
 export type StockItem = {
+  id: string,
   name: string,
   remarks: string,
+  updatedAt: string,
   count: number,
   price: number,
-  id: string,
   limit: number,
 }
 
