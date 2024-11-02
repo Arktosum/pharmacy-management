@@ -22,9 +22,6 @@ app.get("/", (req, res) => {
   res.send("<h1>Welcome to the backend!</h1>");
 });
 
-
-
-
 app.listen(PORT, () => {
   console.log(`listening on port | http://localhost:${PORT}`);
 });

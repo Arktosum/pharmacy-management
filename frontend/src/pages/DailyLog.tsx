@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ORIGIN, isBetween } from "../components/Utils";
+import { ORIGIN, isBetween, setState } from "../components/Utils";
 import "handsontable/dist/handsontable.full.min.css";
 import { registerAllModules } from "handsontable/registry";
 import { HyperFormula } from "hyperformula";
@@ -12,13 +12,22 @@ registerAllModules();
 import { HotTable } from "@handsontable/react";
 import axios from "axios";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { LogItem } from "../redux/logSlice";
+import {
+  deleteLogItem,
+  LogItem,
+  StockLog,
+  updateLogItem,
+} from "../redux/logSlice";
 import moment from "moment";
+import { updateStockCount } from "../redux/stockSlice";
 
 export default function LogData() {
   const [excelData, setexcelData] = useState<[[string], [string]] | []>([]);
   const [selectedDate, setselectedDate] = useState("");
   const currentDate = moment().format("YYYY-MM-DD");
+
+  const [showModal, setshowModal] = useState(false);
+  const [selectedItem, setselectedItem] = useState<LogItem | null>(null);
 
   const dispatch = useAppDispatch();
   useEffect(() => {
@@ -52,6 +61,10 @@ export default function LogData() {
       <div
         key={item.id}
         className="grid grid-cols-4 gap-5  hover:bg-slate-700 duration-200 cursor-pointer text-center"
+        onClick={() => {
+          setselectedItem(item);
+          setshowModal(true);
+        }}
       >
         <div className="text-yellow-300 text-[1em]">
           {item.data.patientName}
@@ -77,6 +90,7 @@ export default function LogData() {
     const response = await axios.post(ORIGIN + "/excels/", [...excelData]);
     setexcelData(response.data);
   }
+
   return (
     <div className="h-[90vh] bg-black flex">
       <div className="w-[25vw] h-full overflow-auto">
@@ -121,6 +135,13 @@ export default function LogData() {
           licenseKey="non-commercial-and-evaluation" // for non-commercial use only
         />
       </div>
+      {showModal && selectedItem && (
+        <Modal
+          selectedItem={selectedItem}
+          setselectedItem={setselectedItem}
+          setshowModal={setshowModal}
+        />
+      )}
       <div className="w-[80vw] h-full">
         <input
           type="date"
@@ -151,5 +172,137 @@ export default function LogData() {
         </div>
       </div>
     </div>
+  );
+}
+
+interface ModalProps {
+  selectedItem: LogItem;
+  setselectedItem: setState<LogItem | null>;
+  setshowModal: setState<boolean>;
+}
+
+function Modal({ selectedItem, setselectedItem, setshowModal }: ModalProps) {
+  let feeTotal = 0;
+  let MTTotal = 0;
+  let itemCount = 0;
+  MTTotal = selectedItem.data.MTtotal;
+  itemCount = selectedItem.data.itemCount;
+  feeTotal = selectedItem.data.consultFee;
+
+  const dispatch = useAppDispatch();
+
+  function undoItem(logItem: LogItem, stockItem: StockLog) {
+    const choice = prompt("Sure to undo? (y/n)");
+    if (choice && choice.toLowerCase() !== "y") return;
+    dispatch(updateStockCount({ items: [stockItem], type: "UNDO" })); // use UpdateMany since it re-uses code.
+
+    const newlogItem = {
+      ...logItem,
+      data: {
+        ...logItem.data, // Patient name doesn't change
+        itemCount: logItem.data.itemCount - stockItem.multiplier,
+        MTtotal: logItem.data.MTtotal - stockItem.price * stockItem.multiplier,
+        medicines: logItem.data.medicines.filter(
+          (item) => item.id != stockItem.id
+        ),
+      },
+    };
+    if (newlogItem.data.medicines.length == 0) {
+      dispatch(deleteLogItem(newlogItem));
+    } else {
+      dispatch(updateLogItem(newlogItem));
+    }
+    setselectedItem(null);
+    setshowModal(false);
+  }
+  const infoItems = selectedItem
+    ? selectedItem.data.medicines.map((item: StockLog) => {
+        return (
+          <ModalInfoItem
+            undoItem={undoItem}
+            item={item}
+            selectedItem={selectedItem}
+          />
+        );
+      })
+    : [];
+
+  return (
+    <>
+      <div className="w-full h-full bg-[#000000a0] absolute flex justify-center items-center">
+        <div className="bg-gray-800 h-[75%] w-[75%] rounded-lg">
+          <div className="grid grid-cols-4 bg-slate-900 place-items-center rounded-lg text-xl">
+            <div className="text-orange-400 uppercase text-md font-bold">
+              Name
+            </div>
+            <div className="text-orange-400 uppercase text-md font-bold">
+              Multiplier
+            </div>
+            <div className="text-orange-400 uppercase text-md font-bold">
+              Price
+            </div>
+            <div
+              onClick={() => {
+                setselectedItem(null);
+                setshowModal(false);
+              }}
+              className="text-green-600  uppercase px-5 py-5 m-5 border-2 border-green-600 rounded-xl hover:bg-green-600 duration-200 hover:text-white text-center cursor-pointer"
+            >
+              Cancel
+            </div>
+          </div>
+          <div className="h-[50vh] overflow-y-auto flex flex-col gap-5">
+            {infoItems}
+          </div>
+          <div className="grid grid-cols-4 place-items-center">
+            <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+              Item Count: <span className="text-green-300 ">{itemCount}</span>
+            </div>
+            <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+              Fee Total: <span className="text-green-300">{feeTotal}</span>
+            </div>
+            <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+              MT Total: <span className="text-green-300">{MTTotal}</span>
+            </div>
+            <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+              Grand Total:{" "}
+              <span className="text-green-300">{feeTotal + MTTotal}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+interface ModalInfoItemProps {
+  item: StockLog;
+  selectedItem: LogItem;
+  undoItem: (logItem: LogItem, stockItem: StockLog) => void;
+}
+function ModalInfoItem({ item, selectedItem, undoItem }: ModalInfoItemProps) {
+  return (
+    <>
+      <div
+        key={item.id}
+        className="grid grid-cols-4 duration-200 h-[8%] rounded-md cursor-pointer place-items-center"
+      >
+        <div className="text-yellow-300 text-md font-bold">{item.name}</div>
+        <div className="text-blue-400 text-[1.2em] font-bold">
+          {item.multiplier}
+        </div>
+        <div className="text-green-400 text-[1.2em] font-bold">
+          {item.price}
+        </div>
+        <div
+          onClick={() => {
+            undoItem(selectedItem, item);
+          }}
+          className="text-red-600 uppercase px-5 py-2 border-2 border-red-600 rounded-xl hover:bg-red-600 duration-200 hover:text-black text-center cursor-pointer"
+        >
+          undo
+        </div>
+      </div>
+    </>
   );
 }
