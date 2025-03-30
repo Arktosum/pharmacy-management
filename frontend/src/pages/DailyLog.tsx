@@ -25,7 +25,7 @@ export default function LogData() {
   const [excelData, setexcelData] = useState<[[string], [string]] | []>([]);
   const [selectedDate, setselectedDate] = useState("");
   const currentDate = moment().format("YYYY-MM-DD");
-
+  const [selectedID, setSelectedID] = useState<Set<string>>(new Set());
   const [showModal, setshowModal] = useState(false);
   const [selectedItem, setselectedItem] = useState<LogItem | null>(null);
 
@@ -44,7 +44,6 @@ export default function LogData() {
   LogData = LogData.sort(
     (a: LogItem, b: LogItem) => parseInt(a.id) - parseInt(b.id)
   );
-
   let grandMTtotal = 0;
   let grandFeeTotal = 0;
   let grandTotal = 0;
@@ -54,14 +53,19 @@ export default function LogData() {
     for (const medicine of item.data.medicines) {
       mtTotal += medicine.price * medicine.multiplier;
     }
-    grandMTtotal += mtTotal;
-    grandFeeTotal += item.data.consultFee;
-    grandTotal += item.data.consultFee + mtTotal;
+
+    if (!selectedID.has(item.id)) {
+      // Only add if not present!
+      grandMTtotal += mtTotal;
+      grandFeeTotal += item.data.consultFee;
+      grandTotal += item.data.consultFee + mtTotal;
+    }
     return (
       <div
         key={item.id}
-        className="grid grid-cols-4 gap-5  hover:bg-slate-700 duration-200 cursor-pointer text-center"
-        onClick={() => {
+        className="grid grid-cols-5 gap-5  hover:bg-slate-700 duration-200 cursor-pointer text-center"
+        onClick={(e: React.MouseEvent<HTMLInputElement>) => {
+          e.stopPropagation();
           setselectedItem(item);
           setshowModal(true);
         }}
@@ -74,6 +78,25 @@ export default function LogData() {
         <div className="text-green-300 text-[1em]">
           {item.data.consultFee + mtTotal}
         </div>
+        <input
+          onClick={(e: React.MouseEvent<HTMLInputElement>) => {
+            e.stopPropagation();
+            const isChecked: boolean = e.target.checked;
+            if (isChecked) {
+              // Should be considered.
+              setSelectedID((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(item.id);
+                return newSet;
+              });
+            } else {
+              // should not be considered.
+              setSelectedID((prev) => new Set(prev).add(item.id));
+            }
+          }}
+          type="checkbox"
+          defaultChecked={true}
+        />
       </div>
     );
   });
@@ -151,11 +174,12 @@ export default function LogData() {
           onChange={(e) => setselectedDate(e.target.value)}
           className="my-2 px-5 py-2 rounded-xl text-[#00ff00] bg-[#212121]"
         />
-        <div className="bg-slate-900 grid grid-cols-4 py-5 text-center">
+        <div className="bg-slate-900 grid grid-cols-5 py-5 text-center">
           <div className="text-white">Name</div>
           <div className="text-white">MT Total</div>
           <div className="text-white">Fee</div>
           <div className="text-white">Grand Total</div>
+          <div className="text-white">Select</div>
         </div>
         <div className="h-[60vh] overflow-y-auto">{rowData}</div>
         <div className="grid grid-cols-4 my-10 bg-slate-900 py-2 p-2 text-center">

@@ -8,6 +8,12 @@ export const store = configureStore({
         stocks: stockSlice,
         logs: logSlice
     },
+    // Removing default checks for better performance in development mode!
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+            immutableCheck: false,
+            serializableCheck: false,
+        }),
 })
 
 export type RootState = ReturnType<typeof store.getState>
