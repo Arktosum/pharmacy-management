@@ -1,11 +1,11 @@
 export const deleteSVG = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      fill="rgb(237, 149, 151)"
+      fill="rgb(255, 0, 0)"
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="black"
-      className="w-6 h-6"
+      className="w-3 h-3"
     >
       <path
         strokeLinecap="round"

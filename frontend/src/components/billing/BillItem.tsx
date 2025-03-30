@@ -70,7 +70,7 @@ export function BillItem({ props }: { props: BillItemProps }) {
           setbillingState({ ...billingState });
         }}
       >
-        {deleteSVG}
+        <div className="bg-red-600 w-5 h-5 rounded-full"></div>
       </div>
     </div>
   );
