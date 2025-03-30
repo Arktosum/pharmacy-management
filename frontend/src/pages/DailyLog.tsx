@@ -182,7 +182,7 @@ export default function LogData() {
           <div className="text-white">Select</div>
         </div>
         <div className="h-[60vh] overflow-y-auto">{rowData}</div>
-        <div className="grid grid-cols-4 my-10 bg-slate-900 py-2 p-2 text-center">
+        <div className="grid grid-cols-5 my-10 bg-slate-900 py-2 p-2 text-center">
           <div className="text-yellow-300 text-[1.2em]">Total</div>
           <div className="text-orange-300 text-[1.2em]">
             {grandMTtotal.toLocaleString("hi-in")}
