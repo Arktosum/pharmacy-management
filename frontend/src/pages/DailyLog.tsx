@@ -84,8 +84,8 @@ export default function LogData() {
         </div>
         <div
           className={`w-7 h-7 ${
-            isConsidered ? "bg-red-600" : "bg-white"
-          }  rounded-xl`}
+            isConsidered ? "bg-[#bfefa7]" : "bg-[#e6a2d5]"
+          }  rounded-sm`}
           onClick={(e: React.MouseEvent<HTMLInputElement>) => {
             e.stopPropagation();
             if (!isConsidered) {
@@ -185,7 +185,7 @@ export default function LogData() {
           <div className="text-white">Grand Total</div>
           <div className="text-white">Select</div>
         </div>
-        <div className="h-[60vh] overflow-y-auto">{rowData}</div>
+        <div className="h-[60vh] overflow-y-auto flex flex-col gap-2">{rowData}</div>
         <div className="grid grid-cols-5 my-10 bg-slate-900 py-2 p-2 text-center">
           <div className="text-yellow-300 text-[1.2em]">Total</div>
           <div className="text-orange-300 text-[1.2em]">
