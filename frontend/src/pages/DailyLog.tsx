@@ -28,7 +28,7 @@ export default function LogData() {
   const [selectedID, setSelectedID] = useState<Set<string>>(new Set());
   const [showModal, setshowModal] = useState(false);
   const [selectedItem, setselectedItem] = useState<LogItem | null>(null);
-
+  const [filteredLogData, setFilteredLogData] = useState<LogItem[]>([]);
   const dispatch = useAppDispatch();
   useEffect(() => {
     setselectedDate(currentDate);
@@ -37,24 +37,28 @@ export default function LogData() {
     });
   }, [currentDate, dispatch]);
 
-  let LogData: LogItem[] = useAppSelector((state) => state.logs.data);
-  LogData = LogData.filter((item) =>
-    isBetween(selectedDate, selectedDate, item.id)
-  );
-  LogData = LogData.sort(
-    (a: LogItem, b: LogItem) => parseInt(a.id) - parseInt(b.id)
-  );
+  const LogData: LogItem[] = useAppSelector((state) => state.logs.data);
+  useEffect(() => {
+    let new_data = LogData.filter((item) =>
+      isBetween(selectedDate, selectedDate, item.id)
+    );
+    new_data = new_data.sort(
+      (a: LogItem, b: LogItem) => parseInt(a.id) - parseInt(b.id)
+    );
+    setFilteredLogData(new_data);
+  }, [LogData, selectedDate]);
+  
   let grandMTtotal = 0;
   let grandFeeTotal = 0;
   let grandTotal = 0;
 
-  const rowData = LogData.map((item) => {
+  const rowData = filteredLogData.map((item) => {
     let mtTotal = 0;
     for (const medicine of item.data.medicines) {
       mtTotal += medicine.price * medicine.multiplier;
     }
-
-    if (!selectedID.has(item.id)) {
+    const isConsidered = !selectedID.has(item.id);
+    if (isConsidered) {
       // Only add if not present!
       grandMTtotal += mtTotal;
       grandFeeTotal += item.data.consultFee;
@@ -63,7 +67,7 @@ export default function LogData() {
     return (
       <div
         key={item.id}
-        className="grid grid-cols-5 gap-5  hover:bg-slate-700 duration-200 cursor-pointer text-center"
+        className="grid grid-cols-5 gap-5 place-items-center hover:bg-slate-700 duration-200 cursor-pointer text-center"
         onClick={(e: React.MouseEvent<HTMLInputElement>) => {
           e.stopPropagation();
           setselectedItem(item);
@@ -78,11 +82,13 @@ export default function LogData() {
         <div className="text-green-300 text-[1em]">
           {item.data.consultFee + mtTotal}
         </div>
-        <input
+        <div
+          className={`w-7 h-7 ${
+            isConsidered ? "bg-red-600" : "bg-white"
+          }  rounded-xl`}
           onClick={(e: React.MouseEvent<HTMLInputElement>) => {
             e.stopPropagation();
-            const isChecked: boolean = e.target.checked;
-            if (isChecked) {
+            if (!isConsidered) {
               // Should be considered.
               setSelectedID((prev) => {
                 const newSet = new Set(prev);
@@ -94,8 +100,6 @@ export default function LogData() {
               setSelectedID((prev) => new Set(prev).add(item.id));
             }
           }}
-          type="checkbox"
-          defaultChecked={true}
         />
       </div>
     );
