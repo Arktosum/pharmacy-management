@@ -117,6 +117,22 @@ export default function Navbar() {
           Rx count
         </div>
       </Link>
+
+      <Link to="/medicineMapper">
+        <div
+          onClick={() => {
+            setselected("medicineMapper");
+          }}
+          className={`${
+            selected == "medicineMapper"
+              ? "text-white animate-pulse"
+              : "text-green-500"
+          } text-xl text-bold hover:text-blue-500 duration-200 font-extrabold`}
+        >
+          Mapper
+        </div>
+      </Link>
+
     </div>
   );
 }

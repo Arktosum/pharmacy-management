@@ -1,10 +1,20 @@
-const express = require("express");
-const moment = require("moment");
-const fs = require("fs");
-const { readJSON, writeJSON } = require("../utils");
+
+import express from 'express'
+import moment from 'moment';
+import { readJSON, writeJSON } from './utils';
 
 const router = express.Router();
 const filePath = "./databases/logs.json";
+
+
+interface LogItem {
+  id: string,
+  type: string,
+  data: {
+    medicines: { multiplier: number }[]
+  }
+}
+
 
 // GET all items
 router.get("/", (req, res) => {
@@ -22,7 +32,7 @@ function isBetween(from, to, current) {
 
 router.get("/dailyCount", (req, res) => {
   readJSON(filePath, (items) => {
-    LogData = Object.values(items);
+    let LogData = Object.values(items) as LogItem[];
     let dailyCount = 0;
     const currentDate = moment().format("YYYY-MM-DD");
     for (const logItem of LogData) {
@@ -40,7 +50,7 @@ router.get("/dailyCount", (req, res) => {
 router.post("/", (req, res) => {
   let item = req.body;
   readJSON(filePath, (items) => {
-    let newItem = {};
+    let newItem = {} as LogItem;
     let id = Date.now().toString(); // Generate unique ID as string
     newItem.id = id;
     newItem.type = item.type;
@@ -74,9 +84,10 @@ router.delete("/:id", (req, res) => {
   readJSON(filePath, (items) => {
     items = items.filter(item => item.id !== itemId);
     writeJSON(filePath, items, () => {
-      res.status(200).json({id : itemId});
+      res.status(200).json({ id: itemId });
     });
   });
 });
 
-module.exports = router;
+
+export default router;

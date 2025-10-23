@@ -1,6 +1,6 @@
-const express = require("express");
-const fs = require("fs");
-const { readJSON, writeJSON } = require("../utils");
+
+import express from 'express'
+import { readJSON, writeJSON } from './utils';
 
 const router = express.Router();
 const filePath = "./databases/excel.json";
@@ -19,6 +19,9 @@ router.post("/", (req, res) => {
     res.status(201).json(db);
   });
 });
+
+
+export default router;
 
 // // PUT update item by ID
 // router.put("/", (req, res) => {
@@ -56,5 +59,3 @@ router.post("/", (req, res) => {
 //     });
 //   });
 // });
-
-module.exports = router;

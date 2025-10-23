@@ -1,6 +1,18 @@
-const express = require("express");
-const fs = require("fs");
-const { readJSON, writeJSON } = require("../utils");
+
+import express from 'express'
+import { readJSON, writeJSON } from './utils';
+
+
+interface StockItem {
+  count: number,
+  price: number,
+  remarks: string,
+  updatedAt: string,
+  name: string,
+  id: string,
+  limit: number
+}
+
 
 const router = express.Router();
 const filePath = "./databases/stock.json";
@@ -15,7 +27,7 @@ router.get("/", (req, res) => {
 // POST new item
 router.post("/", (req, res) => {
   readJSON(filePath, (items) => {
-    let newItem = {};
+    let newItem = {} as StockItem
     let id = Date.now().toString(); // Generate unique ID as string
 
     newItem.count = 0;
@@ -81,7 +93,7 @@ router.put("/count/many/:type", (req, res) => {
   readJSON(filePath, (items) => {
     for (let newItem of newItems) {
       let itemIndex = items.findIndex((item) => item.id === newItem.id);
-      items[itemIndex].count += newItem.multiplier*(type == 'UNDO' ? 1 : -1);
+      items[itemIndex].count += newItem.multiplier * (type == 'UNDO' ? 1 : -1);
     }
     writeJSON(filePath, items, () => {
       res.status(200).json(items);
@@ -100,4 +112,4 @@ router.delete("/:id", (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;
