@@ -1,15 +1,6 @@
 import { useEffect, useState } from "react";
 import { ORIGIN, isBetween, setState } from "../components/Utils";
-import "handsontable/dist/handsontable.full.min.css";
-import { registerAllModules } from "handsontable/registry";
-import { HyperFormula } from "hyperformula";
 
-const hyperformulaInstance = HyperFormula.buildEmpty({
-  licenseKey: "internal-use-in-handsontable",
-});
-
-registerAllModules();
-import { HotTable } from "@handsontable/react";
 import axios from "axios";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import {
@@ -21,6 +12,69 @@ import {
 import moment from "moment";
 import { updateStockCount } from "../redux/stockSlice";
 
+function ExcelColumns({ excelData, setexcelData }) {
+  function updateColumns(row, col, val) {
+    excelData[row][col] = val;
+    axios.post(ORIGIN + "/excels/", excelData).then((response) => {
+      setexcelData(response.data);
+    });
+  }
+
+  let sum1: number = 0;
+  for (const item of excelData) {
+    if (item[1] == "") continue;
+    sum1 += parseInt(item[1]);
+  }
+  const numRows = 50;
+  const rows0 = [
+    <div
+      key={-2}
+      className="bg-red-300 border-gray-300 w-[15vw] border-[1px] font-extrabold"
+    >
+      Name
+    </div>,
+  ];
+  const rows1 = [
+    <div
+      key={-1}
+      className="bg-yellow-300 border-gray-300 w-[3.9vw] border-[0.5px] font-extrabold"
+    >
+      {sum1}
+    </div>,
+  ];
+  for (let i = 0; i < numRows; i++) {
+    rows0.push(
+      <input
+        key={i}
+        className="bg-[#d2fafc] border-gray-300  w-[15vw] border-[0.5px] font-extrabold"
+        onChange={(e) => {
+          updateColumns(i, 0, e.target.value);
+        }}
+        value={excelData[i][0]}
+      />
+    );
+  }
+
+  for (let i = 0; i < numRows; i++) {
+    rows1.push(
+      <input
+        key={i}
+        className="bg-[#d2fafc] border-gray-300 w-[3.9vw] border-[0.5px] font-extrabold"
+        onChange={(e) => {
+          updateColumns(i, 1, e.target.value);
+        }}
+        value={excelData[i][1]}
+      />
+    );
+  }
+
+  return (
+    <div className="flex w-full ">
+      <div>{rows0}</div>
+      <div>{rows1}</div>
+    </div>
+  );
+}
 export default function LogData() {
   const [excelData, setexcelData] = useState<[[string], [string]] | []>([]);
   const [selectedDate, setselectedDate] = useState("");
@@ -47,7 +101,7 @@ export default function LogData() {
     );
     setFilteredLogData(new_data);
   }, [LogData, selectedDate]);
-  
+
   let grandMTtotal = 0;
   let grandFeeTotal = 0;
   let grandTotal = 0;
@@ -104,63 +158,12 @@ export default function LogData() {
       </div>
     );
   });
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function updateExcel(changes: any, source: string) {
-    if (source === "loadData") return;
-    if (changes == null) return;
-
-    for (const change of changes) {
-      const [x, y, , to] = change;
-      excelData[x][y] = to;
-    }
-    const response = await axios.post(ORIGIN + "/excels/", [...excelData]);
-    setexcelData(response.data);
-  }
-
   return (
     <div className="h-[90vh] bg-black flex">
-      <div className="w-[25vw] h-full overflow-auto">
-        <HotTable
-          data={excelData}
-          rowHeaders={true}
-          colHeaders={true}
-          height="auto"
-          className="custom-table"
-          comments={true}
-          stretchH="all"
-          rowHeights={20}
-          formulas={{
-            engine: hyperformulaInstance,
-          }}
-          cell={[
-            {
-              row: 40,
-              col: 1,
-              className: "custom-cell",
-            },
-            {
-              row: 0,
-              col: 0,
-              className: "custom-cell-2",
-            },
-            {
-              row: 0,
-              col: 1,
-              className: "custom-cell",
-            },
-          ]}
-          manualRowResize={true}
-          manualColumnResize={true}
-          copyPaste={{
-            copyColumnHeaders: true,
-            copyColumnGroupHeaders: true,
-            copyColumnHeadersOnly: true,
-          }}
-          contextMenu={true}
-          afterChange={updateExcel}
-          licenseKey="non-commercial-and-evaluation" // for non-commercial use only
-        />
+      <div className="w-[20vw] h-full overflow-y-auto borderize overflow-x-clip">
+        {excelData.length > 0 && (
+          <ExcelColumns excelData={excelData} setexcelData={setexcelData} />
+        )}
       </div>
       {showModal && selectedItem && (
         <Modal
@@ -185,7 +188,9 @@ export default function LogData() {
           <div className="text-white">Grand Total</div>
           <div className="text-white">Select</div>
         </div>
-        <div className="h-[60vh] overflow-y-auto flex flex-col gap-2">{rowData}</div>
+        <div className="h-[60vh] overflow-y-auto flex flex-col gap-2">
+          {rowData}
+        </div>
         <div className="grid grid-cols-5 my-10 bg-slate-900 py-2 p-2 text-center">
           <div className="text-yellow-300 text-[1.2em]">Total</div>
           <div className="text-orange-300 text-[1.2em]">
