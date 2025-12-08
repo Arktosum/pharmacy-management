@@ -28,7 +28,7 @@ function ExcelColumns({ excelData, setexcelData }) {
       .join("\n");
 
     navigator.clipboard.writeText(tsvData).then(() => {
-      toast.success("40x2 data copied to clipboard! Paste into Excel (Ctrl+V)");
+      toast.success("Data Copied to clipboard!");
     });
   };
 
@@ -90,7 +90,7 @@ function ExcelColumns({ excelData, setexcelData }) {
     rows0.push(
       <input
         key={i}
-        className="bg-[#d2fcef] border-gray-300 w-[15vw] border-[0.5px] font-extrabold"
+        className="bg-[#fae8d7] border-gray-300 w-[15vw] border-[0.5px] font-extrabold"
         onChange={(e) => updateColumns(i, 0, e.target.value)}
         value={excelData[i]?.[0] || ""}
       />
@@ -114,7 +114,7 @@ function ExcelColumns({ excelData, setexcelData }) {
     rows1.push(
       <input
         key={i}
-        className="bg-[#d2fcef] border-gray-300 w-[3.9vw] border-[0.5px] font-extrabold"
+        className="bg-[#fae8d7] border-gray-300 w-[3.9vw] border-[0.5px] font-extrabold"
         onChange={(e) => updateColumns(i, 1, e.target.value)}
         value={excelData[i]?.[1] || ""}
       />
