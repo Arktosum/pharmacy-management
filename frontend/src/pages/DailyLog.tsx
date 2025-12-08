@@ -11,6 +11,7 @@ import {
 } from "../redux/logSlice";
 import moment from "moment";
 import { updateStockCount } from "../redux/stockSlice";
+import { toast } from "react-toastify";
 
 function ExcelColumns({ excelData, setexcelData }) {
   function updateColumns(row, col, val) {
@@ -20,12 +21,41 @@ function ExcelColumns({ excelData, setexcelData }) {
     });
   }
 
+  const copyToExcel = () => {
+    const tsvData = excelData
+      .slice(0, 40)
+      .map((row) => `${row[0] || ""}\t${row[1] || ""}`)
+      .join("\n");
+
+    navigator.clipboard.writeText(tsvData).then(() => {
+      toast.success("40x2 data copied to clipboard! Paste into Excel (Ctrl+V)");
+    });
+  };
+
+  // Clear ONLY rows 0-39 (40 rows), leave 40-49 untouched
+  const clearMainData = () => {
+    const clearedData = [...excelData];
+    for (let i = 0; i < 40; i++) {
+      // Only first 40 rows
+      clearedData[i][0] = "";
+      clearedData[i][1] = "";
+    }
+    // Rows 40-49 remain unchanged
+
+    axios.post(ORIGIN + "/excels/", clearedData).then((response) => {
+      setexcelData(response.data);
+    });
+  };
+
   let sum1: number = 0;
-  for (const item of excelData) {
-    if (item[1] == "") continue;
-    sum1 += parseInt(item[1]);
+  // Only sum rows 0-39 (exclude preview rows 40-49)
+  for (let i = 0; i < 40; i++) {
+    if (excelData[i]?.[1] == "") continue;
+    sum1 += parseInt(excelData[i][1]);
   }
-  const numRows = 50;
+
+  const numRows = 40;
+  const previewRows = 10;
   const rows0 = [
     <div
       key={-2}
@@ -42,39 +72,79 @@ function ExcelColumns({ excelData, setexcelData }) {
       {sum1}
     </div>,
   ];
+
+  // Rows 0-39: Main data (saved, copied, cleared)
   for (let i = 0; i < numRows; i++) {
     rows0.push(
       <input
         key={i}
-        className="bg-[#d2fafc] border-gray-300  w-[15vw] border-[0.5px] font-extrabold"
-        onChange={(e) => {
-          updateColumns(i, 0, e.target.value);
-        }}
-        value={excelData[i][0]}
+        className="bg-[#d2fafc] border-gray-300 w-[15vw] border-[0.5px] font-extrabold"
+        onChange={(e) => updateColumns(i, 0, e.target.value)}
+        value={excelData[i]?.[0] || ""}
       />
     );
   }
 
+  // Rows 40-49: Preview (saved, NOT copied, NOT cleared)
+  for (let i = 40; i < 40 + previewRows; i++) {
+    rows0.push(
+      <input
+        key={i}
+        className="bg-[#d2fcef] border-gray-300 w-[15vw] border-[0.5px] font-extrabold"
+        onChange={(e) => updateColumns(i, 0, e.target.value)}
+        value={excelData[i]?.[0] || ""}
+      />
+    );
+  }
+
+  // Rows 0-39: Main data (saved, copied, cleared)
   for (let i = 0; i < numRows; i++) {
     rows1.push(
       <input
         key={i}
         className="bg-[#d2fafc] border-gray-300 w-[3.9vw] border-[0.5px] font-extrabold"
-        onChange={(e) => {
-          updateColumns(i, 1, e.target.value);
-        }}
-        value={excelData[i][1]}
+        onChange={(e) => updateColumns(i, 1, e.target.value)}
+        value={excelData[i]?.[1] || ""}
+      />
+    );
+  }
+
+  // Rows 40-49: Preview (saved, NOT copied, NOT cleared)
+  for (let i = 40; i < 40 + previewRows; i++) {
+    rows1.push(
+      <input
+        key={i}
+        className="bg-[#d2fcef] border-gray-300 w-[3.9vw] border-[0.5px] font-extrabold"
+        onChange={(e) => updateColumns(i, 1, e.target.value)}
+        value={excelData[i]?.[1] || ""}
       />
     );
   }
 
   return (
-    <div className="flex w-full ">
-      <div>{rows0}</div>
-      <div>{rows1}</div>
+    <div className="flex flex-col gap-2 w-full">
+      <div className="flex gap-2 p-2 bg-gray-100 rounded">
+        <button
+          onClick={copyToExcel}
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-bold"
+        >
+          📋 Copy to Excel
+        </button>
+        <button
+          onClick={clearMainData}
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-bold"
+        >
+          🗑️ Clear Data
+        </button>
+      </div>
+      <div className="flex w-full">
+        <div>{rows0}</div>
+        <div>{rows1}</div>
+      </div>
     </div>
   );
 }
+
 export default function LogData() {
   const [excelData, setexcelData] = useState<[[string], [string]] | []>([]);
   const [selectedDate, setselectedDate] = useState("");
