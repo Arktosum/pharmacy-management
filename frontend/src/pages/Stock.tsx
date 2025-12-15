@@ -108,7 +108,7 @@ function StockModal({
     const payload: StockItem = {
       name: data.name.toUpperCase(),
       count: parseInt(data.count),
-      updatedAt : data.updatedAt,
+      updatedAt: data.updatedAt,
       remarks: data.remarks,
       price: parseInt(data.price),
       id: selectedItem.id,
@@ -122,62 +122,84 @@ function StockModal({
     <div className="w-full h-full bg-[#000000a0] absolute flex justify-center items-center z-10">
       <div className="bg-gray-800 w-[50%] p-5 rounded-xl border-gray-600 border-2">
         <form
-          className="grid grid-cols-2 gap-5 text-center"
+          className=""
           onSubmit={(e) => {
             updateStock(e);
           }}
         >
-          <div className="text-yellow-300 text-xl uppercase">Name </div>
-          <input
-            type="text"
-            name="name"
-            className="px-5 py-2 text-yellow-300 text-[1.2em] bg-black"
-            defaultValue={selectedItem.name}
-            required
-          />
-          <div className="text-yellow-300 text-xl uppercase">30ml STOCK</div>
-          <input
-            type="number"
-            name="count"
-            className="px-5 py-2 text-yellow-300 text-[1.2em] no-arrow bg-black"
-            defaultValue={selectedItem.count}
-            required
-          />
-          <div className="text-yellow-300 text-xl uppercase">100ml PRICE</div>
-          <input
-            type="text"
-            name="remarks"
-            className="px-5 py-2 text-green-300 text-[1.2em] no-arrow bg-black"
-            defaultValue={selectedItem.remarks}
-            required
-          />
-          <div className="text-yellow-300 text-xl uppercase">Price 30ml</div>
-          <input
-            type="number"
-            name="price"
-            className="px-5 py-2 text-yellow-300 no-arrow text-[1.2em] bg-black"
-            defaultValue={selectedItem.price}
-            required
-          />
-          <div className="text-yellow-300 text-xl uppercase">Limit </div>
-          <input
-            type="number"
-            name="limit"
-            className="px-5 py-2 text-yellow-300 no-arrow text-[1.2em] bg-black"
-            defaultValue={selectedItem.limit}
-            required
-          />
-          <div
-            onClick={() => {
-              deleteStock();
-            }}
-            className="text-red-600 uppercase px-5 py-2 border-2 border-red-600 rounded-xl hover:bg-red-600 duration-200 hover:text-black cursor-pointer"
-          >
-            delete
+          <div className="grid grid-cols-2 gap-5 text-center my-5">
+            <div className="grid grid-cols-2 gap-5 text-center ">
+              <div className="text-yellow-300 text-xl uppercase">Name </div>
+              <input
+                type="text"
+                name="name"
+                className="px-5 py-2 text-yellow-300 text-[1.2em] bg-black"
+                defaultValue={selectedItem.name}
+                required
+              />
+              <div className="text-yellow-300 text-xl uppercase">
+                30ml STOCK
+              </div>
+              <input
+                type="number"
+                name="count"
+                className="px-5 py-2  text-yellow-300 text-[1.2em] no-arrow bg-black"
+                defaultValue={selectedItem.count}
+                required
+              />
+              {/* <div className="text-yellow-300 text-xl uppercase">
+                100ml PRICE
+              </div>
+               <input
+                type="text"
+                name="remarks"
+                className="px-5 py-2 text-green-300 text-[1.2em] no-arrow bg-black"
+                defaultValue={selectedItem.remarks}
+                required
+              /> */}
+              <div className="text-yellow-300 text-xl uppercase">
+                Price 30ml
+              </div>
+              <input
+                type="number"
+                name="price"
+                className="px-5 py-2 text-yellow-300 no-arrow text-[1.2em] bg-black"
+                defaultValue={selectedItem.price}
+                required
+              />
+              <div className="text-yellow-300 text-xl uppercase">Limit </div>
+              <input
+                type="number"
+                name="limit"
+                className="px-5 py-2 text-yellow-300 no-arrow text-[1.2em] bg-black"
+                defaultValue={selectedItem.limit}
+                required
+              />
+            </div>
+            <div>
+              <textarea
+                rows={10}
+                className="px-5 py-2 text-green-300 text-[1.2em] no-arrow bg-black"
+                defaultValue={selectedItem.remarks}
+                required
+                name="remarks"
+                id=""
+              ></textarea>
+            </div>
           </div>
-          <button className="text-green-600 uppercase px-5 py-2 border-2 border-green-600 rounded-xl hover:bg-green-600 duration-200 hover:text-black">
-            update
-          </button>
+          <div className="grid grid-cols-2 gap-5 text-center">
+            <div
+              onClick={() => {
+                deleteStock();
+              }}
+              className="text-red-600 uppercase px-5 py-2 border-2 border-red-600 rounded-xl hover:bg-red-600 duration-200 hover:text-black cursor-pointer"
+            >
+              delete
+            </div>
+            <button className="text-green-600 uppercase px-5 py-2 border-2 border-green-600 rounded-xl hover:bg-green-600 duration-200 hover:text-black">
+              update
+            </button>
+          </div>
         </form>
         <div
           onClick={resetModal}
@@ -255,8 +277,8 @@ function SearchSection({
       >
         <option value="count">30ml </option>
         <option value="name">Name</option>
-        <option value="remarks">100ml</option>
         <option value="price">Price</option>
+        <option value="remarks">Remarks</option>
         <option value="updatedAt">Updated</option>
       </select>
       <select
@@ -301,8 +323,8 @@ function StockTable(props: StockTableProps) {
       <div className="grid grid-cols-5 bg-slate-900 p-5 text-center">
         <div className="text-white text-lg font-bold">Name</div>
         <div className="text-white text-lg font-bold">30ml</div>
-        <div className="text-white text-lg font-bold">100ml</div>
         <div className="text-white text-lg font-bold">Price</div>
+        <div className="text-white text-lg font-bold">Remarks</div>
         <div className="text-white text-lg font-bold">UpdateAt</div>
       </div>
       <div className="h-[50vh] overflow-y-auto">{rowElements}</div>
@@ -339,9 +361,13 @@ function StockRowItem({
       >
         {item.count}
       </div>
-      <div className="text-white text-md font-bold">{item.remarks}</div>
       <div className="text-yellow-300 text-md font-bold">{item.price}</div>
-      <div className="text-yellow-300 text-md font-bold">{moment(new Date(parseInt(item.updatedAt))).format("YYYY-MM-DD || HH:mm:ss")}</div>
+      <div className="text-white text-md font-bold">{item.remarks}</div>
+      <div className="text-yellow-300 text-md font-bold">
+        {moment(new Date(parseInt(item.updatedAt))).format(
+          "YYYY-MM-DD || HH:mm:ss"
+        )}
+      </div>
     </div>
   );
 }
