@@ -5,7 +5,7 @@ import Search from "../components/mapper/Search";
 
 export default function MedicineMapper() {
   return (
-    <main className="h-screen mx-auto px-4 py-6 grid gap-4 overflow-y-scroll">
+    <main className="h-[90vh] mx-auto px-4 py-6 grid gap-4 overflow-y-scroll">
       <section className="grid md:grid-cols-2 gap-4">
         <AddMedicine />
         <Adddisease />
