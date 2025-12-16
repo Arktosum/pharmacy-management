@@ -113,6 +113,7 @@ function StockModal({
       price: parseInt(data.price),
       id: selectedItem.id,
       limit: parseInt(data.limit),
+      hundredml : data.hundredml
     };
     dispatch(updateStockItem(payload));
     e.currentTarget.reset();
@@ -138,7 +139,7 @@ function StockModal({
                 required
               />
               <div className="text-yellow-300 text-xl uppercase">
-                30ml STOCK
+                30ml Stock
               </div>
               <input
                 type="number"
@@ -147,16 +148,16 @@ function StockModal({
                 defaultValue={selectedItem.count}
                 required
               />
-              {/* <div className="text-yellow-300 text-xl uppercase">
-                100ml PRICE
+              <div className="text-yellow-300 text-xl uppercase">
+                100ml
               </div>
                <input
                 type="text"
-                name="remarks"
+                name="hundredml"
                 className="px-5 py-2 text-green-300 text-[1.2em] no-arrow bg-black"
-                defaultValue={selectedItem.remarks}
+                defaultValue={selectedItem.hundredml}
                 required
-              /> */}
+              />
               <div className="text-yellow-300 text-xl uppercase">
                 Price 30ml
               </div>
@@ -278,7 +279,7 @@ function SearchSection({
         <option value="count">30ml </option>
         <option value="name">Name</option>
         <option value="price">Price</option>
-        <option value="remarks">Remarks</option>
+        <option value="hundredml">100ml</option>
         <option value="updatedAt">Updated</option>
       </select>
       <select
@@ -322,10 +323,10 @@ function StockTable(props: StockTableProps) {
     <>
       <div className="grid grid-cols-5 bg-slate-900 p-5 text-center">
         <div className="text-white text-lg font-bold">Name</div>
-        <div className="text-white text-lg font-bold">30ml</div>
+        <div className="text-white text-lg font-bold">30 ml</div>
         <div className="text-white text-lg font-bold">Price</div>
-        <div className="text-white text-lg font-bold">Remarks</div>
-        <div className="text-white text-lg font-bold">UpdateAt</div>
+        <div className="text-white text-lg font-bold">100 ml</div>
+        <div className="text-white text-lg font-bold">UpdatedAt</div>
       </div>
       <div className="h-[50vh] overflow-y-auto">{rowElements}</div>
     </>
@@ -362,7 +363,7 @@ function StockRowItem({
         {item.count}
       </div>
       <div className="text-yellow-300 text-md font-bold">{item.price}</div>
-      <div className="text-white text-md font-bold">{item.remarks}</div>
+      <div className="text-white text-md font-bold">{item.hundredml}</div>
       <div className="text-yellow-300 text-md font-bold">
         {moment(new Date(parseInt(item.updatedAt))).format(
           "YYYY-MM-DD || HH:mm:ss"

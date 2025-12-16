@@ -7,6 +7,7 @@ import stockRouter from "./routes/stockRoutes";
 import logRouter from "./routes/logRoutes";
 import excelRouter from "./routes/excelRoutes";
 import mapperRoutes from "./routes/mapperRoutes";
+import { readJSON, writeJSON } from './routes/utils';
 
 const PORT = 3000;
 const app = express()
@@ -31,7 +32,8 @@ app.listen(PORT, () => {
 //   let new_data = [];
 //   for(let row in data){
 //     let item = data[row];
-//     item.updatedAt = Date.now().toString();
+//     item.hundredml = item.remarks;
+//     item.remarks = ""
 //     new_data.push({...item});
 //   }
 //   writeJSON('./databases/stock.json',new_data,()=>{

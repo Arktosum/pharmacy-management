@@ -78,6 +78,7 @@ export type StockItem = {
   count: number,
   price: number,
   limit: number,
+  hundredml : string,
 }
 
 const initialState: {
