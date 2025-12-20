@@ -34,6 +34,8 @@ function ExcelColumns({ excelData, setexcelData }) {
 
   // Clear ONLY rows 0-39 (40 rows), leave 40-49 untouched
   const clearMainData = () => {
+    const choice = prompt("Sure to delete? y/n");
+    if (choice != "y") return;
     const clearedData = [...excelData];
     for (let i = 0; i < 40; i++) {
       // Only first 40 rows
