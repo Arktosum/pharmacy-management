@@ -45,7 +45,7 @@ export function EditItem({ props }: { props: EditItemProps }) {
       >
         {item.count}
       </div>
-      <div className="text-white text-[1.2em] font-bold">{item.remarks}</div>
+      <div className="text-white text-[1.2em] font-bold">{item.hundredml}</div>
       <div className={`text-yellow-300 text-[1.2em] font-bold`}>
         {item.price}
       </div>

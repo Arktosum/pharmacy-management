@@ -182,7 +182,6 @@ function StockModal({
                 rows={10}
                 className="px-5 py-2 text-green-300 text-[1.2em] no-arrow bg-black"
                 defaultValue={selectedItem.remarks}
-                required
                 name="remarks"
                 id=""
               ></textarea>
