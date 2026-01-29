@@ -1,4 +1,3 @@
-import { deleteSVG } from "../../assets/assets";
 import { StockLog } from "../../redux/logSlice";
 import { BillingStateType, setState, updateLocalStorage } from "../Utils";
 
@@ -34,7 +33,7 @@ export function BillItem({ props }: { props: BillItemProps }) {
           }
           // Remove all where multiplier is less than zero from billItemsList
           const newList = billingState.itemList.filter(
-            (item) => item.multiplier > 0
+            (item) => item.multiplier > 0,
           );
           billingState.itemList = newList;
           updateLocalStorage(billingState);
@@ -44,7 +43,7 @@ export function BillItem({ props }: { props: BillItemProps }) {
         min="1"
         max={item.count}
         defaultValue={item.multiplier}
-        className={`text-[1.2em]  bg-[#131313] rounded-xl ${item.multiplier > 1 ? 'text-red-600 animate-pulse' :'text-yellow-300' } text-center`}
+        className={`text-[1.3em] font-bold bg-[#131313] rounded-xl ${item.multiplier > 1 ? "text-green-300 animate-pulse" : "text-yellow-300"} text-center`}
       />
       <input
         onChange={(e) => {

@@ -5,16 +5,16 @@ interface CheckoutProps {
   billingState: BillingStateType;
   setbillingState: setState<BillingStateType>;
   enableTransaction: boolean;
-  receivedAmt : number,
-  setreceivedAmt : setState<number>;
+  receivedAmt: number;
+  setreceivedAmt: setState<number>;
 }
 export function Checkout({ props }: { props: CheckoutProps }) {
-  const { billingState, setbillingState,receivedAmt,setreceivedAmt } = props;
+  const { billingState, setbillingState, receivedAmt, setreceivedAmt } = props;
   const [evalString, setevalString] = useState("");
 
   function addevalString() {
     if (evalString == "") return 0;
-    const vals = evalString.replaceAll(" ", "+");
+    const vals = evalString.replace(/ /g, "+");
     try {
       const finalValue = eval(vals).toFixed(2);
       const [decimal, fractional] = finalValue.split(".");
@@ -117,7 +117,7 @@ export function Checkout({ props }: { props: CheckoutProps }) {
             <span className="text-white">Received: </span>
             <input
               type="text"
-              className={`text-black text-center font-bold text-[1.4em] ${receivedAmt > 0 ? 'pulse-red-green' : 'bg-green-300'} w-full px-1 rounded-md`}
+              className={`text-black text-center font-bold text-[1.4em] ${receivedAmt > 0 ? "pulse-red-green" : "bg-green-300"} w-full px-1 rounded-md`}
               value={receivedAmt}
               onChange={(e) => {
                 const val = e.target.value;
