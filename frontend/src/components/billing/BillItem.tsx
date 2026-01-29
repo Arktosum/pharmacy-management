@@ -43,7 +43,7 @@ export function BillItem({ props }: { props: BillItemProps }) {
         min="1"
         max={item.count}
         defaultValue={item.multiplier}
-        className={`text-[1.3em] bg-[#131313] rounded-xl ${item.multiplier > 1 ? "text-green-600 animate-pulse" : "text-yellow-300"} text-center`}
+        className={`text-[1.3em] bg-[#131313] rounded-xl ${item.multiplier > 1 ? "text-green-300 animate-pulse" : "text-yellow-300"} text-center`}
       />
       <input
         onChange={(e) => {
