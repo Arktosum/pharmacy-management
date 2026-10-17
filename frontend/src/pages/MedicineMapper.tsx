@@ -1,5 +1,12 @@
-import { useState } from "react";
-import { Network, LayoutGrid, Pill, Stethoscope, Link as LinkIcon } from "lucide-react";
+import { useState, useMemo } from "react";
+import {
+  Network,
+  LayoutGrid,
+  Pill,
+  Stethoscope,
+  Link as LinkIcon,
+  AlertTriangle,
+} from "lucide-react";
 import {
   useGetMedicinesQuery,
   useGetDiseasesQuery,
@@ -10,13 +17,27 @@ import { Adddisease, AddMedicine } from "../components/mapper/AddEntity";
 import IntersectionFinder from "../components/mapper/IntersectionFinder";
 import Linker from "../components/mapper/Linker";
 import Search from "../components/mapper/Search";
+import SimilarGroupsAudit from "../components/mapper/SimilarGroupsAudit";
+import { auditSimilarGroups } from "../utils/similarityAudit";
 
 export default function MedicineMapper() {
   const [activeTab, setActiveTab] = useState<"graph" | "classic">("graph");
+  const [classicSubTab, setClassicSubTab] = useState<"manage" | "duplicates">(
+    "manage"
+  );
+  const [searchSelection, setSearchSelection] = useState<{
+    type: "medicine" | "disease";
+    id: string;
+  } | null>(null);
 
   const { data: medicines = [] } = useGetMedicinesQuery();
   const { data: diseases = [] } = useGetDiseasesQuery();
   const { data: links = [] } = useGetLinksQuery();
+
+  const auditSummary = useMemo(
+    () => auditSimilarGroups(medicines, diseases, links),
+    [medicines, diseases, links]
+  );
 
   return (
     <div className="h-[90vh] flex flex-col bg-slate-900 text-slate-100 overflow-hidden font-sans">
@@ -77,6 +98,11 @@ export default function MedicineMapper() {
           >
             <LayoutGrid className="w-4 h-4" />
             <span>Classic Form View</span>
+            {auditSummary.totalGroups > 0 && (
+              <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.2 rounded-full">
+                {auditSummary.totalGroups}
+              </span>
+            )}
           </button>
         </div>
       </header>
@@ -90,14 +116,80 @@ export default function MedicineMapper() {
         {activeTab === "graph" ? (
           <GraphExplorer />
         ) : (
-          <main className="h-full overflow-y-auto px-4 py-6 grid gap-4 max-w-7xl xl:max-w-[1600px] mx-auto">
-            <section className="grid md:grid-cols-2 gap-4">
-              <AddMedicine />
-              <Adddisease />
-            </section>
-            <Linker />
-            <Search />
-            <IntersectionFinder />
+          <main className="h-full overflow-y-auto px-4 py-6 flex flex-col gap-4 max-w-7xl xl:max-w-[1600px] mx-auto">
+            {/* Sub-tab Navigation */}
+            <div className="flex items-center justify-between border-b border-slate-300 pb-3 shrink-0">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setClassicSubTab("manage")}
+                  className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition shadow-sm ${
+                    classicSubTab === "manage"
+                      ? "bg-slate-900 text-white shadow"
+                      : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-300"
+                  }`}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  <span>Entity & Link Tools</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setClassicSubTab("duplicates")}
+                  className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition shadow-sm ${
+                    classicSubTab === "duplicates"
+                      ? "bg-amber-600 text-white shadow"
+                      : "bg-white text-slate-700 hover:bg-amber-50 border border-slate-300"
+                  }`}
+                >
+                  <AlertTriangle
+                    className={`w-4 h-4 ${
+                      classicSubTab === "duplicates"
+                        ? "text-white"
+                        : "text-amber-600"
+                    }`}
+                  />
+                  <span>Similar Names & Duplicates</span>
+                  {auditSummary.totalGroups > 0 && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-black ${
+                        classicSubTab === "duplicates"
+                          ? "bg-white/20 text-white"
+                          : "bg-amber-100 text-amber-900 border border-amber-300"
+                      }`}
+                    >
+                      {auditSummary.totalGroups}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              <div className="text-xs text-slate-500 font-semibold hidden md:block">
+                {classicSubTab === "manage"
+                  ? "Manage, search, link & find intersections"
+                  : `Auditing ${medicines.length} medicines & ${diseases.length} diseases`}
+              </div>
+            </div>
+
+            {/* Sub-tab Body */}
+            {classicSubTab === "manage" ? (
+              <div className="grid gap-4">
+                <section className="grid md:grid-cols-2 gap-4">
+                  <AddMedicine />
+                  <Adddisease />
+                </section>
+                <Linker />
+                <Search initialSelection={searchSelection} />
+                <IntersectionFinder />
+              </div>
+            ) : (
+              <SimilarGroupsAudit
+                onInspectEntity={(type, id) => {
+                  setSearchSelection({ type, id });
+                  setClassicSubTab("manage");
+                }}
+              />
+            )}
           </main>
         )}
       </div>

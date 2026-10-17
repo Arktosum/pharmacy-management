@@ -14,13 +14,26 @@ import {
 } from "../../api/api";
 import { Disease, Medicine } from "../../types";
 
-export default function SearchLinker(): JSX.Element {
+interface SearchLinkerProps {
+  initialSelection?: { type: "medicine" | "disease"; id: string } | null;
+}
+
+export default function SearchLinker({
+  initialSelection,
+}: SearchLinkerProps = {}): JSX.Element {
   const [type, setType] = useState<"medicine" | "disease">("medicine");
   const [query, setQuery] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (initialSelection) {
+      setType(initialSelection.type);
+      setSelectedId(initialSelection.id);
+    }
+  }, [initialSelection]);
 
   const { data: meds = [] } = useGetMedicinesQuery();
   const { data: ills = [] } = useGetDiseasesQuery();
