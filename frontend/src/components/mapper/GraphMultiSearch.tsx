@@ -18,6 +18,7 @@ interface GraphMultiSearchProps {
   degree: 1 | 2 | 3;
   onDegreeChange: (degree: 1 | 2 | 3) => void;
   totalIntersectingCount?: number;
+  intersectionLabel?: string;
   onFilterIntersectionsOnly?: () => void;
   isIntersectingOnly?: boolean;
 }
@@ -49,6 +50,7 @@ export default function GraphMultiSearch({
   degree,
   onDegreeChange,
   totalIntersectingCount = 0,
+  intersectionLabel,
   onFilterIntersectionsOnly,
   isIntersectingOnly = false,
 }: GraphMultiSearchProps) {
@@ -236,9 +238,10 @@ export default function GraphMultiSearch({
                 ? "bg-amber-500 text-slate-950 border-amber-400 shadow-md font-bold"
                 : "bg-amber-950/40 text-amber-300 border-amber-700/60 hover:bg-amber-900/40"
             }`}
+            title="Click to isolate only the intersecting items"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>{totalIntersectingCount} Common Remedy{totalIntersectingCount > 1 ? "ies" : ""}</span>
+            <span>{intersectionLabel || `${totalIntersectingCount} Intersections`}</span>
           </button>
         )}
 

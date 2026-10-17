@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Plus,
   Eye,
+  Sparkles,
 } from "lucide-react";
 import {
   useGetMedicinesQuery,
@@ -32,6 +33,7 @@ export interface GraphLink extends d3.SimulationLinkDatum<GraphNode> {
   source: string | GraphNode;
   target: string | GraphNode;
   id: string;
+  isIntersectingLink?: boolean;
 }
 
 export default function GraphExplorer() {
@@ -92,30 +94,134 @@ export default function GraphExplorer() {
     };
   }, [medicines, diseases, links]);
 
-  // Compute Intersecting Medicines (medicines connected to ALL selected diseases)
+  // Compute Selected Subsets
+  const selectedMedicines = useMemo(
+    () => selectedEntities.filter((e) => e.type === "medicine"),
+    [selectedEntities]
+  );
   const selectedDiseases = useMemo(
     () => selectedEntities.filter((e) => e.type === "disease"),
     [selectedEntities]
   );
 
-  const intersectingMedicineIds = useMemo(() => {
-    if (selectedDiseases.length < 2) return new Set<string>();
+  // Generalized Intersection Engine (handles M medicines & N diseases)
+  const intersectionSummary = useMemo(() => {
+    const numMeds = selectedMedicines.length;
+    const numDiseases = selectedDiseases.length;
 
-    const diseaseToMeds = new Map<string, Set<string>>();
-    links.forEach((l) => {
-      if (!diseaseToMeds.has(l.diseaseId)) {
-        diseaseToMeds.set(l.diseaseId, new Set());
+    if (selectedEntities.length < 2) {
+      return {
+        hasIntersection: false,
+        title: "",
+        description: "",
+        commonRemedyIds: new Set<string>(),
+        commonIndicationIds: new Set<string>(),
+        directMatchCount: 0,
+        intersectingNodeIds: new Set<string>(),
+        intersectingLinkIds: new Set<string>(),
+      };
+    }
+
+    // 1. Common Remedies: Medicines connected to ALL selected diseases (when >= 2 diseases)
+    let commonRemedyIds = new Set<string>();
+    if (numDiseases >= 2) {
+      const diseaseToMeds = new Map<string, Set<string>>();
+      links.forEach((l) => {
+        if (!diseaseToMeds.has(l.diseaseId)) diseaseToMeds.set(l.diseaseId, new Set());
+        diseaseToMeds.get(l.diseaseId)!.add(l.medicineId);
+      });
+
+      let common = new Set<string>(diseaseToMeds.get(selectedDiseases[0].id) || []);
+      for (let i = 1; i < numDiseases; i++) {
+        const nextMeds = diseaseToMeds.get(selectedDiseases[i].id) || new Set();
+        common = new Set([...common].filter((mId) => nextMeds.has(mId)));
       }
-      diseaseToMeds.get(l.diseaseId)!.add(l.medicineId);
+      commonRemedyIds = common;
+    }
+
+    // 2. Common Indications: Diseases connected to ALL selected medicines (when >= 2 medicines)
+    let commonIndicationIds = new Set<string>();
+    if (numMeds >= 2) {
+      const medToDiseases = new Map<string, Set<string>>();
+      links.forEach((l) => {
+        if (!medToDiseases.has(l.medicineId)) medToDiseases.set(l.medicineId, new Set());
+        medToDiseases.get(l.medicineId)!.add(l.diseaseId);
+      });
+
+      let common = new Set<string>(medToDiseases.get(selectedMedicines[0].id) || []);
+      for (let i = 1; i < numMeds; i++) {
+        const nextDiseases = medToDiseases.get(selectedMedicines[i].id) || new Set();
+        common = new Set([...common].filter((dId) => nextDiseases.has(dId)));
+      }
+      commonIndicationIds = common;
+    }
+
+    // 3. Direct Matches between selected medicines and selected diseases
+    const selMedIdSet = new Set(selectedMedicines.map((m) => m.id));
+    const selDiseaseIdSet = new Set(selectedDiseases.map((d) => d.id));
+    const directMatchLinks = links.filter(
+      (l) => selMedIdSet.has(l.medicineId) && selDiseaseIdSet.has(l.diseaseId)
+    );
+
+    const directMatchMedIds = new Set(directMatchLinks.map((l) => l.medicineId));
+    const directMatchDiseaseIds = new Set(directMatchLinks.map((l) => l.diseaseId));
+
+    // Combined intersecting node IDs
+    const intersectingNodeIds = new Set<string>([
+      ...commonRemedyIds,
+      ...commonIndicationIds,
+      ...directMatchMedIds,
+      ...directMatchDiseaseIds,
+    ]);
+
+    // Intersecting link IDs
+    const intersectingLinkIds = new Set<string>();
+    directMatchLinks.forEach((l) => intersectingLinkIds.add(`${l.medicineId}-${l.diseaseId}`));
+
+    links.forEach((l) => {
+      if (commonRemedyIds.has(l.medicineId) && selDiseaseIdSet.has(l.diseaseId)) {
+        intersectingLinkIds.add(`${l.medicineId}-${l.diseaseId}`);
+      }
+      if (commonIndicationIds.has(l.diseaseId) && selMedIdSet.has(l.medicineId)) {
+        intersectingLinkIds.add(`${l.medicineId}-${l.diseaseId}`);
+      }
     });
 
-    let commonMeds = new Set<string>(diseaseToMeds.get(selectedDiseases[0].id) || []);
-    for (let i = 1; i < selectedDiseases.length; i++) {
-      const nextMeds = diseaseToMeds.get(selectedDiseases[i].id) || new Set();
-      commonMeds = new Set([...commonMeds].filter((mId) => nextMeds.has(mId)));
+    let title = "";
+    let description = "";
+
+    if (numDiseases >= 2 && numMeds === 0) {
+      title = `${commonRemedyIds.size} Common Remedy${commonRemedyIds.size === 1 ? "" : "ies"}`;
+      description = commonRemedyIds.size > 0
+        ? `Treats ALL ${numDiseases} selected diseases`
+        : `No single medicine treats all ${numDiseases} selected diseases`;
+    } else if (numMeds >= 2 && numDiseases === 0) {
+      title = `${commonIndicationIds.size} Common Indication${commonIndicationIds.size === 1 ? "" : "s"}`;
+      description = commonIndicationIds.size > 0
+        ? `Treated by ALL ${numMeds} selected medicines`
+        : `No single disease is treated by all ${numMeds} selected medicines`;
+    } else if (numMeds >= 1 && numDiseases >= 1) {
+      title = `${directMatchLinks.length} Direct Match${directMatchLinks.length === 1 ? "" : "es"}`;
+      const extras: string[] = [];
+      if (commonRemedyIds.size > 0) extras.push(`${commonRemedyIds.size} remedies treat all ${numDiseases} diseases`);
+      if (commonIndicationIds.size > 0) extras.push(`${commonIndicationIds.size} conditions treated by all ${numMeds} meds`);
+      description = extras.length > 0 ? extras.join(" • ") : `Connections between ${numMeds} medicines & ${numDiseases} diseases`;
     }
-    return commonMeds;
-  }, [selectedDiseases, links]);
+
+    const hasIntersection =
+      commonRemedyIds.size > 0 || commonIndicationIds.size > 0 || directMatchLinks.length > 0;
+
+    return {
+      hasIntersection,
+      title,
+      description,
+      commonRemedyIds,
+      commonIndicationIds,
+      directMatchCount: directMatchLinks.length,
+      intersectingNodeIds,
+      intersectingLinkIds,
+    };
+  }, [selectedMedicines, selectedDiseases, selectedEntities, links]);
 
   // Filter Pipeline: Build Active Nodes & Links
   const { activeNodes, activeLinks } = useMemo(() => {
@@ -153,9 +259,9 @@ export default function GraphExplorer() {
       }
     }
     // 2. Intersections-Only filter mode
-    else if (isIntersectingOnly && selectedDiseases.length >= 2) {
-      selectedDiseases.forEach((d) => visibleNodeIds.add(d.id));
-      intersectingMedicineIds.forEach((mId) => visibleNodeIds.add(mId));
+    else if (isIntersectingOnly && intersectionSummary.hasIntersection) {
+      selectedEntities.forEach((e) => visibleNodeIds.add(e.id));
+      intersectionSummary.intersectingNodeIds.forEach((id) => visibleNodeIds.add(id));
     }
     // 3. Multi-Search / Focus Filter mode: Multi-degree BFS
     else if (selectedEntities.length > 0) {
@@ -197,7 +303,7 @@ export default function GraphExplorer() {
       const med = allMedMap.get(id);
       if (med) {
         const deg = medDegrees.get(id) || 0;
-        const isInter = intersectingMedicineIds.has(id);
+        const isInter = intersectionSummary.intersectingNodeIds.has(id);
         nodes.push({
           id,
           name: med.name,
@@ -214,14 +320,15 @@ export default function GraphExplorer() {
       const ill = allIllMap.get(id);
       if (ill) {
         const deg = illDegrees.get(id) || 0;
+        const isInter = intersectionSummary.intersectingNodeIds.has(id);
         nodes.push({
           id,
           name: ill.name,
           type: "disease",
-          radius: 10,
+          radius: isInter ? 14 : 10,
           degreeCount: deg,
           isOrphan: deg === 0,
-          isIntersecting: false,
+          isIntersecting: isInter,
           isDirectSelection: directSelectedSet.has(id),
         });
       }
@@ -232,11 +339,15 @@ export default function GraphExplorer() {
     // Filter valid links where BOTH source and target are in activeNodeIdSet
     const activeLinksList: GraphLink[] = links
       .filter((l) => activeNodeIdSet.has(l.medicineId) && activeNodeIdSet.has(l.diseaseId))
-      .map((l) => ({
-        id: `${l.medicineId}-${l.diseaseId}`,
-        source: l.medicineId,
-        target: l.diseaseId,
-      }));
+      .map((l) => {
+        const linkId = `${l.medicineId}-${l.diseaseId}`;
+        return {
+          id: linkId,
+          source: l.medicineId,
+          target: l.diseaseId,
+          isIntersectingLink: intersectionSummary.intersectingLinkIds.has(linkId),
+        };
+      });
 
     return { activeNodes: nodes, activeLinks: activeLinksList };
   }, [
@@ -247,8 +358,7 @@ export default function GraphExplorer() {
     degree,
     orphanFilter,
     isIntersectingOnly,
-    selectedDiseases,
-    intersectingMedicineIds,
+    intersectionSummary,
     medDegrees,
     illDegrees,
   ]);
@@ -367,22 +477,10 @@ export default function GraphExplorer() {
       .data(activeLinks, (d) => d.id)
       .enter()
       .append("line")
-      .attr("stroke", (d) => {
-        const sourceNode = typeof d.source === "object" ? d.source : null;
-        return sourceNode && sourceNode.isIntersecting ? "#f59e0b" : "#475569";
-      })
-      .attr("stroke-opacity", (d) => {
-        const sourceNode = typeof d.source === "object" ? d.source : null;
-        return sourceNode && sourceNode.isIntersecting ? 0.8 : 0.45;
-      })
-      .attr("stroke-width", (d) => {
-        const sourceNode = typeof d.source === "object" ? d.source : null;
-        return sourceNode && sourceNode.isIntersecting ? 2.5 : 1.5;
-      })
-      .attr("stroke-dasharray", (d) => {
-        const sourceNode = typeof d.source === "object" ? d.source : null;
-        return sourceNode && sourceNode.isIntersecting ? "4 2" : "none";
-      });
+      .attr("stroke", (d) => (d.isIntersectingLink ? "#f59e0b" : "#475569"))
+      .attr("stroke-opacity", (d) => (d.isIntersectingLink ? 0.9 : 0.45))
+      .attr("stroke-width", (d) => (d.isIntersectingLink ? 2.5 : 1.5))
+      .attr("stroke-dasharray", (d) => (d.isIntersectingLink ? "4 2" : "none"));
 
     // Define applyHighlight function
     const applyHighlight = (focusedNode: InspectedNode | null) => {
@@ -405,18 +503,10 @@ export default function GraphExplorer() {
 
         // Reset all links to normal
         linkElements
-          .attr("stroke", (d) => {
-            const sourceNode = typeof d.source === "object" ? d.source : null;
-            return sourceNode && sourceNode.isIntersecting ? "#f59e0b" : "#475569";
-          })
-          .attr("stroke-opacity", (d) => {
-            const sourceNode = typeof d.source === "object" ? d.source : null;
-            return sourceNode && sourceNode.isIntersecting ? 0.8 : 0.45;
-          })
-          .attr("stroke-width", (d) => {
-            const sourceNode = typeof d.source === "object" ? d.source : null;
-            return sourceNode && sourceNode.isIntersecting ? 2.5 : 1.5;
-          });
+          .attr("stroke", (d) => (d.isIntersectingLink ? "#f59e0b" : "#475569"))
+          .attr("stroke-opacity", (d) => (d.isIntersectingLink ? 0.9 : 0.45))
+          .attr("stroke-width", (d) => (d.isIntersectingLink ? 2.5 : 1.5))
+          .attr("stroke-dasharray", (d) => (d.isIntersectingLink ? "4 2" : "none"));
         return;
       }
 
@@ -635,7 +725,8 @@ export default function GraphExplorer() {
             onClearAll={handleClearAllSearch}
             degree={degree}
             onDegreeChange={setDegree}
-            totalIntersectingCount={intersectingMedicineIds.size}
+            totalIntersectingCount={intersectionSummary.intersectingNodeIds.size}
+            intersectionLabel={intersectionSummary.title}
             isIntersectingOnly={isIntersectingOnly}
             onFilterIntersectionsOnly={() => setIsIntersectingOnly((prev) => !prev)}
           />
@@ -750,7 +841,7 @@ export default function GraphExplorer() {
             </button>
           </div>
 
-          {/* Visual Legend (Bottom Center) */}
+          {/* Visual Legend (Bottom Right) */}
           <div className="hidden sm:flex absolute bottom-4 right-4 items-center gap-4 bg-slate-900/80 backdrop-blur border border-slate-800 px-3 py-1.5 rounded-lg text-xs text-slate-300 shadow-lg pointer-events-none z-10">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
@@ -760,10 +851,10 @@ export default function GraphExplorer() {
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
               <span>Disease</span>
             </div>
-            {intersectingMedicineIds.size > 0 && (
+            {intersectionSummary.hasIntersection && (
               <div className="flex items-center gap-1.5 text-amber-300 font-medium">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-amber-300"></span>
-                <span>Common Remedy</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-amber-300 shadow-sm"></span>
+                <span>Common Intersection</span>
               </div>
             )}
             <div className="flex items-center gap-1.5 text-slate-400">
@@ -772,14 +863,44 @@ export default function GraphExplorer() {
             </div>
           </div>
 
-          {/* Filter Status Badge */}
+          {/* Intersection Insights Floating Banner (Bottom Left, above zoom controls) */}
+          {intersectionSummary.hasIntersection && (
+            <div className="absolute bottom-16 left-4 bg-slate-900/95 backdrop-blur border border-amber-500/60 rounded-lg px-3 py-1.5 flex items-center gap-2.5 text-xs text-amber-200 shadow-2xl z-10 max-w-lg">
+              <span className="p-1 rounded bg-amber-500/20 text-amber-400 shrink-0">
+                <Sparkles className="w-3.5 h-3.5" />
+              </span>
+              <div className="truncate text-xs">
+                <span className="font-bold text-amber-300 mr-1.5">
+                  {intersectionSummary.title}
+                </span>
+                <span className="text-slate-300 text-[11px]">
+                  ({intersectionSummary.description})
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsIntersectingOnly((prev) => !prev)}
+                className={`ml-2 px-2.5 py-1 rounded text-[11px] font-bold transition shrink-0 ${
+                  isIntersectingOnly
+                    ? "bg-amber-500 text-slate-950 shadow"
+                    : "bg-amber-950/80 hover:bg-amber-900/80 text-amber-300 border border-amber-600/50"
+                }`}
+                title="Isolate only the intersecting remedies / conditions"
+              >
+                {isIntersectingOnly ? "Show All Context" : "Isolate"}
+              </button>
+            </div>
+          )}
+
+          {/* Filter Status Badge (Placed at top-right to NEVER block or overlap the search dropdown on the left!) */}
           {(selectedEntities.length > 0 || orphanFilter !== "none" || isIntersectingOnly) && (
-            <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur border border-slate-700 px-3 py-1.5 rounded-lg text-xs text-slate-200 flex items-center gap-2 shadow-lg z-10">
+            <div className="absolute top-3 right-3 bg-slate-900/90 backdrop-blur border border-slate-700 px-3 py-1.5 rounded-lg text-xs text-slate-200 flex items-center gap-2 shadow-xl z-10">
               <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
               <span>
                 Showing <strong>{activeNodes.length}</strong> nodes, <strong>{activeLinks.length}</strong> links
               </span>
               <button
+                type="button"
                 onClick={() => {
                   setSelectedEntities([]);
                   setOrphanFilter("none");
@@ -787,7 +908,7 @@ export default function GraphExplorer() {
                 }}
                 className="ml-2 text-rose-400 hover:text-rose-300 underline font-medium"
               >
-                Reset All Filters
+                Reset Filters
               </button>
             </div>
           )}
@@ -803,7 +924,7 @@ export default function GraphExplorer() {
           links={links}
           history={inspectorHistory}
           onBackHistory={handleBackHistory}
-          intersectingMedicineIds={intersectingMedicineIds}
+          intersectingMedicineIds={intersectionSummary.intersectingNodeIds}
         />
       </div>
 
