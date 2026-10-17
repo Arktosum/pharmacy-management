@@ -204,98 +204,102 @@ export default function GraphInspectorDrawer({
   };
 
   return (
-    <aside className="w-84 bg-slate-900 border-l border-slate-700 p-5 flex flex-col shrink-0 overflow-y-auto z-20 shadow-2xl h-full animate-in slide-in-from-right duration-200">
+    <aside className="w-[420px] lg:w-[480px] xl:w-[520px] bg-slate-900 border-l border-slate-700/80 p-6 flex flex-col shrink-0 overflow-y-auto z-20 shadow-2xl h-full animate-in slide-in-from-right duration-200">
       {/* Top Bar with History & Close */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center gap-2.5">
           {history.length > 0 && (
             <button
               onClick={onBackHistory}
-              className="p-1 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded transition"
+              className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition"
               title="Go back to previous node"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-5 h-5" />
             </button>
           )}
           <span
-            className={`px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wider border ${
+            className={`px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider border shadow-sm ${
               node.type === "medicine"
-                ? "bg-blue-900/50 text-blue-300 border-blue-700/60"
-                : "bg-emerald-900/50 text-emerald-300 border-emerald-700/60"
+                ? "bg-blue-900/60 text-blue-300 border-blue-600/70"
+                : "bg-emerald-900/60 text-emerald-300 border-emerald-600/70"
             }`}
           >
             {node.type}
           </span>
           {isIntersecting && (
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/50 flex items-center gap-1 shadow-sm">
-              <Sparkles className="w-3 h-3 text-amber-400" />
+            <span className="px-2.5 py-1 rounded-md text-xs font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/60 flex items-center gap-1.5 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               Common Remedy
             </span>
           )}
         </div>
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-slate-100 p-1 rounded hover:bg-slate-800 transition"
+          className="text-slate-400 hover:text-slate-100 p-2 rounded-lg hover:bg-slate-800 transition"
+          title="Close Inspector"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* Node Name & Inline Rename / Delete */}
-      <div className="py-4 border-b border-slate-800">
+      <div className="py-5 border-b border-slate-800">
         {isEditing ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
+            <label className="block text-xs font-bold uppercase tracking-wider text-blue-400">
+              Edit {node.type} Name
+            </label>
             <input
               type="text"
               autoFocus
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-950 border border-blue-500 rounded text-slate-100 text-sm focus:outline-none"
+              className="w-full px-4 py-2.5 bg-slate-950 border-2 border-blue-500 rounded-xl text-slate-100 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner"
             />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5 pt-1">
               <button
                 onClick={handleSaveRename}
                 disabled={updatingMed || updatingIll}
-                className="px-3 py-1 bg-green-600 hover:bg-green-500 text-white rounded text-xs font-semibold flex items-center gap-1 transition"
+                className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-semibold flex items-center gap-1.5 transition shadow-sm"
               >
-                <Check className="w-3.5 h-3.5" /> Save
+                <Check className="w-4 h-4" /> Save Changes
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs transition"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition"
               >
                 Cancel
               </button>
             </div>
           </div>
         ) : (
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <h3 className="text-lg font-bold text-slate-100 leading-snug">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-2xl font-black text-slate-100 leading-snug tracking-tight break-words">
                 {node.name}
               </h3>
-              <p className="text-[11px] font-mono text-slate-500 mt-0.5">
-                ID: {node.id}
+              <p className="text-xs font-mono text-slate-400 mt-1.5 flex items-center gap-2">
+                <span className="text-slate-500">ID:</span> {node.id}
               </p>
             </div>
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
               <button
                 onClick={() => {
                   setEditName(node.name);
                   setIsEditing(true);
                 }}
-                className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded transition"
+                className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition"
                 title="Edit name"
               >
-                <Edit2 className="w-3.5 h-3.5" />
+                <Edit2 className="w-4.5 h-4.5" />
               </button>
               <button
                 onClick={handleDeleteNode}
                 disabled={deletingMed || deletingIll}
-                className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded transition"
+                className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition"
                 title="Delete entity and its links"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-4.5 h-4.5" />
               </button>
             </div>
           </div>
@@ -303,9 +307,9 @@ export default function GraphInspectorDrawer({
       </div>
 
       {/* Quick Link Tool */}
-      <div className="py-4 border-b border-slate-800">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-          <LinkIcon className="w-3.5 h-3.5 text-blue-400" />
+      <div className="py-5 border-b border-slate-800">
+        <label className="text-sm font-bold uppercase tracking-wider text-slate-300 mb-2.5 flex items-center gap-2">
+          <LinkIcon className="w-4 h-4 text-blue-400" />
           Link with {node.type === "medicine" ? "Disease" : "Medicine"}
         </label>
         <div className="relative" ref={linkContainerRef}>
@@ -318,23 +322,23 @@ export default function GraphInspectorDrawer({
             }}
             onFocus={() => setIsLinkDropdownOpen(true)}
             placeholder={`Search ${node.type === "medicine" ? "disease" : "medicine"} to link...`}
-            className="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-md text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-4 py-3 text-sm bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition shadow-inner"
           />
           {isLinkDropdownOpen && (
-            <div className="absolute left-0 right-0 top-full mt-1 max-h-48 overflow-y-auto bg-slate-800 border border-slate-700 rounded-md shadow-xl z-30 divide-y divide-slate-700">
+            <div className="absolute left-0 right-0 top-full mt-2 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-30 divide-y divide-slate-700/70">
               {availableToLink.map((target) => (
                 <button
                   key={target.id}
                   onClick={() => handleCreateLink(target.id, target.name)}
                   disabled={linking}
-                  className="w-full text-left px-3 py-1.5 text-xs text-slate-200 hover:bg-blue-600/20 hover:text-blue-200 flex items-center justify-between transition"
+                  className="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-blue-600/25 hover:text-white flex items-center justify-between transition"
                 >
-                  <span className="font-medium truncate">{target.name}</span>
-                  <Plus className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span className="font-semibold truncate">{target.name}</span>
+                  <Plus className="w-4 h-4 text-blue-400 shrink-0" />
                 </button>
               ))}
               {availableToLink.length === 0 && (
-                <div className="px-3 py-2 text-xs text-slate-500 italic">
+                <div className="px-4 py-3.5 text-sm text-slate-400 italic">
                   No matching items available to link.
                 </div>
               )}
@@ -344,29 +348,31 @@ export default function GraphInspectorDrawer({
       </div>
 
       {/* Connected Entities List */}
-      <div className="py-4 flex-1">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            {node.type === "medicine" ? "Treated Diseases" : "Matching Remedies"} (
-            {connectedItems.length})
+      <div className="py-5 flex-1 flex flex-col min-h-0">
+        <div className="flex items-center justify-between mb-3.5 shrink-0">
+          <h4 className="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <span>{node.type === "medicine" ? "Treated Diseases" : "Matching Remedies"}</span>
+            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">
+              {connectedItems.length}
+            </span>
           </h4>
         </div>
 
         {connectedItems.length === 0 ? (
-          <div className="p-4 bg-slate-950/60 rounded-lg border border-slate-800 text-center">
-            <p className="text-xs text-slate-500 italic mb-1">
+          <div className="p-6 bg-slate-950/70 rounded-xl border border-slate-800 text-center">
+            <p className="text-sm text-slate-400 italic mb-1.5">
               No active links found.
             </p>
-            <p className="text-[11px] text-amber-500/80 font-medium">
+            <p className="text-xs text-amber-400/90 font-semibold">
               This is currently an orphan node.
             </p>
           </div>
         ) : (
-          <ul className="space-y-1.5 max-h-[45vh] overflow-y-auto pr-1">
+          <ul className="space-y-2.5 overflow-y-auto pr-1.5 flex-1">
             {connectedItems.map((item) => (
               <li
                 key={item.id}
-                className="group px-3 py-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 rounded-lg flex items-center justify-between transition text-xs"
+                className="group px-4 py-3 bg-slate-950/80 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 rounded-xl flex items-center justify-between transition-all duration-150 text-sm shadow-sm"
               >
                 <button
                   onClick={() =>
@@ -376,18 +382,18 @@ export default function GraphInspectorDrawer({
                       type: node.type === "medicine" ? "disease" : "medicine",
                     })
                   }
-                  className="font-medium text-slate-200 hover:text-blue-400 truncate text-left flex-1 mr-2"
-                  title="Click to inspect"
+                  className="font-semibold text-slate-200 group-hover:text-blue-300 truncate text-left flex-1 mr-3 text-sm leading-snug"
+                  title="Click to inspect this connected node"
                 >
                   {item.name}
                 </button>
                 <button
                   onClick={() => handleUnlink(item.id, item.name)}
                   disabled={unlinking}
-                  className="p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 rounded transition opacity-70 group-hover:opacity-100"
+                  className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition opacity-70 group-hover:opacity-100"
                   title="Unlink"
                 >
-                  <Unlink className="w-3.5 h-3.5" />
+                  <Unlink className="w-4 h-4" />
                 </button>
               </li>
             ))}

@@ -78,56 +78,56 @@ export default function AddEntityModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-blue-600/20 text-blue-400">
-              <Plus className="w-4 h-4" />
+        <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-blue-600/20 text-blue-400">
+              <Plus className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-slate-100 text-base">
+            <h3 className="font-bold text-slate-100 text-lg">
               Add New Node to Graph
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 p-1 rounded-md hover:bg-slate-800 transition"
+            className="text-slate-400 hover:text-slate-100 p-1.5 rounded-lg hover:bg-slate-800 transition"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* Type Selector */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
               Entity Type
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setType("medicine")}
-                className={`py-2 px-3 rounded-lg border text-sm font-medium flex items-center justify-center gap-2 transition ${
+                className={`py-3 px-4 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2.5 transition ${
                   type === "medicine"
-                    ? "bg-blue-600/20 border-blue-500 text-blue-300 font-semibold shadow-sm"
+                    ? "bg-blue-600/20 border-blue-500 text-blue-200 font-bold shadow-sm"
                     : "bg-slate-800/80 border-slate-700 text-slate-400 hover:text-slate-200"
                 }`}
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                <span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm"></span>
                 Medicine / Remedy
               </button>
               <button
                 type="button"
                 onClick={() => setType("disease")}
-                className={`py-2 px-3 rounded-lg border text-sm font-medium flex items-center justify-center gap-2 transition ${
+                className={`py-3 px-4 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2.5 transition ${
                   type === "disease"
-                    ? "bg-emerald-600/20 border-emerald-500 text-emerald-300 font-semibold shadow-sm"
+                    ? "bg-emerald-600/20 border-emerald-500 text-emerald-200 font-bold shadow-sm"
                     : "bg-slate-800/80 border-slate-700 text-slate-400 hover:text-slate-200"
                 }`}
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>
                 Disease / Symptom
               </button>
             </div>
@@ -135,7 +135,7 @@ export default function AddEntityModal({
 
           {/* Name Input */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
               {type === "medicine" ? "Medicine Name" : "Disease / Symptom Name"}
             </label>
             <input
@@ -146,13 +146,13 @@ export default function AddEntityModal({
               placeholder={
                 type === "medicine" ? "e.g. Belladonna, Arnica 200..." : "e.g. Migraine, Fever..."
               }
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base font-medium shadow-inner transition"
             />
 
             {/* Exact Duplicate Warning */}
             {exactMatch && (
-              <p className="mt-2 text-xs text-rose-400 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <p className="mt-2.5 text-sm text-rose-400 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>
                   "{trimmed}" already exists as a {type}!
                 </span>
@@ -161,8 +161,8 @@ export default function AddEntityModal({
 
             {/* Fuzzy match suggestion */}
             {!exactMatch && topFuzzyMatch && (
-              <p className="mt-2 text-xs text-amber-400/90 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <p className="mt-2.5 text-sm text-amber-400/90 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>
                   Similar entity exists: "<strong>{topFuzzyMatch}</strong>"
                 </span>
@@ -171,18 +171,18 @@ export default function AddEntityModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-800">
+          <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition"
+              className="px-5 py-2.5 text-base text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-xl transition font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!trimmed || exactMatch || addingMed || addingIll}
-              className="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md"
+              className="px-6 py-2.5 text-base bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md"
             >
               {addingMed || addingIll ? "Adding..." : `Create ${type === "medicine" ? "Medicine" : "Disease"}`}
             </button>

@@ -308,7 +308,7 @@ export default function GraphExplorer() {
           id,
           name: med.name,
           type: "medicine",
-          radius: isInter ? 16 : 12,
+          radius: isInter ? 20 : 15,
           degreeCount: deg,
           isOrphan: deg === 0,
           isIntersecting: isInter,
@@ -325,7 +325,7 @@ export default function GraphExplorer() {
           id,
           name: ill.name,
           type: "disease",
-          radius: isInter ? 14 : 10,
+          radius: isInter ? 18 : 13,
           degreeCount: deg,
           isOrphan: deg === 0,
           isIntersecting: isInter,
@@ -455,16 +455,16 @@ export default function GraphExplorer() {
           .id((d) => d.id)
           .distance((d) => {
             const targetNode = typeof d.target === "object" ? d.target : null;
-            return targetNode && targetNode.isIntersecting ? 110 : 90;
+            return targetNode && targetNode.isIntersecting ? 125 : 105;
           })
       )
-      .force("charge", d3.forceManyBody().strength(-280))
+      .force("charge", d3.forceManyBody().strength(-320))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force(
         "collide",
         d3
           .forceCollide<GraphNode>()
-          .radius((d) => d.radius + Math.max(16, d.name.length * 3.6))
+          .radius((d) => d.radius + Math.max(20, d.name.length * 4.0))
       )
       .force("x", d3.forceX(width / 2).strength(0.06))
       .force("y", d3.forceY(height / 2).strength(0.06));
@@ -628,20 +628,20 @@ export default function GraphExplorer() {
       .filter((d) => d.isIntersecting)
       .insert("circle", ":first-child")
       .attr("class", "node-halo")
-      .attr("r", (d) => d.radius + 5)
+      .attr("r", (d) => d.radius + 6)
       .attr("fill", "none")
       .attr("stroke", "#f59e0b")
-      .attr("stroke-width", 1.5)
-      .attr("stroke-opacity", 0.6)
+      .attr("stroke-width", 2)
+      .attr("stroke-opacity", 0.7)
       .attr("stroke-dasharray", "4 3");
 
     // Crisp Typography Node Labels with Halo
     nodeElements
       .append("text")
       .text((d) => d.name)
-      .attr("x", (d) => d.radius + 6)
-      .attr("y", 4)
-      .attr("font-size", (d) => (d.isIntersecting ? "12px" : "11px"))
+      .attr("x", (d) => d.radius + 8)
+      .attr("y", 5)
+      .attr("font-size", (d) => (d.isIntersecting || d.isDirectSelection ? "14px" : "13px"))
       .attr("font-weight", (d) => (d.isIntersecting || d.isDirectSelection ? 700 : 600))
       .attr("fill", (d) => {
         if (d.isIntersecting) return "#fef08a";
@@ -649,7 +649,7 @@ export default function GraphExplorer() {
         return "#f1f5f9";
       })
       .attr("stroke", "#020617")
-      .attr("stroke-width", 3.5)
+      .attr("stroke-width", 4)
       .attr("paint-order", "stroke fill")
       .attr("stroke-linejoin", "round")
       .attr("font-family", "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif")
@@ -713,9 +713,9 @@ export default function GraphExplorer() {
   return (
     <div className="flex flex-col h-full w-full bg-slate-950 text-slate-100 rounded-xl border border-slate-800 shadow-2xl overflow-hidden relative font-sans">
       {/* Top Controls Header */}
-      <header className="bg-slate-900 border-b border-slate-800 px-4 py-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 z-10 shrink-0 shadow-md">
+      <header className="bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 z-10 shrink-0 shadow-md">
         {/* Left: Multi-Search and Scope */}
-        <div className="flex-1 max-w-2xl">
+        <div className="flex-1 max-w-3xl">
           <GraphMultiSearch
             medicines={medicines}
             diseases={diseases}
@@ -733,22 +733,22 @@ export default function GraphExplorer() {
         </div>
 
         {/* Right: Quick Action Buttons & Stats */}
-        <div className="flex items-center gap-2 flex-wrap justify-end">
+        <div className="flex items-center gap-3 flex-wrap justify-end">
           {/* Orphan Filters */}
-          <div className="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-0.5 text-xs">
+          <div className="flex items-center bg-slate-950/80 border border-slate-800 rounded-xl p-1 text-sm shadow-sm">
             <button
               onClick={() => {
                 setOrphanFilter((prev) => (prev === "meds" ? "none" : "meds"));
                 setSelectedEntities([]);
               }}
-              className={`px-2.5 py-1 rounded font-medium transition flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-2 text-sm ${
                 orphanFilter === "meds"
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-slate-400 hover:text-slate-200"
               }`}
               title="Show unlinked medicines"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+              <span className="w-2 h-2 rounded-full bg-blue-400"></span>
               Orphan Meds ({orphanMedCount})
             </button>
             <button
@@ -756,14 +756,14 @@ export default function GraphExplorer() {
                 setOrphanFilter((prev) => (prev === "diseases" ? "none" : "diseases"));
                 setSelectedEntities([]);
               }}
-              className={`px-2.5 py-1 rounded font-medium transition flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-2 text-sm ${
                 orphanFilter === "diseases"
                   ? "bg-emerald-600 text-white shadow-sm"
                   : "text-slate-400 hover:text-slate-200"
               }`}
               title="Show unlinked diseases"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
               Orphan Diseases ({orphanDiseaseCount})
             </button>
           </div>
@@ -771,9 +771,9 @@ export default function GraphExplorer() {
           {/* Add Entity Button */}
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-md transition"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-md transition"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4.5 h-4.5" />
             <span>Add Node</span>
           </button>
         </div>
@@ -785,8 +785,8 @@ export default function GraphExplorer() {
         <div className="flex-1 relative bg-slate-950 overflow-hidden select-none">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60 z-30">
-              <div className="flex items-center gap-2 text-slate-300 text-sm font-medium">
-                <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
+              <div className="flex items-center gap-2.5 text-slate-300 text-base font-medium">
+                <RefreshCw className="w-5 h-5 animate-spin text-blue-500" />
                 Loading Remedy Network...
               </div>
             </div>
@@ -798,92 +798,92 @@ export default function GraphExplorer() {
           ></svg>
 
           {/* Floating Canvas Controls (Bottom Left) */}
-          <div className="absolute bottom-4 left-4 flex items-center gap-1 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-lg p-1 text-slate-300 shadow-xl z-10">
+          <div className="absolute bottom-5 left-5 flex items-center gap-1.5 bg-slate-900/95 backdrop-blur border border-slate-800 rounded-xl p-1.5 text-slate-300 shadow-2xl z-10">
             <button
               onClick={handleZoomIn}
-              className="p-1.5 hover:bg-slate-800 hover:text-white rounded transition"
+              className="p-2 hover:bg-slate-800 hover:text-white rounded-lg transition"
               title="Zoom In"
             >
-              <ZoomIn className="w-4 h-4" />
+              <ZoomIn className="w-5 h-5" />
             </button>
             <button
               onClick={handleZoomOut}
-              className="p-1.5 hover:bg-slate-800 hover:text-white rounded transition"
+              className="p-2 hover:bg-slate-800 hover:text-white rounded-lg transition"
               title="Zoom Out"
             >
-              <ZoomOut className="w-4 h-4" />
+              <ZoomOut className="w-5 h-5" />
             </button>
             <button
               onClick={handleResetZoom}
-              className="p-1.5 hover:bg-slate-800 hover:text-white rounded transition"
+              className="p-2 hover:bg-slate-800 hover:text-white rounded-lg transition"
               title="Reset View"
             >
-              <Maximize2 className="w-4 h-4" />
+              <Maximize2 className="w-5 h-5" />
             </button>
-            <div className="w-[1px] h-4 bg-slate-800 mx-1"></div>
+            <div className="w-[1px] h-5 bg-slate-800 mx-1"></div>
             <button
               onClick={handleReheatSim}
-              className="p-1.5 hover:bg-slate-800 hover:text-white rounded transition"
+              className="p-2 hover:bg-slate-800 hover:text-white rounded-lg transition"
               title="Re-balance Graph Physics"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-5 h-5" />
             </button>
             <button
               onClick={() => setShowLabels((prev) => !prev)}
-              className={`p-1.5 rounded transition ${
+              className={`p-2 rounded-lg transition ${
                 showLabels
                   ? "bg-slate-800 text-blue-400"
                   : "hover:bg-slate-800 hover:text-white"
               }`}
               title="Toggle Text Labels"
             >
-              <Eye className="w-4 h-4" />
+              <Eye className="w-5 h-5" />
             </button>
           </div>
 
           {/* Visual Legend (Bottom Right) */}
-          <div className="hidden sm:flex absolute bottom-4 right-4 items-center gap-4 bg-slate-900/80 backdrop-blur border border-slate-800 px-3 py-1.5 rounded-lg text-xs text-slate-300 shadow-lg pointer-events-none z-10">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+          <div className="hidden sm:flex absolute bottom-5 right-5 items-center gap-5 bg-slate-900/90 backdrop-blur border border-slate-800 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 shadow-xl pointer-events-none z-10">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm"></span>
               <span>Medicine</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>
               <span>Disease</span>
             </div>
             {intersectionSummary.hasIntersection && (
-              <div className="flex items-center gap-1.5 text-amber-300 font-medium">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-amber-300 shadow-sm"></span>
+              <div className="flex items-center gap-2 text-amber-300 font-bold">
+                <span className="w-3 h-3 rounded-full bg-amber-500 border border-amber-300 shadow-sm"></span>
                 <span>Common Intersection</span>
               </div>
             )}
-            <div className="flex items-center gap-1.5 text-slate-400">
-              <span className="w-2.5 h-2.5 rounded-full border border-dashed border-slate-400"></span>
+            <div className="flex items-center gap-2 text-slate-400">
+              <span className="w-3 h-3 rounded-full border border-dashed border-slate-400"></span>
               <span>Orphan</span>
             </div>
           </div>
 
           {/* Intersection Insights Floating Banner (Bottom Left, above zoom controls) */}
           {intersectionSummary.hasIntersection && (
-            <div className="absolute bottom-16 left-4 bg-slate-900/95 backdrop-blur border border-amber-500/60 rounded-lg px-3 py-1.5 flex items-center gap-2.5 text-xs text-amber-200 shadow-2xl z-10 max-w-lg">
-              <span className="p-1 rounded bg-amber-500/20 text-amber-400 shrink-0">
-                <Sparkles className="w-3.5 h-3.5" />
+            <div className="absolute bottom-20 left-5 bg-slate-900/95 backdrop-blur border border-amber-500/70 rounded-xl px-4 py-2.5 flex items-center gap-3 text-sm text-amber-200 shadow-2xl z-10 max-w-xl">
+              <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 shrink-0">
+                <Sparkles className="w-4 h-4" />
               </span>
-              <div className="truncate text-xs">
-                <span className="font-bold text-amber-300 mr-1.5">
+              <div className="truncate">
+                <span className="font-bold text-amber-300 mr-2 text-sm">
                   {intersectionSummary.title}
                 </span>
-                <span className="text-slate-300 text-[11px]">
+                <span className="text-slate-300 text-xs">
                   ({intersectionSummary.description})
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsIntersectingOnly((prev) => !prev)}
-                className={`ml-2 px-2.5 py-1 rounded text-[11px] font-bold transition shrink-0 ${
+                className={`ml-2 px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 ${
                   isIntersectingOnly
                     ? "bg-amber-500 text-slate-950 shadow"
-                    : "bg-amber-950/80 hover:bg-amber-900/80 text-amber-300 border border-amber-600/50"
+                    : "bg-amber-950/80 hover:bg-amber-900/80 text-amber-300 border border-amber-600/60"
                 }`}
                 title="Isolate only the intersecting remedies / conditions"
               >
@@ -894,8 +894,8 @@ export default function GraphExplorer() {
 
           {/* Filter Status Badge (Placed at top-right to NEVER block or overlap the search dropdown on the left!) */}
           {(selectedEntities.length > 0 || orphanFilter !== "none" || isIntersectingOnly) && (
-            <div className="absolute top-3 right-3 bg-slate-900/90 backdrop-blur border border-slate-700 px-3 py-1.5 rounded-lg text-xs text-slate-200 flex items-center gap-2 shadow-xl z-10">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <div className="absolute top-4 right-4 bg-slate-900/95 backdrop-blur border border-slate-700 px-4 py-2 rounded-xl text-sm text-slate-200 flex items-center gap-2.5 shadow-2xl z-10 font-medium">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
               <span>
                 Showing <strong>{activeNodes.length}</strong> nodes, <strong>{activeLinks.length}</strong> links
               </span>
@@ -906,7 +906,7 @@ export default function GraphExplorer() {
                   setOrphanFilter("none");
                   setIsIntersectingOnly(false);
                 }}
-                className="ml-2 text-rose-400 hover:text-rose-300 underline font-medium"
+                className="ml-2 text-rose-400 hover:text-rose-300 underline font-semibold"
               >
                 Reset Filters
               </button>
