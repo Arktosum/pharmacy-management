@@ -12,6 +12,8 @@ import {
 import { toast } from "react-toastify";
 import {
   useGetLinksQuery,
+  useGetMedicinesQuery,
+  useGetDiseasesQuery,
   useUpdateMedicineMutation,
   useUpdateDiseaseMutation,
   useLinkMutation,
@@ -23,7 +25,7 @@ import { SimilarGroup } from "../../utils/similarityAudit";
 interface MergeConflictModalProps {
   group: SimilarGroup | null;
   onClose: () => void;
-  onSuccess: (survivorName: string) => void;
+  onSuccess: (survivorName: string, deletedIds: string[]) => void;
 }
 
 export default function MergeConflictModal({
@@ -34,7 +36,9 @@ export default function MergeConflictModal({
   if (!group) return null;
 
   const isMed = group.entityType === "medicine";
-  const { data: allLinks = [] } = useGetLinksQuery();
+  const { data: allLinks = [], refetch: refetchLinks } = useGetLinksQuery();
+  const { refetch: refetchMeds } = useGetMedicinesQuery();
+  const { refetch: refetchIlls } = useGetDiseasesQuery();
 
   const [updateMed] = useUpdateMedicineMutation();
   const [updateIll] = useUpdateDiseaseMutation();
@@ -153,6 +157,7 @@ export default function MergeConflictModal({
       }
 
       // 3. Delete victim nodes (backend automatically deletes associated links)
+      const deletedIds = victimMembers.map((m) => m.id);
       for (const victim of victimMembers) {
         if (isMed) {
           await deleteMed(victim.id).unwrap();
@@ -161,10 +166,22 @@ export default function MergeConflictModal({
         }
       }
 
+      // Immediately inform parent so UI removes the group without waiting
+      onSuccess(finalName, deletedIds);
+
+      // Re-fetch in background/parallel to guarantee server sync
+      try {
+        await Promise.all([
+          refetchLinks(),
+          isMed ? refetchMeds() : refetchIlls(),
+        ]);
+      } catch (e) {
+        console.warn("Background refetch notice:", e);
+      }
+
       toast.success(
         `Successfully merged ${group.members.length} items into "${finalName}"! Conflict resolved.`
       );
-      onSuccess(finalName);
       onClose();
     } catch (err: any) {
       console.error("Merge failed:", err);

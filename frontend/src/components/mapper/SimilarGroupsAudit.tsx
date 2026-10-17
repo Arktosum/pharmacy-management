@@ -31,14 +31,16 @@ import MergeConflictModal from "./MergeConflictModal";
 
 interface SimilarGroupsAuditProps {
   onInspectEntity: (type: "medicine" | "disease", id: string) => void;
+  onEntityMerged?: (deletedIds: string[]) => void;
 }
 
 export default function SimilarGroupsAudit({
   onInspectEntity,
+  onEntityMerged,
 }: SimilarGroupsAuditProps): JSX.Element {
-  const { data: medicines = [] } = useGetMedicinesQuery();
-  const { data: diseases = [] } = useGetDiseasesQuery();
-  const { data: links = [] } = useGetLinksQuery();
+  const { data: medicines = [], refetch: refetchMeds } = useGetMedicinesQuery();
+  const { data: diseases = [], refetch: refetchIlls } = useGetDiseasesQuery();
+  const { data: links = [], refetch: refetchLinks } = useGetLinksQuery();
 
   const [typeFilter, setTypeFilter] = useState<
     "all" | "medicine" | "disease"
@@ -52,11 +54,32 @@ export default function SimilarGroupsAudit({
   );
   const [viewDismissed, setViewDismissed] = useState(false);
   const [dismissTick, setDismissTick] = useState(0);
+  const [optimisticDeletedIds, setOptimisticDeletedIds] = useState<Set<string>>(
+    new Set()
+  );
+
+  const filteredMeds = useMemo(
+    () => medicines.filter((m) => !optimisticDeletedIds.has(m.id)),
+    [medicines, optimisticDeletedIds]
+  );
+  const filteredIlls = useMemo(
+    () => diseases.filter((i) => !optimisticDeletedIds.has(i.id)),
+    [diseases, optimisticDeletedIds]
+  );
+  const filteredLinksData = useMemo(
+    () =>
+      links.filter(
+        (l) =>
+          !optimisticDeletedIds.has(l.medicineId) &&
+          !optimisticDeletedIds.has(l.diseaseId)
+      ),
+    [links, optimisticDeletedIds]
+  );
 
   const audit = useMemo(
-    () => auditSimilarGroups(medicines, diseases, links),
+    () => auditSimilarGroups(filteredMeds, filteredIlls, filteredLinksData),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [medicines, diseases, links, dismissTick]
+    [filteredMeds, filteredIlls, filteredLinksData, dismissTick]
   );
 
   // Available issue categories
@@ -370,7 +393,12 @@ export default function SimilarGroupsAudit({
         <MergeConflictModal
           group={selectedForMerge}
           onClose={() => setSelectedForMerge(null)}
-          onSuccess={() => {
+          onSuccess={(_survivorName, deletedIds) => {
+            setOptimisticDeletedIds((prev) => new Set([...prev, ...deletedIds]));
+            onEntityMerged?.(deletedIds);
+            refetchMeds();
+            refetchIlls();
+            refetchLinks();
             setSelectedForMerge(null);
             setDismissTick((t) => t + 1);
           }}

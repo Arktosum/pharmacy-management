@@ -30,13 +30,35 @@ export default function MedicineMapper() {
     id: string;
   } | null>(null);
 
-  const { data: medicines = [] } = useGetMedicinesQuery();
-  const { data: diseases = [] } = useGetDiseasesQuery();
-  const { data: links = [] } = useGetLinksQuery();
+  const [resolvedDeletedIds, setResolvedDeletedIds] = useState<Set<string>>(
+    new Set()
+  );
+
+  const { data: medicines = [], refetch: refetchMeds } = useGetMedicinesQuery();
+  const { data: diseases = [], refetch: refetchIlls } = useGetDiseasesQuery();
+  const { data: links = [], refetch: refetchLinks } = useGetLinksQuery();
+
+  const filteredMeds = useMemo(
+    () => medicines.filter((m) => !resolvedDeletedIds.has(m.id)),
+    [medicines, resolvedDeletedIds]
+  );
+  const filteredIlls = useMemo(
+    () => diseases.filter((i) => !resolvedDeletedIds.has(i.id)),
+    [diseases, resolvedDeletedIds]
+  );
+  const filteredLinks = useMemo(
+    () =>
+      links.filter(
+        (l) =>
+          !resolvedDeletedIds.has(l.medicineId) &&
+          !resolvedDeletedIds.has(l.diseaseId)
+      ),
+    [links, resolvedDeletedIds]
+  );
 
   const auditSummary = useMemo(
-    () => auditSimilarGroups(medicines, diseases, links),
-    [medicines, diseases, links]
+    () => auditSimilarGroups(filteredMeds, filteredIlls, filteredLinks),
+    [filteredMeds, filteredIlls, filteredLinks]
   );
 
   return (
@@ -187,6 +209,14 @@ export default function MedicineMapper() {
                 onInspectEntity={(type, id) => {
                   setSearchSelection({ type, id });
                   setClassicSubTab("manage");
+                }}
+                onEntityMerged={(deletedIds) => {
+                  setResolvedDeletedIds(
+                    (prev) => new Set([...prev, ...deletedIds])
+                  );
+                  refetchMeds();
+                  refetchIlls();
+                  refetchLinks();
                 }}
               />
             )}
