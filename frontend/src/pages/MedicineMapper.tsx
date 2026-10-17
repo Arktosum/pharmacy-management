@@ -90,7 +90,7 @@ export default function MedicineMapper() {
         {activeTab === "graph" ? (
           <GraphExplorer />
         ) : (
-          <main className="h-full overflow-y-auto px-4 py-6 grid gap-4 max-w-5xl mx-auto">
+          <main className="h-full overflow-y-auto px-4 py-6 grid gap-4 max-w-7xl xl:max-w-[1600px] mx-auto">
             <section className="grid md:grid-cols-2 gap-4">
               <AddMedicine />
               <Adddisease />

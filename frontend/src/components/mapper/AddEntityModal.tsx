@@ -32,27 +32,16 @@ export default function AddEntityModal({
   const trimmed = name.trim();
   const trimmedLower = trimmed.toLowerCase();
 
-  const exactMatch = useMemo(() => {
-    if (!trimmedLower) return false;
-    if (type === "medicine") {
-      return medicines.some((m) => m.name.toLowerCase() === trimmedLower);
-    } else {
-      return diseases.some((d) => d.name.toLowerCase() === trimmedLower);
-    }
+  const matchingEntities = useMemo(() => {
+    if (!trimmedLower) return [];
+    const pool = type === "medicine" ? medicines : diseases;
+    return pool.filter((item) => item.name.toLowerCase().includes(trimmedLower));
   }, [type, trimmedLower, medicines, diseases]);
 
-  const topFuzzyMatch = useMemo(() => {
-    if (!trimmedLower || exactMatch) return null;
-    if (type === "medicine") {
-      return (
-        medicines.find((m) => m.name.toLowerCase().includes(trimmedLower))?.name ?? null
-      );
-    } else {
-      return (
-        diseases.find((d) => d.name.toLowerCase().includes(trimmedLower))?.name ?? null
-      );
-    }
-  }, [type, trimmedLower, exactMatch, medicines, diseases]);
+  const exactMatch = useMemo(() => {
+    if (!trimmedLower) return false;
+    return matchingEntities.some((item) => item.name.toLowerCase() === trimmedLower);
+  }, [matchingEntities, trimmedLower]);
 
   if (!isOpen) return null;
 
@@ -133,7 +122,7 @@ export default function AddEntityModal({
             </div>
           </div>
 
-          {/* Name Input */}
+          {/* Name Input & Live Matching Dropdown */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
               {type === "medicine" ? "Medicine Name" : "Disease / Symptom Name"}
@@ -151,22 +140,61 @@ export default function AddEntityModal({
 
             {/* Exact Duplicate Warning */}
             {exactMatch && (
-              <p className="mt-2.5 text-sm text-rose-400 flex items-center gap-2">
+              <p className="mt-2.5 text-sm text-rose-400 flex items-center gap-2 font-medium">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>
-                  "{trimmed}" already exists as a {type}!
+                  "{trimmed}" already exists as a {type}! (Cannot add duplicate)
                 </span>
               </p>
             )}
 
-            {/* Fuzzy match suggestion */}
-            {!exactMatch && topFuzzyMatch && (
-              <p className="mt-2.5 text-sm text-amber-400/90 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>
-                  Similar entity exists: "<strong>{topFuzzyMatch}</strong>"
-                </span>
+            {/* Unique Name Indication */}
+            {!exactMatch && trimmedLower.length > 0 && matchingEntities.length === 0 && (
+              <p className="mt-2 text-xs text-emerald-400 flex items-center gap-1.5 font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span>"{trimmed}" is unique and ready to be created.</span>
               </p>
+            )}
+
+            {/* Live Dropdown / List showing ALL matching items */}
+            {matchingEntities.length > 0 && (
+              <div className="mt-3 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div className="px-3.5 py-2 bg-slate-800/80 border-b border-slate-800 flex items-center justify-between text-xs text-slate-300">
+                  <span className="font-semibold">
+                    Matching {type === "medicine" ? "medicines" : "diseases"} ({matchingEntities.length}):
+                  </span>
+                  <span className="text-[11px] text-slate-400">Click to autofill</span>
+                </div>
+                <ul className="max-h-44 overflow-y-auto divide-y divide-slate-800/60">
+                  {matchingEntities.map((item) => {
+                    const isExact = item.name.toLowerCase() === trimmedLower;
+                    return (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          onClick={() => setName(item.name)}
+                          className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition ${
+                            isExact
+                              ? "bg-rose-950/40 text-rose-200 font-bold"
+                              : "text-slate-200 hover:bg-blue-600/20 hover:text-white"
+                          }`}
+                        >
+                          <span className="truncate">{item.name}</span>
+                          {isExact ? (
+                            <span className="text-[11px] px-2 py-0.5 rounded bg-rose-900/60 text-rose-300 border border-rose-700/60 font-semibold">
+                              Exact Match
+                            </span>
+                          ) : (
+                            <span className="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                              Already in graph
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             )}
           </div>
 
