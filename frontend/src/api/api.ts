@@ -25,7 +25,7 @@ export const api = createApi({
         }),
         updateMedicine: builder.mutation<Medicine, { id: string; name: string }>({
             query: ({ id, name }) => ({ url: `/medicines/${id}`, method: 'PUT', body: { name } }),
-            invalidatesTags: (res, err, { id }) => [
+            invalidatesTags: (_res, _err, { id }) => [
                 { type: 'Medicine', id },
                 { type: 'Medicine', id: 'LIST' },
                 { type: 'Link', id: 'LIST' },
@@ -33,7 +33,7 @@ export const api = createApi({
         }),
         deleteMedicine: builder.mutation<void, string>({
             query: id => ({ url: `/medicines/${id}`, method: 'DELETE' }),
-            invalidatesTags: (res, err, id) => [
+            invalidatesTags: (_res, _err, id) => [
                 { type: 'Medicine', id },
                 { type: 'Medicine', id: 'LIST' },
                 { type: 'Link', id: 'LIST' },
@@ -56,7 +56,7 @@ export const api = createApi({
         }),
         updateDisease: builder.mutation<Disease, { id: string; name: string }>({
             query: ({ id, name }) => ({ url: `/illnesses/${id}`, method: 'PUT', body: { name } }),
-            invalidatesTags: (res, err, { id }) => [
+            invalidatesTags: (_res, _err, { id }) => [
                 { type: 'Illness', id },
                 { type: 'Illness', id: 'LIST' },
                 { type: 'Link', id: 'LIST' },
@@ -64,7 +64,7 @@ export const api = createApi({
         }),
         deleteDisease: builder.mutation<void, string>({
             query: id => ({ url: `/illnesses/${id}`, method: 'DELETE' }),
-            invalidatesTags: (res, err, id) => [
+            invalidatesTags: (_res, _err, id) => [
                 { type: 'Illness', id },
                 { type: 'Illness', id: 'LIST' },
                 { type: 'Link', id: 'LIST' },

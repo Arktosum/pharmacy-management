@@ -66,7 +66,7 @@ export default function Linker() {
   }, [duplicateExists, link, selectedIll, selectedMed]);
 
   const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+    (e: KeyboardEvent | React.KeyboardEvent) => {
       if (e.key === "Enter") {
         console.log("enter");
         handleLink();

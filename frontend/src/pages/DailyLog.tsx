@@ -13,8 +13,8 @@ import moment from "moment";
 import { updateStockCount } from "../redux/stockSlice";
 import { toast } from "react-toastify";
 
-function ExcelColumns({ excelData, setexcelData }) {
-  function updateColumns(row, col, val) {
+function ExcelColumns({ excelData, setexcelData }: { excelData: any; setexcelData: any }) {
+  function updateColumns(row: any, col: any, val: any) {
     excelData[row][col] = val;
     axios.post(ORIGIN + "/excels/", excelData).then((response) => {
       setexcelData(response.data);
@@ -24,7 +24,7 @@ function ExcelColumns({ excelData, setexcelData }) {
   const copyToExcel = () => {
     const tsvData = excelData
       .slice(0, 40)
-      .map((row) => `${row[0] || ""}\t${row[1] || ""}`)
+      .map((row: any) => `${row[0] || ""}\t${row[1] || ""}`)
       .join("\n");
 
     navigator.clipboard.writeText(tsvData).then(() => {
