@@ -9,6 +9,10 @@ import {
   Filter,
   Check,
   CheckCircle2,
+  GitMerge,
+  EyeOff,
+  RotateCcw,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -18,9 +22,12 @@ import {
 } from "../../api/api";
 import {
   auditSimilarGroups,
+  dismissGroupSignature,
+  restoreGroupSignature,
   IssueCategory,
   SimilarGroup,
 } from "../../utils/similarityAudit";
+import MergeConflictModal from "./MergeConflictModal";
 
 interface SimilarGroupsAuditProps {
   onInspectEntity: (type: "medicine" | "disease", id: string) => void;
@@ -40,9 +47,16 @@ export default function SimilarGroupsAudit({
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const [selectedForMerge, setSelectedForMerge] = useState<SimilarGroup | null>(
+    null
+  );
+  const [viewDismissed, setViewDismissed] = useState(false);
+  const [dismissTick, setDismissTick] = useState(0);
+
   const audit = useMemo(
     () => auditSimilarGroups(medicines, diseases, links),
-    [medicines, diseases, links]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [medicines, diseases, links, dismissTick]
   );
 
   // Available issue categories
@@ -55,12 +69,22 @@ export default function SimilarGroupsAudit({
   // Filtered groups
   const filteredGroups = useMemo(() => {
     return audit.groups.filter((g) => {
+      // Dismissed toggle
+      if (viewDismissed) {
+        if (!g.isDismissed) return false;
+      } else {
+        if (g.isDismissed) return false;
+      }
+
       // Type filter
       if (typeFilter !== "all" && g.entityType !== typeFilter) {
         return false;
       }
       // Issue filter
-      if (issueFilter !== "all" && !g.issues.includes(issueFilter as IssueCategory)) {
+      if (
+        issueFilter !== "all" &&
+        !g.issues.includes(issueFilter as IssueCategory)
+      ) {
         return false;
       }
       // Search query filter
@@ -76,13 +100,29 @@ export default function SimilarGroupsAudit({
       }
       return true;
     });
-  }, [audit.groups, typeFilter, issueFilter, searchQuery]);
+  }, [audit.groups, viewDismissed, typeFilter, issueFilter, searchQuery]);
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     toast.success(`Copied "${text}" to clipboard`);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDismiss = (group: SimilarGroup) => {
+    dismissGroupSignature(group.signature);
+    setDismissTick((t) => t + 1);
+    toast.info(
+      `Group "${group.primaryName}" marked as distinct entities and dismissed.`
+    );
+  };
+
+  const handleRestore = (group: SimilarGroup) => {
+    restoreGroupSignature(group.signature);
+    setDismissTick((t) => t + 1);
+    toast.success(
+      `Group "${group.primaryName}" restored to active duplicate conflicts.`
+    );
   };
 
   return (
@@ -95,15 +135,19 @@ export default function SimilarGroupsAudit({
               <AlertTriangle className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2.5">
-                <span>Potential Duplicates & Similar Name Groups</span>
+              <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2.5 flex-wrap">
+                <span>Potential Duplicates & Merge Resolution</span>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                  {audit.totalGroups} Groups Detected
+                  {audit.totalGroups} Active Conflicts
                 </span>
+                {audit.dismissedCount > 0 && (
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                    {audit.dismissedCount} Dismissed False Alarms
+                  </span>
+                )}
               </h2>
               <p className="text-sm text-slate-300 mt-1 max-w-3xl leading-relaxed">
-                Automatically scans your database to flag entries that are nearly
-                identical due to spacing variations (e.g.{" "}
+                Scan and resolve nearly identical names caused by spacing variations (e.g.{" "}
                 <code className="text-amber-300 font-mono text-xs">
                   "oxalic  acid 3x"
                 </code>{" "}
@@ -119,7 +163,9 @@ export default function SimilarGroupsAudit({
                 <code className="text-amber-300 font-mono text-xs">
                   "cough dry"
                 </code>
-                ), singular/plural suffixes, or single-character typos.
+                ), singular/plural suffixes, or single-character typos. Click{" "}
+                <strong className="text-amber-300 font-bold">Merge & Resolve</strong> to
+                transfer connections and consolidate duplicates into a single canonical entry.
               </p>
             </div>
           </div>
@@ -129,13 +175,13 @@ export default function SimilarGroupsAudit({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
           <div className="bg-slate-950/70 border border-slate-800 p-3.5 rounded-xl">
             <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
-              Total Conflict Groups
+              Active Conflict Groups
             </div>
             <div className="text-2xl font-black text-amber-400 mt-1">
               {audit.totalGroups}
             </div>
             <div className="text-[11px] text-slate-500 mt-0.5">
-              Requires user review
+              Require merge or review
             </div>
           </div>
           <div className="bg-slate-950/70 border border-slate-800 p-3.5 rounded-xl">
@@ -176,6 +222,43 @@ export default function SimilarGroupsAudit({
         </div>
       </div>
 
+      {/* Mode Switcher: Active Conflicts vs Dismissed False Alarms */}
+      <div className="flex items-center justify-between border-b border-slate-800 pb-3 gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setViewDismissed(false)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm ${
+              !viewDismissed
+                ? "bg-amber-600 text-white shadow"
+                : "bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800"
+            }`}
+          >
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span>Active Conflicts ({audit.totalGroups})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewDismissed(true)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm ${
+              viewDismissed
+                ? "bg-slate-800 text-white shadow"
+                : "bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800"
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Dismissed False Alarms ({audit.dismissedCount})</span>
+          </button>
+        </div>
+
+        <div className="text-xs text-slate-400 font-medium">
+          {viewDismissed
+            ? "Showing groups marked as legitimately distinct terms (e.g. nephritis vs nephrosis)."
+            : "Reviewing groups detected as likely accidental duplicates."}
+        </div>
+      </div>
+
       {/* Filter & Search Bar */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-sm">
         {/* Type Filter Buttons */}
@@ -185,11 +268,11 @@ export default function SimilarGroupsAudit({
             onClick={() => setTypeFilter("all")}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition ${
               typeFilter === "all"
-                ? "bg-amber-600 text-white shadow"
+                ? "bg-slate-800 text-white shadow"
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            All ({audit.totalGroups})
+            All Types
           </button>
           <button
             type="button"
@@ -201,7 +284,7 @@ export default function SimilarGroupsAudit({
             }`}
           >
             <Pill className="w-3.5 h-3.5" />
-            <span>Medicines ({audit.medicineGroups})</span>
+            <span>Medicines</span>
           </button>
           <button
             type="button"
@@ -213,7 +296,7 @@ export default function SimilarGroupsAudit({
             }`}
           >
             <Stethoscope className="w-3.5 h-3.5" />
-            <span>Diseases ({audit.diseaseGroups})</span>
+            <span>Diseases</span>
           </button>
         </div>
 
@@ -252,12 +335,16 @@ export default function SimilarGroupsAudit({
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
           <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3 opacity-90" />
           <h3 className="text-lg font-bold text-slate-200">
-            No Problematic Groups Found
+            {viewDismissed
+              ? "No Dismissed Groups"
+              : "No Problematic Groups Found"}
           </h3>
           <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
             {searchQuery || issueFilter !== "all" || typeFilter !== "all"
               ? "No groups match your current filter criteria. Try clearing filters or search query."
-              : "All medicines and diseases have distinct names. Great job keeping the knowledge graph clean!"}
+              : viewDismissed
+              ? "No false alarms have been dismissed yet. If you see two terms that are legitimately distinct, click 'Not a Duplicate' to dismiss them here."
+              : "All active medicines and diseases have distinct names. Great job keeping the knowledge graph clean!"}
           </p>
         </div>
       ) : (
@@ -270,9 +357,24 @@ export default function SimilarGroupsAudit({
               copiedId={copiedId}
               onCopy={handleCopy}
               onInspect={onInspectEntity}
+              onMerge={(g) => setSelectedForMerge(g)}
+              onDismiss={handleDismiss}
+              onRestore={handleRestore}
             />
           ))}
         </div>
+      )}
+
+      {/* Merge Conflict Resolution Modal */}
+      {selectedForMerge && (
+        <MergeConflictModal
+          group={selectedForMerge}
+          onClose={() => setSelectedForMerge(null)}
+          onSuccess={() => {
+            setSelectedForMerge(null);
+            setDismissTick((t) => t + 1);
+          }}
+        />
       )}
     </div>
   );
@@ -284,6 +386,9 @@ interface GroupCardProps {
   copiedId: string | null;
   onCopy: (text: string, id: string) => void;
   onInspect: (type: "medicine" | "disease", id: string) => void;
+  onMerge: (group: SimilarGroup) => void;
+  onDismiss: (group: SimilarGroup) => void;
+  onRestore: (group: SimilarGroup) => void;
 }
 
 function GroupCard({
@@ -292,6 +397,9 @@ function GroupCard({
   copiedId,
   onCopy,
   onInspect,
+  onMerge,
+  onDismiss,
+  onRestore,
 }: GroupCardProps): JSX.Element {
   const isMed = group.entityType === "medicine";
 
@@ -315,6 +423,12 @@ function GroupCard({
             <span className="text-xs font-bold text-slate-400">
               Group #{index}
             </span>
+
+            {group.isDismissed && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                Dismissed
+              </span>
+            )}
           </div>
 
           <span className="text-xs font-bold text-slate-400 bg-slate-950 px-2.5 py-0.5 rounded-full border border-slate-800">
@@ -368,7 +482,7 @@ function GroupCard({
                 </div>
               </div>
 
-              {/* Actions */}
+              {/* Individual Item Actions */}
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
@@ -396,6 +510,50 @@ function GroupCard({
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Card Footer: Conflict Resolution Actions */}
+      <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+        {group.isDismissed ? (
+          <div className="flex items-center justify-between w-full">
+            <span className="text-xs text-slate-400 flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-slate-500" />
+              <span>Marked as distinct medical terms</span>
+            </span>
+
+            <button
+              type="button"
+              onClick={() => onRestore(group)}
+              className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 flex items-center gap-1.5 transition shadow-sm"
+              title="Restore to active conflict list"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Restore Conflict</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between w-full">
+            <button
+              type="button"
+              onClick={() => onDismiss(group)}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent hover:border-slate-700 flex items-center gap-1.5 transition"
+              title="Dismiss this group if they are genuinely different diseases or medicines"
+            >
+              <EyeOff className="w-3.5 h-3.5" />
+              <span>Not a Duplicate</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onMerge(group)}
+              className="px-4 py-1.5 text-xs font-extrabold rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 flex items-center gap-1.5 shadow-sm transition"
+              title="Consolidate all variants into one canonical entity and transfer links"
+            >
+              <GitMerge className="w-3.5 h-3.5" />
+              <span>Merge & Resolve</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -19,10 +19,12 @@ export interface DuplicateMember {
 
 export interface SimilarGroup {
   id: string;
+  signature: string;
   entityType: "medicine" | "disease";
   primaryName: string;
   issues: IssueCategory[];
   members: DuplicateMember[];
+  isDismissed?: boolean;
 }
 
 export interface AuditSummary {
@@ -30,7 +32,41 @@ export interface AuditSummary {
   medicineGroups: number;
   diseaseGroups: number;
   totalConflictingEntities: number;
+  dismissedCount: number;
   groups: SimilarGroup[];
+}
+
+const DISMISSED_STORAGE_KEY = "remedygraph_dismissed_clusters";
+
+export function getDismissedGroupSignatures(): Set<string> {
+  try {
+    const raw = localStorage.getItem(DISMISSED_STORAGE_KEY);
+    if (!raw) return new Set();
+    const list = JSON.parse(raw);
+    return new Set(Array.isArray(list) ? list : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function dismissGroupSignature(signature: string): void {
+  try {
+    const set = getDismissedGroupSignatures();
+    set.add(signature);
+    localStorage.setItem(DISMISSED_STORAGE_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {
+    console.error("Failed to dismiss group:", e);
+  }
+}
+
+export function restoreGroupSignature(signature: string): void {
+  try {
+    const set = getDismissedGroupSignatures();
+    set.delete(signature);
+    localStorage.setItem(DISMISSED_STORAGE_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {
+    console.error("Failed to restore group:", e);
+  }
 }
 
 // Clean invisible unicode characters, zero-width spaces, and soft hyphens
@@ -130,6 +166,36 @@ export function isOppositePair(a: string, b: string): boolean {
   return false;
 }
 
+export function isDistinctMedicalSuffixPair(a: string, b: string): boolean {
+  const lowA = a.toLowerCase();
+  const lowB = b.toLowerCase();
+  // -itis vs -osis (inflammation vs pathology, e.g. nephritis vs nephrosis, arthritis vs arthrosis)
+  if (
+    (lowA.endsWith("itis") && lowB.endsWith("osis")) ||
+    (lowA.endsWith("osis") && lowB.endsWith("itis"))
+  ) {
+    return true;
+  }
+  // -emia vs -uria (blood vs urine)
+  if (
+    (lowA.endsWith("emia") && lowB.endsWith("uria")) ||
+    (lowA.endsWith("uria") && lowB.endsWith("emia")) ||
+    (lowA.endsWith("aemia") && lowB.endsWith("uria")) ||
+    (lowA.endsWith("uria") && lowB.endsWith("aemia"))
+  ) {
+    return true;
+  }
+  // -ectomy vs -otomy vs -ostomy
+  if (
+    (lowA.endsWith("ectomy") || lowA.endsWith("otomy") || lowA.endsWith("ostomy")) &&
+    (lowB.endsWith("ectomy") || lowB.endsWith("otomy") || lowB.endsWith("ostomy")) &&
+    lowA !== lowB
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export function compareItems(
   nameA: string,
   nameB: string
@@ -138,6 +204,7 @@ export function compareItems(
   const cleanB = cleanString(nameB);
 
   if (isOppositePair(cleanA, cleanB)) return null;
+  if (isDistinctMedicalSuffixPair(cleanA, cleanB)) return null;
 
   // 1. Normalized match (casing, quotes, punctuation, spacing, invisible chars)
   const normA = normalize(cleanA);
@@ -177,6 +244,7 @@ export function compareItems(
     if (diffs.length === 1) {
       const { tA, tB } = diffs[0];
       if (isOppositePair(tA, tB)) return null;
+      if (isDistinctMedicalSuffixPair(tA, tB)) return null;
       if (stem(tA) === stem(tB)) return "Singular / Plural";
       if (
         (tA === "ac" && tB === "acid") ||
@@ -197,6 +265,7 @@ export function compareItems(
 
   // 5. Full string single token comparison
   if (toksA.length === 1 && toksB.length === 1) {
+    if (isDistinctMedicalSuffixPair(toksA[0], toksB[0])) return null;
     const dDist = damerauLevenshtein(toksA[0], toksB[0]);
     if (dDist === 1 && Math.min(toksA[0].length, toksB[0].length) >= 4) {
       return "Typo (1 char diff)";
@@ -221,7 +290,8 @@ export function compareItems(
 export function clusterEntities<T extends { id: string; name: string }>(
   items: T[],
   entityType: "medicine" | "disease",
-  linkCounts: Map<string, number>
+  linkCounts: Map<string, number>,
+  dismissedSet: Set<string> = getDismissedGroupSignatures()
 ): SimilarGroup[] {
   const n = items.length;
   if (n < 2) return [];
@@ -276,12 +346,20 @@ export function clusterEntities<T extends { id: string; name: string }>(
         (a, b) => b.linkCount - a.linkCount || a.name.localeCompare(b.name)
       );
 
+      const signature = formattedMembers
+        .map((m) => m.id)
+        .sort()
+        .join("::");
+      const isDismissed = dismissedSet.has(signature);
+
       clusters.push({
         id: `${entityType}-${formattedMembers[0].id}`,
+        signature,
         entityType,
         primaryName: formattedMembers[0].name,
         issues: Array.from(issuesSet),
         members: formattedMembers,
+        isDismissed,
       });
     }
   }
@@ -313,20 +391,25 @@ export function auditSimilarGroups(
     illLinks.set(l.diseaseId, (illLinks.get(l.diseaseId) || 0) + 1);
   }
 
-  const medClusters = clusterEntities(medicines, "medicine", medLinks);
-  const illClusters = clusterEntities(diseases, "disease", illLinks);
+  const dismissedSet = getDismissedGroupSignatures();
+  const medClusters = clusterEntities(medicines, "medicine", medLinks, dismissedSet);
+  const illClusters = clusterEntities(diseases, "disease", illLinks, dismissedSet);
   const allGroups = [...medClusters, ...illClusters];
 
-  const totalConflictingEntities = allGroups.reduce(
+  const activeGroups = allGroups.filter((g) => !g.isDismissed);
+  const dismissedGroups = allGroups.filter((g) => g.isDismissed);
+
+  const totalConflictingEntities = activeGroups.reduce(
     (acc, g) => acc + g.members.length,
     0
   );
 
   return {
-    totalGroups: allGroups.length,
-    medicineGroups: medClusters.length,
-    diseaseGroups: illClusters.length,
+    totalGroups: activeGroups.length,
+    medicineGroups: activeGroups.filter((g) => g.entityType === "medicine").length,
+    diseaseGroups: activeGroups.filter((g) => g.entityType === "disease").length,
     totalConflictingEntities,
+    dismissedCount: dismissedGroups.length,
     groups: allGroups,
   };
 }
