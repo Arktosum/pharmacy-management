@@ -217,54 +217,55 @@ export default function SearchLinker({
 
   return (
     <Card>
-      <div className="flex items-center justify-between flex-wrap gap-4 mb-5 pb-3 border-b border-slate-200">
-        <div>
-          <h3 className="text-xl font-bold text-slate-900">Search & Manage Links</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Select a mode to filter, manage 1° direct links, and explore 2° sibling hops.
-          </p>
-        </div>
-        <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-          <button
-            type="button"
-            onClick={() => {
-              setType("medicine");
-              setSelectedId(null);
-              setQuery("");
-            }}
-            className={`px-4 py-2 rounded-lg font-bold text-sm transition ${
-              type === "medicine"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Medicines
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setType("disease");
-              setSelectedId(null);
-              setQuery("");
-            }}
-            className={`px-4 py-2 rounded-lg font-bold text-sm transition ${
-              type === "disease"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Diseases
-          </button>
-        </div>
+      {/* Header */}
+      <div className="mb-5 pb-3 border-b border-slate-200">
+        <h3 className="text-2xl font-extrabold text-slate-900">Search & Manage Links</h3>
+        <p className="text-sm text-slate-500 mt-1">
+          Select a mode to filter, manage 1° direct links, and explore 2° sibling hops.
+        </p>
       </div>
 
       {/* 4-Column Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Column 1: Search & Matches */}
         <div className="flex flex-col">
-          <label className="text-sm font-bold text-slate-800 mb-1.5 flex items-center justify-between">
+          {/* Selector for Medicines / Diseases: above filter text & below hr */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-300 mb-3.5 shadow-inner">
+            <button
+              type="button"
+              onClick={() => {
+                setType("medicine");
+                setSelectedId(null);
+                setQuery("");
+              }}
+              className={`flex-1 py-2 rounded-lg font-bold text-base transition ${
+                type === "medicine"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Medicines
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setType("disease");
+                setSelectedId(null);
+                setQuery("");
+              }}
+              className={`flex-1 py-2 rounded-lg font-bold text-base transition ${
+                type === "disease"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Diseases
+            </button>
+          </div>
+
+          <label className="text-base font-bold text-slate-800 mb-2 flex items-center justify-between">
             <span>Filter {type === "medicine" ? "Medicines" : "Diseases"}</span>
-            <span className="text-xs font-semibold text-slate-500">
+            <span className="text-sm font-semibold text-slate-500">
               {matches.length} found
             </span>
           </label>
@@ -272,29 +273,30 @@ export default function SearchLinker({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={`Type to search ${type}...`}
-            className="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-400 bg-cyan-50/40 text-slate-900 text-sm placeholder-slate-400"
+            style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
+            className="w-full px-4 py-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-emerald-500 text-slate-900 text-base font-semibold placeholder-slate-600 shadow-sm"
           />
-          <ul className="mt-2 max-h-80 overflow-y-auto border border-slate-200 rounded-lg bg-white divide-y shadow-sm flex-1">
+          <ul className="mt-2.5 max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
             {matches.map((m) => (
               <li
                 key={m.id}
                 onClick={() => handleSelect(m.id)}
-                className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm transition flex items-center justify-between ${
+                className={`px-4 py-2.5 cursor-pointer hover:bg-blue-50 text-base transition flex items-center justify-between ${
                   selectedId === m.id
                     ? "bg-blue-100 font-bold text-blue-900"
-                    : "text-slate-800"
+                    : "text-slate-800 font-medium"
                 }`}
               >
                 <span className="truncate">{m.name}</span>
                 {selectedId === m.id && (
-                  <span className="text-[10px] bg-blue-600 text-white font-bold px-1.5 py-0.5 rounded">
+                  <span className="text-xs bg-blue-600 text-white font-bold px-2 py-0.5 rounded-md">
                     Selected
                   </span>
                 )}
               </li>
             ))}
             {matches.length === 0 && (
-              <li className="px-3 py-6 text-center text-xs text-slate-400 italic">
+              <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
                 No matching {type}s found.
               </li>
             )}
@@ -303,48 +305,51 @@ export default function SearchLinker({
 
         {/* Column 2: Selected Item & Edit/Delete */}
         <div className="flex flex-col">
-          <label className="text-sm font-bold text-slate-800 mb-1.5">
+          {/* Alignment spacer to line up labels horizontally on desktop */}
+          <div className="hidden lg:block h-[54px]" />
+
+          <label className="text-base font-bold text-slate-800 mb-2">
             Selected {type === "medicine" ? "Medicine" : "Disease"}
           </label>
-          <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/90 shadow-sm flex-1 flex flex-col justify-between min-h-[220px]">
+          <div className="border border-slate-200 rounded-xl p-5 bg-slate-50/90 shadow-sm flex-1 flex flex-col justify-between min-h-[240px]">
             {selectedItem ? (
               <div>
                 {!editing ? (
                   <div>
-                    <h4 className="text-xl font-extrabold text-slate-900 leading-snug break-words">
+                    <h4 className="text-2xl font-black text-slate-900 leading-snug break-words">
                       {selectedItem.name}
                     </h4>
-                    <p className="text-xs font-mono text-slate-500 mt-1">
+                    <p className="text-sm font-mono text-slate-500 mt-1.5">
                       ID: {selectedItem.id}
                     </p>
 
-                    <div className="flex gap-2 mt-4">
+                    <div className="flex gap-2.5 mt-4">
                       <button
                         type="button"
                         onClick={startEdit}
-                        className="px-3 py-1.5 text-xs font-bold border border-slate-300 rounded-lg bg-white hover:bg-slate-100 text-slate-700 transition shadow-sm"
+                        className="px-4 py-2 text-sm font-bold border border-slate-300 rounded-xl bg-white hover:bg-slate-100 text-slate-700 transition shadow-sm"
                       >
                         Rename
                       </button>
                       <button
                         type="button"
                         onClick={handleDelete}
-                        className="px-3 py-1.5 text-xs font-bold border border-rose-200 rounded-lg bg-white hover:bg-rose-50 text-rose-600 transition shadow-sm"
+                        className="px-4 py-2 text-sm font-bold border border-rose-200 rounded-xl bg-white hover:bg-rose-50 text-rose-600 transition shadow-sm"
                       >
                         Delete
                       </button>
                     </div>
 
-                    <div className="mt-5 pt-3.5 border-t border-slate-200 text-xs text-slate-600 space-y-1.5">
+                    <div className="mt-5 pt-4 border-t border-slate-200 text-sm text-slate-600 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-slate-700">1° Direct Links:</span>
-                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">
+                        <span className="px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-bold text-sm">
                           {selectedLinks.length} {type === "medicine" ? "diseases" : "medicines"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-slate-700">2° Related {type === "medicine" ? "Meds" : "Diseases"}:</span>
-                        <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">
+                        <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 font-bold text-sm">
                           {secondHopRelated.length}
                         </span>
                       </div>
@@ -352,27 +357,28 @@ export default function SearchLinker({
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
                       Rename {type}:
                     </label>
                     <input
                       autoFocus
                       value={editingName ?? ""}
                       onChange={(e) => setEditingName(e.target.value)}
-                      className="w-full px-3 py-2 border-2 border-blue-500 rounded-lg bg-white text-sm font-semibold text-slate-900 focus:outline-none shadow-inner"
+                      style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
+                      className="w-full px-4 py-2.5 border-2 border-emerald-500 rounded-xl text-base font-bold text-slate-900 focus:outline-none shadow-inner"
                     />
-                    <div className="mt-3 flex gap-2">
+                    <div className="mt-3.5 flex gap-2.5">
                       <button
                         type="button"
                         onClick={saveName}
-                        className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition shadow-sm"
+                        className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition shadow-sm"
                       >
                         Save
                       </button>
                       <button
                         type="button"
                         onClick={cancelEdit}
-                        className="px-3.5 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+                        className="px-4 py-2 border border-slate-300 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition"
                       >
                         Cancel
                       </button>
@@ -381,7 +387,7 @@ export default function SearchLinker({
                 )}
               </div>
             ) : (
-              <div className="text-sm text-slate-400 italic flex items-center justify-center flex-1 text-center p-4">
+              <div className="text-base text-slate-400 italic flex items-center justify-center flex-1 text-center p-6">
                 Select an item from the list to inspect, edit, or manage its connections.
               </div>
             )}
@@ -390,28 +396,31 @@ export default function SearchLinker({
 
         {/* Column 3: 1st Hop (Direct Links) */}
         <div className="flex flex-col">
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+          {/* Alignment spacer */}
+          <div className="hidden lg:block h-[54px]" />
+
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-blue-500"></span>
               <span>1st Hop: Linked {type === "medicine" ? "Diseases" : "Medicines"}</span>
             </label>
             {selectedItem && (
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+              <span className="text-sm font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
                 {selectedLinks.length}
               </span>
             )}
           </div>
-          <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-lg bg-white divide-y shadow-sm flex-1">
+          <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
             {selectedItem ? (
               selectedLinks.length === 0 ? (
-                <li className="px-3 py-8 text-center text-xs text-slate-400 italic">
+                <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
                   No 1st-degree links found (orphan node).
                 </li>
               ) : (
                 selectedLinks.map((item) => (
                   <li
                     key={item.id}
-                    className="px-3 py-2 flex items-center justify-between hover:bg-slate-50 transition text-sm"
+                    className="px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition text-base"
                   >
                     <div className="font-semibold text-slate-800 truncate mr-2">
                       {item.name}
@@ -419,7 +428,7 @@ export default function SearchLinker({
                     <button
                       type="button"
                       onClick={() => handleUnlink(item.id, item.name)}
-                      className="px-2 py-1 text-xs border border-rose-200 text-rose-600 rounded hover:bg-rose-50 transition shrink-0 font-medium"
+                      className="px-3 py-1.5 text-sm border border-rose-200 text-rose-600 rounded-lg hover:bg-rose-50 transition shrink-0 font-bold shadow-sm"
                       title="Unlink"
                     >
                       Unlink
@@ -428,7 +437,7 @@ export default function SearchLinker({
                 ))
               )
             ) : (
-              <li className="px-3 py-8 text-center text-xs text-slate-400 italic">
+              <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
                 Select an item to view its 1st-degree links.
               </li>
             )}
@@ -437,21 +446,24 @@ export default function SearchLinker({
 
         {/* Column 4: 2nd Hop (Related Sibling Hops) */}
         <div className="flex flex-col">
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+          {/* Alignment spacer */}
+          <div className="hidden lg:block h-[54px]" />
+
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-amber-500"></span>
               <span>2nd Hop: Related {type === "medicine" ? "Medicines" : "Diseases"}</span>
             </label>
             {selectedItem && (
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+              <span className="text-sm font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
                 {secondHopRelated.length}
               </span>
             )}
           </div>
-          <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-lg bg-white divide-y shadow-sm flex-1">
+          <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
             {selectedItem ? (
               secondHopRelated.length === 0 ? (
-                <li className="px-3 py-8 text-center text-xs text-slate-400 italic">
+                <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
                   No 2nd-hop related {type === "medicine" ? "medicines" : "diseases"} found.
                 </li>
               ) : (
@@ -459,20 +471,20 @@ export default function SearchLinker({
                   <li
                     key={item.id}
                     onClick={() => handleSelect(item.id)}
-                    className="px-3 py-2.5 cursor-pointer hover:bg-amber-50/80 flex items-center justify-between transition text-sm group"
+                    className="px-4 py-3 cursor-pointer hover:bg-amber-50/80 flex items-center justify-between transition text-base group"
                     title={`Click to inspect ${item.name}`}
                   >
                     <span className="font-semibold text-slate-800 group-hover:text-amber-950 truncate mr-2">
                       {item.name}
                     </span>
-                    <span className="text-[11px] font-bold text-amber-800 bg-amber-100/90 border border-amber-300/80 px-2 py-0.5 rounded-md shrink-0">
+                    <span className="text-xs font-bold text-amber-800 bg-amber-100/90 border border-amber-300/80 px-2.5 py-1 rounded-lg shrink-0">
                       {item.sharedCount} shared
                     </span>
                   </li>
                 ))
               )
             ) : (
-              <li className="px-3 py-8 text-center text-xs text-slate-400 italic">
+              <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
                 Select an item to view its 2nd-hop related {type}s.
               </li>
             )}

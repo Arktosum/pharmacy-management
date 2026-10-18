@@ -71,23 +71,27 @@ export default function IntersectionFinder(): JSX.Element {
 
   return (
     <Card>
-      <h3 className="text-lg font-semibold mb-4">Find Common Intersection</h3>
+      <h3 className="text-2xl font-black text-slate-800 mb-6 tracking-tight">
+        Find Common Intersection
+      </h3>
       <div className="grid md:grid-cols-3 gap-6">
         {/* Column 1: Disease Search & Selection */}
         <div>
+          <h4 className="text-base font-bold text-slate-700 mb-3">Search Diseases</h4>
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search for diseases to add..."
-            className="w-full px-3 py-2 border rounded focus:ring focus:ring-blue-200 bg-[#fbffd3]"
+            style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
+            className="w-full px-4 py-3 border border-emerald-300 rounded-lg text-base font-semibold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
           />
           {searchResults.length > 0 && (
-            <ul className="mt-2 max-h-48 overflow-auto border rounded bg-white divide-y">
+            <ul className="mt-2 max-h-56 overflow-auto border border-slate-200 rounded-lg bg-white divide-y shadow-md">
               {searchResults.map((d) => (
                 <li
                   key={d.id}
                   onClick={() => handleSelectDisease(d)}
-                  className="px-3 py-2 cursor-pointer hover:bg-blue-50"
+                  className="px-4 py-2.5 cursor-pointer hover:bg-emerald-50 text-base font-medium text-slate-800 transition"
                 >
                   {d.name}
                 </li>
@@ -97,20 +101,21 @@ export default function IntersectionFinder(): JSX.Element {
         </div>
 
         <div>
-          <h4 className="font-medium mb-2">Selected Diseases</h4>
+          <h4 className="text-base font-bold text-slate-700 mb-3">Selected Diseases</h4>
           {selectedDiseases.length === 0 ? (
-            <p className="text-sm text-gray-500">No diseases selected yet.</p>
+            <p className="text-base text-gray-500 italic">No diseases selected yet.</p>
           ) : (
             <ul className="space-y-2">
               {selectedDiseases.map((d) => (
                 <li
                   key={d.id}
-                  className="px-3 py-2 bg-gray-100 rounded flex items-center justify-between"
+                  className="px-4 py-2.5 bg-slate-100 rounded-lg flex items-center justify-between text-base font-semibold text-slate-800 shadow-sm"
                 >
                   <span>{d.name}</span>
                   <button
                     onClick={() => handleRemoveDisease(d.id)}
-                    className="font-bold text-red-500 hover:text-red-700"
+                    className="font-bold text-red-500 hover:text-red-700 text-xl px-1 leading-none"
+                    title="Remove"
                   >
                     &times;
                   </button>
@@ -122,23 +127,23 @@ export default function IntersectionFinder(): JSX.Element {
 
         {/* Column 3: Intersection Results */}
         <div>
-          <h4 className="font-medium mb-2">Common Medicines</h4>
+          <h4 className="text-base font-bold text-slate-700 mb-3">Common Medicines</h4>
           {selectedDiseases.length > 0 ? (
             intersectingMedicines.length > 0 ? (
-              <ul className="max-h-80 overflow-auto border rounded bg-white divide-y">
+              <ul className="max-h-80 overflow-auto border border-emerald-200 rounded-lg bg-white divide-y divide-emerald-100 shadow-sm">
                 {intersectingMedicines.map((med) => (
-                  <li key={med.id} className="px-3 py-2 bg-green-50">
+                  <li key={med.id} className="px-4 py-2.5 bg-emerald-50 text-base font-bold text-emerald-900">
                     {med.name}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-gray-500">
+              <p className="text-base text-gray-500 italic">
                 No common medicines found for the selected diseases.
               </p>
             )
           ) : (
-            <p className="text-sm text-gray-500">
+            <p className="text-base text-gray-500 italic">
               Select diseases to see results.
             </p>
           )}

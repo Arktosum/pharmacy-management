@@ -35,18 +35,19 @@ export function AddMedicine() {
 
   return (
     <Card>
-      <h3 className="text-lg font-semibold mb-3">Add Medicine</h3>
+      <h3 className="text-2xl font-black text-slate-800 mb-4 tracking-tight">Add Medicine</h3>
       <form onSubmit={submit} className="flex flex-col gap-2">
         <div className="flex gap-2">
           <input
-            className="input flex-1 w-full px-3 py-2 border rounded focus:ring focus:ring-blue-200 bg-cyan-50"
+            className="input flex-1 w-full px-4 py-3 border border-emerald-300 rounded-lg text-base font-semibold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
             placeholder="e.g., Abroma Augusta"
+            style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <button
             type="submit"
-            className="btn bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="btn bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
             disabled={isLoading || hasExact || !trimmedLower}
           >
             Add
@@ -54,19 +55,19 @@ export function AddMedicine() {
         </div>
 
         {hasExact && (
-          <p className="text-red-600 text-sm font-medium">
+          <p className="text-red-600 text-base font-semibold mt-1">
             “{name.trim()}” already exists! Cannot add duplicate.
           </p>
         )}
 
         {/* Live Dropdown showing ALL matching medicines */}
         {matchingMeds.length > 0 && (
-          <div className="mt-2 border rounded-lg bg-white overflow-hidden shadow-sm">
-            <div className="px-3 py-1.5 bg-slate-100 border-b text-xs text-slate-600 flex justify-between items-center font-medium">
+          <div className="mt-2 border border-slate-200 rounded-lg bg-white overflow-hidden shadow-md">
+            <div className="px-4 py-2 bg-slate-100 border-b text-sm text-slate-700 flex justify-between items-center font-bold">
               <span>Matching medicines ({matchingMeds.length}):</span>
-              <span className="text-[11px] text-slate-500">Click to autofill</span>
+              <span className="text-xs text-slate-500 font-normal">Click to autofill</span>
             </div>
-            <ul className="max-h-36 overflow-y-auto divide-y">
+            <ul className="max-h-44 overflow-y-auto divide-y">
               {matchingMeds.map((m) => {
                 const isExact = m.name.toLowerCase() === trimmedLower;
                 return (
@@ -74,15 +75,15 @@ export function AddMedicine() {
                     <button
                       type="button"
                       onClick={() => setName(m.name)}
-                      className={`w-full text-left px-3 py-1.5 text-sm flex items-center justify-between transition ${
+                      className={`w-full text-left px-4 py-2.5 text-base flex items-center justify-between transition ${
                         isExact
-                          ? "bg-red-50 text-red-700 font-semibold"
-                          : "hover:bg-blue-50 text-slate-800"
+                          ? "bg-red-50 text-red-700 font-bold"
+                          : "hover:bg-emerald-50 text-slate-800 font-medium"
                       }`}
                     >
                       <span className="truncate">{m.name}</span>
                       {isExact && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-bold">
+                        <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-700 font-bold">
                           Exact Match
                         </span>
                       )}
@@ -130,18 +131,19 @@ export function Adddisease() {
 
   return (
     <Card>
-      <h3 className="text-lg font-semibold mb-3">Add Disease</h3>
+      <h3 className="text-2xl font-black text-slate-800 mb-4 tracking-tight">Add Disease</h3>
       <form onSubmit={submit} className="flex flex-col gap-2">
         <div className="flex gap-2">
           <input
-            className="input flex-1 w-full px-3 py-2 border rounded focus:ring focus:ring-blue-200 bg-cyan-50"
+            className="input flex-1 w-full px-4 py-3 border border-emerald-300 rounded-lg text-base font-semibold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
             placeholder="e.g., Migraine"
+            style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <button
             type="submit"
-            className="btn bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="btn bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
             disabled={isLoading || hasExact || !trimmedLower}
           >
             Add
@@ -149,19 +151,19 @@ export function Adddisease() {
         </div>
 
         {hasExact && (
-          <p className="text-red-600 text-sm font-medium">
+          <p className="text-red-600 text-base font-semibold mt-1">
             “{name.trim()}” already exists! Cannot add duplicate.
           </p>
         )}
 
         {/* Live Dropdown showing ALL matching diseases */}
         {matchingIlls.length > 0 && (
-          <div className="mt-2 border rounded-lg bg-white overflow-hidden shadow-sm">
-            <div className="px-3 py-1.5 bg-slate-100 border-b text-xs text-slate-600 flex justify-between items-center font-medium">
+          <div className="mt-2 border border-slate-200 rounded-lg bg-white overflow-hidden shadow-md">
+            <div className="px-4 py-2 bg-slate-100 border-b text-sm text-slate-700 flex justify-between items-center font-bold">
               <span>Matching diseases ({matchingIlls.length}):</span>
-              <span className="text-[11px] text-slate-500">Click to autofill</span>
+              <span className="text-xs text-slate-500 font-normal">Click to autofill</span>
             </div>
-            <ul className="max-h-36 overflow-y-auto divide-y">
+            <ul className="max-h-44 overflow-y-auto divide-y">
               {matchingIlls.map((i) => {
                 const isExact = i.name.toLowerCase() === trimmedLower;
                 return (
@@ -169,15 +171,15 @@ export function Adddisease() {
                     <button
                       type="button"
                       onClick={() => setName(i.name)}
-                      className={`w-full text-left px-3 py-1.5 text-sm flex items-center justify-between transition ${
+                      className={`w-full text-left px-4 py-2.5 text-base flex items-center justify-between transition ${
                         isExact
-                          ? "bg-red-50 text-red-700 font-semibold"
-                          : "hover:bg-blue-50 text-slate-800"
+                          ? "bg-red-50 text-red-700 font-bold"
+                          : "hover:bg-emerald-50 text-slate-800 font-medium"
                       }`}
                     >
                       <span className="truncate">{i.name}</span>
                       {isExact && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-bold">
+                        <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-700 font-bold">
                           Exact Match
                         </span>
                       )}

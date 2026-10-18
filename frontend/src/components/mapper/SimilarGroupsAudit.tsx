@@ -342,13 +342,14 @@ export default function SimilarGroupsAudit({
 
         {/* Search input */}
         <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-700" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search within groups or IDs..."
-            className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-semibold text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+            style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
+            className="w-full pl-9 pr-3 py-2 border border-emerald-500/50 rounded-lg text-sm font-semibold text-slate-900 placeholder-slate-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
           />
         </div>
       </div>

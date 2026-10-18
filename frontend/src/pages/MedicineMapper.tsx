@@ -145,27 +145,27 @@ export default function MedicineMapper() {
                 <button
                   type="button"
                   onClick={() => setClassicSubTab("manage")}
-                  className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition shadow-sm ${
+                  className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
                     classicSubTab === "manage"
                       ? "bg-slate-900 text-white shadow"
                       : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-300"
                   }`}
                 >
-                  <LayoutGrid className="w-4 h-4" />
+                  <LayoutGrid className="w-5 h-5" />
                   <span>Entity & Link Tools</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setClassicSubTab("duplicates")}
-                  className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition shadow-sm ${
+                  className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
                     classicSubTab === "duplicates"
                       ? "bg-amber-600 text-white shadow"
                       : "bg-white text-slate-700 hover:bg-amber-50 border border-slate-300"
                   }`}
                 >
                   <AlertTriangle
-                    className={`w-4 h-4 ${
+                    className={`w-5 h-5 ${
                       classicSubTab === "duplicates"
                         ? "text-white"
                         : "text-amber-600"
@@ -174,7 +174,7 @@ export default function MedicineMapper() {
                   <span>Similar Names & Duplicates</span>
                   {auditSummary.totalGroups > 0 && (
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-black ${
+                      className={`px-2.5 py-0.5 rounded-full text-sm font-black ${
                         classicSubTab === "duplicates"
                           ? "bg-white/20 text-white"
                           : "bg-amber-100 text-amber-900 border border-amber-300"
@@ -186,23 +186,23 @@ export default function MedicineMapper() {
                 </button>
               </div>
 
-              <div className="text-xs text-slate-500 font-semibold hidden md:block">
+              <div className="text-sm text-slate-500 font-bold hidden md:block">
                 {classicSubTab === "manage"
                   ? "Manage, search, link & find intersections"
                   : `Auditing ${medicines.length} medicines & ${diseases.length} diseases`}
               </div>
             </div>
 
-            {/* Sub-tab Body */}
+            {/* Sub-tab Body (Reordered: Search -> IntersectionFinder -> AddEntity -> Linker) */}
             {classicSubTab === "manage" ? (
-              <div className="grid gap-4">
-                <section className="grid md:grid-cols-2 gap-4">
+              <div className="grid gap-6">
+                <Search initialSelection={searchSelection} />
+                <IntersectionFinder />
+                <section className="grid md:grid-cols-2 gap-6">
                   <AddMedicine />
                   <Adddisease />
                 </section>
                 <Linker />
-                <Search initialSelection={searchSelection} />
-                <IntersectionFinder />
               </div>
             ) : (
               <SimilarGroupsAudit

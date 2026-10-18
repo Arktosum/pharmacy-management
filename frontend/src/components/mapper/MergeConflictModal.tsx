@@ -300,7 +300,8 @@ export default function MergeConflictModal({
               value={customName}
               onChange={(e) => setCustomName(e.target.value)}
               placeholder="e.g. Oxalic Acid 3x"
-              className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-semibold text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
+              style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
+              className="w-full px-4 py-2.5 border border-emerald-500 rounded-xl text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 shadow-inner"
             />
             <p className="text-[11px] text-slate-400 mt-1">
               You can edit or format the final name before merging (e.g., proper capitalization or fixing typos).
