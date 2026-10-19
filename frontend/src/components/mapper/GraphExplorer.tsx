@@ -5,10 +5,13 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
+  Minimize2,
+  RotateCcw,
   RefreshCw,
   Plus,
   Eye,
   Sparkles,
+  PanelRight,
 } from "lucide-react";
 import {
   useGetMedicinesQuery,
@@ -47,11 +50,15 @@ export default function GraphExplorer() {
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<SVGGElement | null>(null);
+  const graphContainerRef = useRef<HTMLDivElement | null>(null);
   const simulationRef = useRef<d3.Simulation<GraphNode, GraphLink> | null>(null);
   const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const applyHighlightRef = useRef<((node: InspectedNode | null) => void) | null>(null);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // UI State
+  // UI & Fullscreen State
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedEntities, setSelectedEntities] = useState<SelectedEntity[]>([]);
   const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(new Set());
   const [orphanFilter, setOrphanFilter] = useState<"none" | "meds" | "diseases" | "all">("none");
@@ -467,7 +474,69 @@ export default function GraphExplorer() {
     [links]
   );
 
-  // Handle Node Inspection Navigation with Back History
+  // Fullscreen Toggle
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      if (graphContainerRef.current?.requestFullscreen) {
+        graphContainerRef.current.requestFullscreen().catch(() => {
+          setIsFullscreen((prev) => !prev);
+        });
+      } else {
+        setIsFullscreen((prev) => !prev);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {
+          setIsFullscreen(false);
+        });
+      } else {
+        setIsFullscreen(false);
+      }
+    }
+  }, []);
+
+  // Sync fullscreen state with browser events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      if (simulationRef.current) {
+        simulationRef.current.alpha(0.3).restart();
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
+  // Escape key handler for fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreen) {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFullscreen]);
+
+  // Single-Click Node: Focus & highlight on canvas WITHOUT popping open the sidebar
+  const handleSelectNode = useCallback((node: InspectedNode) => {
+    setInspectedNode((current) => {
+      if (current && current.id !== node.id) {
+        setInspectorHistory((prev) => [...prev, current]);
+      }
+      return node;
+    });
+    if (applyHighlightRef.current) {
+      applyHighlightRef.current(node);
+    }
+  }, []);
+
+  // Inspect Node: Open drawer with full details
   const handleInspectNode = useCallback((node: InspectedNode) => {
     setInspectedNode((current) => {
       if (current && current.id !== node.id) {
@@ -475,6 +544,10 @@ export default function GraphExplorer() {
       }
       return node;
     });
+    setIsDrawerOpen(true);
+    if (applyHighlightRef.current) {
+      applyHighlightRef.current(node);
+    }
   }, []);
 
   const handleBackHistory = useCallback(() => {
@@ -488,8 +561,7 @@ export default function GraphExplorer() {
   }, []);
 
   const handleCloseInspector = useCallback(() => {
-    setInspectedNode(null);
-    setInspectorHistory([]);
+    setIsDrawerOpen(false);
   }, []);
 
   // Initialize and Update D3 Simulation
@@ -779,12 +851,34 @@ export default function GraphExplorer() {
       })
       .on("click", (event, d) => {
         event.stopPropagation();
-        handleInspectNode({ id: d.id, name: d.name, type: d.type });
-        applyHighlight({ id: d.id, name: d.name, type: d.type });
+        // Alt or Shift click immediately opens details drawer
+        if (event.altKey || event.shiftKey) {
+          if (clickTimerRef.current) {
+            clearTimeout(clickTimerRef.current);
+            clickTimerRef.current = null;
+          }
+          handleInspectNode({ id: d.id, name: d.name, type: d.type });
+          return;
+        }
+
+        // Debounce single-click to ensure double-click for expansion never triggers the drawer
+        if (clickTimerRef.current) {
+          clearTimeout(clickTimerRef.current);
+          clickTimerRef.current = null;
+        }
+        clickTimerRef.current = setTimeout(() => {
+          clickTimerRef.current = null;
+          handleSelectNode({ id: d.id, name: d.name, type: d.type });
+        }, 260);
       })
       .on("dblclick", (event, d) => {
         event.stopPropagation();
         event.preventDefault();
+        // Cancel single-click timer immediately so drawer NEVER pops open on double click!
+        if (clickTimerRef.current) {
+          clearTimeout(clickTimerRef.current);
+          clickTimerRef.current = null;
+        }
         handleToggleExpandNode({ id: d.id, name: d.name, type: d.type });
       });
 
@@ -921,9 +1015,21 @@ export default function GraphExplorer() {
     });
 
     return () => {
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = null;
+      }
       simulation.stop();
     };
-  }, [activeNodes, activeLinks, showLabels, handleInspectNode, handleCloseInspector]);
+  }, [
+    activeNodes,
+    activeLinks,
+    showLabels,
+    isFullscreen,
+    handleSelectNode,
+    handleInspectNode,
+    handleCloseInspector,
+  ]);
 
   // Sync highlight whenever inspectedNode changes from outside D3 (e.g. drawer navigation or close)
   useEffect(() => {
@@ -960,7 +1066,14 @@ export default function GraphExplorer() {
   const isLoading = loadingMeds || loadingDiseases || loadingLinks;
 
   return (
-    <div className="flex flex-col h-full w-full bg-slate-950 text-slate-100 rounded-xl border border-slate-800 shadow-2xl overflow-hidden relative font-sans">
+    <div
+      ref={graphContainerRef}
+      className={`flex flex-col bg-slate-950 text-slate-100 shadow-2xl overflow-hidden relative font-sans transition-all duration-150 ${
+        isFullscreen
+          ? "fixed inset-0 z-50 w-screen h-screen rounded-none"
+          : "h-full w-full rounded-xl border border-slate-800"
+      }`}
+    >
       {/* Top Controls Header */}
       <header className="bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 z-10 shrink-0 shadow-md">
         {/* Left: Multi-Search and Scope */}
@@ -1023,6 +1136,26 @@ export default function GraphExplorer() {
             <Plus className="w-4.5 h-4.5" />
             <span>Add Node</span>
           </button>
+
+          {/* Fullscreen Toggle Button */}
+          <button
+            onClick={toggleFullscreen}
+            className={`px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 border transition ${
+              isFullscreen
+                ? "bg-slate-800 text-sky-400 border-sky-500/50 shadow-inner"
+                : "bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-700 hover:text-white"
+            }`}
+            title={isFullscreen ? "Exit Fullscreen (Esc)" : "Enter Fullscreen"}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="w-4.5 h-4.5" />
+            ) : (
+              <Maximize2 className="w-4.5 h-4.5" />
+            )}
+            <span className="hidden sm:inline">
+              {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            </span>
+          </button>
         </div>
       </header>
 
@@ -1063,9 +1196,9 @@ export default function GraphExplorer() {
             <button
               onClick={handleResetZoom}
               className="p-2 hover:bg-slate-800 hover:text-white rounded-lg transition"
-              title="Reset View"
+              title="Reset View / Recenter"
             >
-              <Maximize2 className="w-5 h-5" />
+              <RotateCcw className="w-5 h-5" />
             </button>
             <div className="w-[1px] h-5 bg-slate-800 mx-1"></div>
             <button
@@ -1085,6 +1218,45 @@ export default function GraphExplorer() {
               title="Toggle Text Labels"
             >
               <Eye className="w-5 h-5" />
+            </button>
+            <div className="w-[1px] h-5 bg-slate-800 mx-1"></div>
+            <button
+              onClick={() => {
+                if (!isDrawerOpen && !inspectedNode && activeNodes.length > 0) {
+                  const defaultNode =
+                    activeNodes.find((n) => n.isDirectSelection) || activeNodes[0];
+                  handleInspectNode({
+                    id: defaultNode.id,
+                    name: defaultNode.name,
+                    type: defaultNode.type,
+                  });
+                } else {
+                  setIsDrawerOpen((prev) => !prev);
+                }
+              }}
+              className={`p-2 rounded-lg transition ${
+                isDrawerOpen
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "hover:bg-slate-800 hover:text-white"
+              }`}
+              title={isDrawerOpen ? "Close Node Details Drawer" : "Open Node Details Drawer"}
+            >
+              <PanelRight className="w-5 h-5" />
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              className={`p-2 rounded-lg transition ${
+                isFullscreen
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "hover:bg-slate-800 hover:text-white"
+              }`}
+              title={isFullscreen ? "Exit Fullscreen (Esc)" : "Enter Fullscreen"}
+            >
+              {isFullscreen ? (
+                <Minimize2 className="w-5 h-5" />
+              ) : (
+                <Maximize2 className="w-5 h-5" />
+              )}
             </button>
           </div>
 
@@ -1175,11 +1347,58 @@ export default function GraphExplorer() {
               </button>
             </div>
           )}
+          {/* Selected Node Floating Quick Actions */}
+          {inspectedNode && !isDrawerOpen && (
+            <div className="absolute top-16 right-4 z-20 flex items-center gap-2 bg-slate-900/95 backdrop-blur border border-slate-700/80 px-3 py-1.5 rounded-xl shadow-2xl text-xs text-slate-200">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  inspectedNode.type === "medicine" ? "bg-blue-400" : "bg-emerald-400"
+                }`}
+              ></span>
+              <span className="font-bold text-slate-100 text-xs max-w-[140px] truncate">
+                {inspectedNode.name}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleInspectNode(inspectedNode)}
+                className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs shadow transition flex items-center gap-1"
+                title="Open node details, rename, delete or manage links"
+              >
+                <PanelRight className="w-3.5 h-3.5" />
+                <span>Details & Links</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleToggleExpandNode(inspectedNode);
+                }}
+                className={`px-2.5 py-1 rounded-lg font-bold text-xs transition border ${
+                  expandedNodeIds.has(inspectedNode.id)
+                    ? "bg-slate-800 hover:bg-slate-700 text-sky-300 border-sky-500/40"
+                    : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
+                }`}
+                title="Toggle expansion of connections"
+              >
+                {expandedNodeIds.has(inspectedNode.id) ? "Collapse" : "Expand"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setInspectedNode(null);
+                  if (applyHighlightRef.current) applyHighlightRef.current(null);
+                }}
+                className="text-slate-400 hover:text-slate-200 px-1 py-0.5 ml-0.5 text-xs font-bold"
+                title="Deselect Node"
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Slide-over Inspector Drawer */}
         <GraphInspectorDrawer
-          node={inspectedNode}
+          node={isDrawerOpen ? inspectedNode : null}
           onClose={handleCloseInspector}
           onInspectNode={handleInspectNode}
           medicines={medicines}
