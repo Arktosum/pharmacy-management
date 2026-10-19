@@ -28,7 +28,23 @@ export default function MedicineMapper() {
   const [searchSelection, setSearchSelection] = useState<{
     type: "medicine" | "disease";
     id: string;
+    key?: number;
   } | null>(null);
+
+  const handleSelectMedicineFromIntersection = (medicineId: string) => {
+    setSearchSelection({
+      type: "medicine",
+      id: medicineId,
+      key: Date.now(),
+    });
+    // Smoothly scroll up to the Search & Manage Links section
+    const searchEl = document.getElementById("search-manage-section");
+    if (searchEl) {
+      searchEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   const [resolvedDeletedIds, setResolvedDeletedIds] = useState<Set<string>>(
     new Set()
@@ -197,7 +213,9 @@ export default function MedicineMapper() {
             {classicSubTab === "manage" ? (
               <div className="grid gap-6">
                 <Search initialSelection={searchSelection} />
-                <IntersectionFinder />
+                <IntersectionFinder
+                  onSelectMedicine={handleSelectMedicineFromIntersection}
+                />
                 <section className="grid md:grid-cols-2 gap-6">
                   <AddMedicine />
                   <Adddisease />
@@ -207,8 +225,13 @@ export default function MedicineMapper() {
             ) : (
               <SimilarGroupsAudit
                 onInspectEntity={(type, id) => {
-                  setSearchSelection({ type, id });
+                  setSearchSelection({ type, id, key: Date.now() });
                   setClassicSubTab("manage");
+                  setTimeout(() => {
+                    document
+                      .getElementById("search-manage-section")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 50);
                 }}
                 onEntityMerged={(deletedIds) => {
                   setResolvedDeletedIds(
