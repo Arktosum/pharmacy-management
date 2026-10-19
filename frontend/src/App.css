@@ -94,3 +94,24 @@ input::-webkit-inner-spin-button {
 .borderize{
   border : 1px solid white;
 }
+
+.horizontal-scroll-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
+}
+.horizontal-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+.horizontal-scroll-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+.horizontal-scroll-container::-webkit-scrollbar-thumb {
+  background-color: #94a3b8;
+  border-radius: 9999px;
+}
+.horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: #64748b;
+}

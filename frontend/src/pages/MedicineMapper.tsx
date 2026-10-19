@@ -154,7 +154,7 @@ export default function MedicineMapper() {
         {activeTab === "graph" ? (
           <GraphExplorer />
         ) : (
-          <main className="h-full overflow-y-auto px-4 py-6 flex flex-col gap-4 max-w-7xl xl:max-w-[1600px] mx-auto">
+          <main className="h-full overflow-y-auto overflow-x-hidden px-4 py-6 flex flex-col gap-4 max-w-7xl xl:max-w-[1600px] mx-auto w-full min-w-0">
             {/* Sub-tab Navigation */}
             <div className="flex items-center justify-between border-b border-slate-300 pb-3 shrink-0">
               <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export default function MedicineMapper() {
 
             {/* Sub-tab Body (Reordered: Search -> IntersectionFinder -> AddEntity -> Linker) */}
             {classicSubTab === "manage" ? (
-              <div className="grid gap-6">
+              <div className="grid gap-6 w-full min-w-0">
                 <Search initialSelection={searchSelection} />
                 <IntersectionFinder
                   onSelectMedicine={handleSelectMedicineFromIntersection}
