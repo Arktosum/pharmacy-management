@@ -21,7 +21,7 @@ import SimilarGroupsAudit from "../components/mapper/SimilarGroupsAudit";
 import { auditSimilarGroups } from "../utils/similarityAudit";
 
 export default function MedicineMapper() {
-  const [activeTab, setActiveTab] = useState<"graph" | "classic">("graph");
+  const [activeTab, setActiveTab] = useState<"graph" | "classic">("classic");
   const [classicSubTab, setClassicSubTab] = useState<"manage" | "duplicates">(
     "manage"
   );

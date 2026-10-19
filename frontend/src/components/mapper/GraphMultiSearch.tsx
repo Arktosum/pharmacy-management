@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search, X, Layers, Sparkles } from "lucide-react";
+import { Search, X, Sparkles } from "lucide-react";
 import { Medicine, Disease } from "../../types";
 
 export interface SelectedEntity {
@@ -15,8 +15,6 @@ interface GraphMultiSearchProps {
   onAddEntity: (entity: SelectedEntity) => void;
   onRemoveEntity: (id: string) => void;
   onClearAll: () => void;
-  degree: 1 | 2 | 3;
-  onDegreeChange: (degree: 1 | 2 | 3) => void;
   totalIntersectingCount?: number;
   intersectionLabel?: string;
   onFilterIntersectionsOnly?: () => void;
@@ -47,8 +45,6 @@ export default function GraphMultiSearch({
   onAddEntity,
   onRemoveEntity,
   onClearAll,
-  degree,
-  onDegreeChange,
   totalIntersectingCount = 0,
   intersectionLabel,
   onFilterIntersectionsOnly,
@@ -189,47 +185,10 @@ export default function GraphMultiSearch({
           )}
         </div>
 
-        {/* Degree Selector Buttons */}
-        <div className="flex items-center bg-slate-900 border border-slate-700/80 rounded-xl p-1 gap-1 text-sm text-slate-300 shadow-sm">
-          <span className="px-2 font-semibold text-slate-400 flex items-center gap-1.5">
-            <Layers className="w-4 h-4 text-blue-400" /> Scope:
-          </span>
-          <button
-            type="button"
-            onClick={() => onDegreeChange(1)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${
-              degree === 1
-                ? "bg-blue-600 text-white shadow-md"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-            }`}
-            title="1st Degree: Direct connections (e.g. Medicine ↔ Disease)"
-          >
-            1° Hop
-          </button>
-          <button
-            type="button"
-            onClick={() => onDegreeChange(2)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${
-              degree === 2
-                ? "bg-blue-600 text-white shadow-md"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-            }`}
-            title="2nd Degree: 2 Hops (e.g. Medicine ↔ Disease ↔ Medicine)"
-          >
-            2° Hops
-          </button>
-          <button
-            type="button"
-            onClick={() => onDegreeChange(3)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${
-              degree === 3
-                ? "bg-blue-600 text-white shadow-md"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-            }`}
-            title="3rd Degree: 3 Hops (e.g. Medicine ↔ Disease ↔ Medicine ↔ Disease)"
-          >
-            3° Hops
-          </button>
+        {/* Workflow Tip: Double-click nodes to expand */}
+        <div className="hidden sm:flex items-center text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-700/80 rounded-xl px-3.5 py-2 gap-2 shadow-xs">
+          <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+          <span>Double-click any node on canvas to recursively expand</span>
         </div>
 
         {/* Intersecting Remedies Quick Filter */}

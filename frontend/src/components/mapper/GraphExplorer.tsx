@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import * as d3 from "d3";
+import { toast } from "react-toastify";
 import {
   ZoomIn,
   ZoomOut,
@@ -27,6 +28,7 @@ export interface GraphNode extends d3.SimulationNodeDatum {
   isOrphan: boolean;
   isIntersecting: boolean;
   isDirectSelection: boolean;
+  isExpanded: boolean;
 }
 
 export interface GraphLink extends d3.SimulationLinkDatum<GraphNode> {
@@ -34,6 +36,8 @@ export interface GraphLink extends d3.SimulationLinkDatum<GraphNode> {
   target: string | GraphNode;
   id: string;
   isIntersectingLink?: boolean;
+  isExpandedBackbone?: boolean;
+  isExpansionBranch?: boolean;
 }
 
 export default function GraphExplorer() {
@@ -49,7 +53,7 @@ export default function GraphExplorer() {
 
   // UI State
   const [selectedEntities, setSelectedEntities] = useState<SelectedEntity[]>([]);
-  const [degree, setDegree] = useState<1 | 2 | 3>(1);
+  const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(new Set());
   const [orphanFilter, setOrphanFilter] = useState<"none" | "meds" | "diseases" | "all">("none");
   const [isIntersectingOnly, setIsIntersectingOnly] = useState(false);
   const [showLabels, setShowLabels] = useState(true);
@@ -263,33 +267,39 @@ export default function GraphExplorer() {
       selectedEntities.forEach((e) => visibleNodeIds.add(e.id));
       intersectionSummary.intersectingNodeIds.forEach((id) => visibleNodeIds.add(id));
     }
-    // 3. Multi-Search / Focus Filter mode: Multi-degree BFS
+    // 3. Multi-Search / Focused Recursive Expansion mode
     else if (selectedEntities.length > 0) {
-      const queue: { id: string; hop: number }[] = [];
-      const visitedHops = new Map<string, number>();
-
+      // Direct root nodes from search
       selectedEntities.forEach((entity) => {
-        visitedHops.set(entity.id, 0);
-        queue.push({ id: entity.id, hop: 0 });
+        visibleNodeIds.add(entity.id);
       });
 
+      // Recursively add neighbors of all expanded nodes
+      const queue = Array.from(expandedNodeIds);
+      const processed = new Set<string>();
+
       while (queue.length > 0) {
-        const { id, hop } = queue.shift()!;
-        if (hop < degree) {
-          const neighbors = allMedMap.has(id)
-            ? (medToIlls.get(id) || new Set<string>())
-            : (illToMeds.get(id) || new Set<string>());
+        const currId = queue.shift()!;
+        if (processed.has(currId)) continue;
+        processed.add(currId);
+
+        // Only expand if currId is in visibleNodeIds
+        if (visibleNodeIds.has(currId)) {
+          const neighbors = allMedMap.has(currId)
+            ? (medToIlls.get(currId) || new Set<string>())
+            : (illToMeds.get(currId) || new Set<string>());
 
           neighbors.forEach((nbrId) => {
-            if (!visitedHops.has(nbrId)) {
-              visitedHops.set(nbrId, hop + 1);
-              queue.push({ id: nbrId, hop: hop + 1 });
+            if (!visibleNodeIds.has(nbrId)) {
+              visibleNodeIds.add(nbrId);
+              // If this neighbor is also in expandedNodeIds, add to queue for recursive expansion!
+              if (expandedNodeIds.has(nbrId) && !processed.has(nbrId)) {
+                queue.push(nbrId);
+              }
             }
           });
         }
       }
-
-      visitedHops.forEach((_, id) => visibleNodeIds.add(id));
     }
     // 4. Default: Show all nodes
     else {
@@ -313,6 +323,7 @@ export default function GraphExplorer() {
           isOrphan: deg === 0,
           isIntersecting: isInter,
           isDirectSelection: directSelectedSet.has(id),
+          isExpanded: expandedNodeIds.has(id),
         });
         return;
       }
@@ -330,6 +341,7 @@ export default function GraphExplorer() {
           isOrphan: deg === 0,
           isIntersecting: isInter,
           isDirectSelection: directSelectedSet.has(id),
+          isExpanded: expandedNodeIds.has(id),
         });
       }
     });
@@ -341,11 +353,20 @@ export default function GraphExplorer() {
       .filter((l) => activeNodeIdSet.has(l.medicineId) && activeNodeIdSet.has(l.diseaseId))
       .map((l) => {
         const linkId = `${l.medicineId}-${l.diseaseId}`;
+        const isMedExpanded = expandedNodeIds.has(l.medicineId);
+        const isIllExpanded = expandedNodeIds.has(l.diseaseId);
+        // Backbone connects root/expanded node to another expanded node
+        const isExpandedBackbone = isMedExpanded && isIllExpanded;
+        // Branch connects an expanded node to an unexpanded frontier neighbor
+        const isExpansionBranch = (isMedExpanded || isIllExpanded) && !isExpandedBackbone;
+
         return {
           id: linkId,
           source: l.medicineId,
           target: l.diseaseId,
           isIntersectingLink: intersectionSummary.intersectingLinkIds.has(linkId),
+          isExpandedBackbone,
+          isExpansionBranch,
         };
       });
 
@@ -355,7 +376,7 @@ export default function GraphExplorer() {
     diseases,
     links,
     selectedEntities,
-    degree,
+    expandedNodeIds,
     orphanFilter,
     isIntersectingOnly,
     intersectionSummary,
@@ -364,22 +385,87 @@ export default function GraphExplorer() {
   ]);
 
   // Handle Multi-Search selections
-  const handleAddSearchEntity = useCallback((entity: SelectedEntity) => {
-    setSelectedEntities((prev) => {
-      if (prev.some((e) => e.id === entity.id)) return prev;
-      return [...prev, entity];
-    });
-    setOrphanFilter("none");
-  }, []);
+  const handleAddSearchEntity = useCallback(
+    (entity: SelectedEntity) => {
+      setSelectedEntities((prev) => {
+        if (prev.some((e) => e.id === entity.id)) return prev;
+        return [...prev, entity];
+      });
+      // Expand the searched node initially to display direct connections
+      setExpandedNodeIds((prev) => {
+        const next = new Set(prev);
+        next.add(entity.id);
+        return next;
+      });
+      setOrphanFilter("none");
+
+      const nbrCount =
+        entity.type === "medicine"
+          ? links.filter((l) => l.medicineId === entity.id).length
+          : links.filter((l) => l.diseaseId === entity.id).length;
+      toast.success(
+        `Added & expanded ${nbrCount} connection${nbrCount === 1 ? "" : "s"} for "${entity.name}"`
+      );
+
+      if (simulationRef.current) {
+        simulationRef.current.alpha(0.6).restart();
+      }
+    },
+    [links]
+  );
 
   const handleRemoveSearchEntity = useCallback((id: string) => {
     setSelectedEntities((prev) => prev.filter((e) => e.id !== id));
+    setExpandedNodeIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   }, []);
 
   const handleClearAllSearch = useCallback(() => {
     setSelectedEntities([]);
+    setExpandedNodeIds(new Set());
     setIsIntersectingOnly(false);
   }, []);
+
+  // Double-Click Node: Toggle Recursive Expansion
+  const handleToggleExpandNode = useCallback(
+    (node: { id: string; name: string; type: "medicine" | "disease" }) => {
+      // Find count of direct neighbors
+      const nbrCount =
+        node.type === "medicine"
+          ? links.filter((l) => l.medicineId === node.id).length
+          : links.filter((l) => l.diseaseId === node.id).length;
+
+      // Ensure that if user started with no search filters, the clicked node becomes the focus seed
+      setSelectedEntities((prev) => {
+        if (prev.length === 0) {
+          return [{ id: node.id, name: node.name, type: node.type }];
+        }
+        return prev;
+      });
+
+      setExpandedNodeIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(node.id)) {
+          next.delete(node.id);
+          toast.info(`Collapsed connections for "${node.name}"`);
+        } else {
+          next.add(node.id);
+          toast.success(
+            `Expanded ${nbrCount} connection${nbrCount === 1 ? "" : "s"} for "${node.name}"`
+          );
+        }
+        return next;
+      });
+
+      if (simulationRef.current) {
+        simulationRef.current.alpha(0.6).restart();
+      }
+    },
+    [links]
+  );
 
   // Handle Node Inspection Navigation with Back History
   const handleInspectNode = useCallback((node: InspectedNode) => {
@@ -414,6 +500,45 @@ export default function GraphExplorer() {
     const width = svgRef.current.clientWidth || 900;
     const height = svgRef.current.clientHeight || 650;
 
+    // SVG Glow Filter Defs
+    let defs = svg.select<SVGDefsElement>("defs");
+    if (defs.empty()) {
+      defs = svg.append("defs");
+    }
+    defs.selectAll("*").remove();
+
+    // Cyan glow filter for expanded nodes and backbone links
+    const cyanGlow = defs
+      .append("filter")
+      .attr("id", "cyan-glow")
+      .attr("x", "-50%")
+      .attr("y", "-50%")
+      .attr("width", "200%")
+      .attr("height", "200%");
+    cyanGlow
+      .append("feGaussianBlur")
+      .attr("stdDeviation", "2.5")
+      .attr("result", "coloredBlur");
+    const cyanMerge = cyanGlow.append("feMerge");
+    cyanMerge.append("feMergeNode").attr("in", "coloredBlur");
+    cyanMerge.append("feMergeNode").attr("in", "SourceGraphic");
+
+    // Amber glow filter for intersecting nodes and links
+    const amberGlow = defs
+      .append("filter")
+      .attr("id", "amber-glow")
+      .attr("x", "-50%")
+      .attr("y", "-50%")
+      .attr("width", "200%")
+      .attr("height", "200%");
+    amberGlow
+      .append("feGaussianBlur")
+      .attr("stdDeviation", "3")
+      .attr("result", "coloredBlur");
+    const amberMerge = amberGlow.append("feMerge");
+    amberMerge.append("feMergeNode").attr("in", "coloredBlur");
+    amberMerge.append("feMergeNode").attr("in", "SourceGraphic");
+
     // Clear previous elements inside container
     let g = svg.select<SVGGElement>("g.main-container");
     if (g.empty()) {
@@ -445,17 +570,26 @@ export default function GraphExplorer() {
     // Nodes container
     const nodeGroup = g.append("g").attr("class", "nodes-layer");
 
+    // Sort links so backbone expansion links render on top of secondary links
+    const sortedLinks = [...activeLinks].sort((a, b) => {
+      const scoreA = a.isExpandedBackbone ? 2 : a.isExpansionBranch ? 1 : 0;
+      const scoreB = b.isExpandedBackbone ? 2 : b.isExpansionBranch ? 1 : 0;
+      return scoreA - scoreB;
+    });
+
     // Force simulation
     const simulation = d3
       .forceSimulation<GraphNode>(activeNodes)
       .force(
         "link",
         d3
-          .forceLink<GraphNode, GraphLink>(activeLinks)
+          .forceLink<GraphNode, GraphLink>(sortedLinks)
           .id((d) => d.id)
           .distance((d) => {
             const targetNode = typeof d.target === "object" ? d.target : null;
-            return targetNode && targetNode.isIntersecting ? 125 : 105;
+            if (targetNode && targetNode.isIntersecting) return 130;
+            if (d.isExpandedBackbone) return 115;
+            return 100;
           })
       )
       .force("charge", d3.forceManyBody().strength(-320))
@@ -474,13 +608,33 @@ export default function GraphExplorer() {
     // Draw Links
     const linkElements = linkGroup
       .selectAll<SVGLineElement, GraphLink>("line")
-      .data(activeLinks, (d) => d.id)
+      .data(sortedLinks, (d) => d.id)
       .enter()
       .append("line")
-      .attr("stroke", (d) => (d.isIntersectingLink ? "#f59e0b" : "#475569"))
-      .attr("stroke-opacity", (d) => (d.isIntersectingLink ? 0.9 : 0.45))
-      .attr("stroke-width", (d) => (d.isIntersectingLink ? 2.5 : 1.5))
-      .attr("stroke-dasharray", (d) => (d.isIntersectingLink ? "4 2" : "none"));
+      .attr("stroke", (d) => {
+        if (d.isIntersectingLink) return "#f59e0b";
+        if (d.isExpandedBackbone) return "#38bdf8";
+        if (d.isExpansionBranch) return "#0284c7";
+        return "#475569";
+      })
+      .attr("stroke-opacity", (d) => {
+        if (d.isExpandedBackbone) return 0.95;
+        if (d.isIntersectingLink) return 0.9;
+        if (d.isExpansionBranch) return 0.65;
+        return 0.35;
+      })
+      .attr("stroke-width", (d) => {
+        if (d.isExpandedBackbone) return 3.5;
+        if (d.isIntersectingLink) return 2.5;
+        if (d.isExpansionBranch) return 2.0;
+        return 1.2;
+      })
+      .attr("stroke-dasharray", (d) => (d.isIntersectingLink ? "4 2" : "none"))
+      .attr("filter", (d) => {
+        if (d.isExpandedBackbone) return "url(#cyan-glow)";
+        if (d.isIntersectingLink) return "url(#amber-glow)";
+        return "none";
+      });
 
     // Define applyHighlight function
     const applyHighlight = (focusedNode: InspectedNode | null) => {
@@ -491,22 +645,48 @@ export default function GraphExplorer() {
           .selectAll<SVGCircleElement, GraphNode>("circle.node-core")
           .attr("stroke", (d) => {
             if (d.isDirectSelection) return "#ffffff";
+            if (d.isExpanded) return "#38bdf8";
             if (d.isIntersecting) return "#fef08a";
             if (d.isOrphan) return "#94a3b8";
             return d.type === "medicine" ? "#1d4ed8" : "#047857";
           })
           .attr("stroke-width", (d) => {
-            if (d.isDirectSelection) return 3.5;
+            if (d.isDirectSelection || d.isExpanded) return 3.5;
             if (d.isIntersecting) return 3;
             return 2;
+          })
+          .attr("filter", (d) => {
+            if (d.isIntersecting) return "url(#amber-glow)";
+            if (d.isExpanded) return "url(#cyan-glow)";
+            return "none";
           });
 
         // Reset all links to normal
         linkElements
-          .attr("stroke", (d) => (d.isIntersectingLink ? "#f59e0b" : "#475569"))
-          .attr("stroke-opacity", (d) => (d.isIntersectingLink ? 0.9 : 0.45))
-          .attr("stroke-width", (d) => (d.isIntersectingLink ? 2.5 : 1.5))
-          .attr("stroke-dasharray", (d) => (d.isIntersectingLink ? "4 2" : "none"));
+          .attr("stroke", (d) => {
+            if (d.isIntersectingLink) return "#f59e0b";
+            if (d.isExpandedBackbone) return "#38bdf8";
+            if (d.isExpansionBranch) return "#0284c7";
+            return "#475569";
+          })
+          .attr("stroke-opacity", (d) => {
+            if (d.isExpandedBackbone) return 0.95;
+            if (d.isIntersectingLink) return 0.9;
+            if (d.isExpansionBranch) return 0.65;
+            return 0.35;
+          })
+          .attr("stroke-width", (d) => {
+            if (d.isExpandedBackbone) return 3.5;
+            if (d.isIntersectingLink) return 2.5;
+            if (d.isExpansionBranch) return 2.0;
+            return 1.2;
+          })
+          .attr("stroke-dasharray", (d) => (d.isIntersectingLink ? "4 2" : "none"))
+          .attr("filter", (d) => {
+            if (d.isExpandedBackbone) return "url(#cyan-glow)";
+            if (d.isIntersectingLink) return "url(#amber-glow)";
+            return "none";
+          });
         return;
       }
 
@@ -523,7 +703,7 @@ export default function GraphExplorer() {
 
       // Highlight nodes: focused node + 1st degree neighbors, dim others
       nodeElements
-        .style("opacity", (d) => (nbrIds.has(d.id) ? 1 : 0.2))
+        .style("opacity", (d) => (nbrIds.has(d.id) ? 1 : 0.15))
         .selectAll<SVGCircleElement, GraphNode>("circle.node-core")
         .attr("stroke", (d) => {
           if (d.id === focusedNode.id) return "#38bdf8"; // Focus ring
@@ -554,7 +734,13 @@ export default function GraphExplorer() {
           const sId = typeof d.source === "object" ? d.source.id : d.source;
           const tId = typeof d.target === "object" ? d.target.id : d.target;
           const isConnected = sId === focusedNode.id || tId === focusedNode.id;
-          return isConnected ? 3 : 1;
+          return isConnected ? 3.5 : 1;
+        })
+        .attr("filter", (d) => {
+          const sId = typeof d.source === "object" ? d.source.id : d.source;
+          const tId = typeof d.target === "object" ? d.target.id : d.target;
+          const isConnected = sId === focusedNode.id || tId === focusedNode.id;
+          return isConnected ? "url(#cyan-glow)" : "none";
         });
     };
 
@@ -595,9 +781,53 @@ export default function GraphExplorer() {
         event.stopPropagation();
         handleInspectNode({ id: d.id, name: d.name, type: d.type });
         applyHighlight({ id: d.id, name: d.name, type: d.type });
+      })
+      .on("dblclick", (event, d) => {
+        event.stopPropagation();
+        event.preventDefault();
+        handleToggleExpandNode({ id: d.id, name: d.name, type: d.type });
       });
 
-    // Node Circles
+    // Tooltip with double-click expansion hint
+    nodeElements
+      .append("title")
+      .text((d) => {
+        const status = d.isDirectSelection
+          ? "Root Node"
+          : d.isExpanded
+          ? "Expanded Node"
+          : "Unexpanded Node";
+        const action = d.isExpanded ? "Double-click to collapse" : "Double-click to expand";
+        return `${d.name} (${status})\n• ${action}\n• ${d.degreeCount} connection${d.degreeCount === 1 ? "" : "s"}`;
+      });
+
+    // Concentric orbit halo for expanded nodes
+    nodeElements
+      .filter((d) => d.isExpanded)
+      .append("circle")
+      .attr("class", "node-expanded-halo")
+      .attr("r", (d) => d.radius + 6.5)
+      .attr("fill", "none")
+      .attr("stroke", "#38bdf8")
+      .attr("stroke-width", 2.2)
+      .attr("stroke-opacity", 0.85)
+      .attr("stroke-dasharray", "4 2.5")
+      .attr("filter", "url(#cyan-glow)");
+
+    // Pulsing outer halo for intersecting medicines
+    nodeElements
+      .filter((d) => d.isIntersecting)
+      .append("circle")
+      .attr("class", "node-halo")
+      .attr("r", (d) => d.radius + 6)
+      .attr("fill", "none")
+      .attr("stroke", "#f59e0b")
+      .attr("stroke-width", 2)
+      .attr("stroke-opacity", 0.7)
+      .attr("stroke-dasharray", "4 3")
+      .attr("filter", "url(#amber-glow)");
+
+    // Node Circles (Core)
     nodeElements
       .append("circle")
       .attr("class", "node-core")
@@ -609,53 +839,72 @@ export default function GraphExplorer() {
       })
       .attr("stroke", (d) => {
         if (d.isDirectSelection) return "#ffffff";
+        if (d.isExpanded) return "#38bdf8";
         if (d.isIntersecting) return "#fef08a";
         if (d.isOrphan) return "#94a3b8";
         return d.type === "medicine" ? "#1d4ed8" : "#047857";
       })
       .attr("stroke-width", (d) => {
-        if (d.isDirectSelection) return 3.5;
+        if (d.isDirectSelection || d.isExpanded) return 3.5;
         if (d.isIntersecting) return 3;
         return 2;
       })
       .attr("stroke-dasharray", (d) => (d.isOrphan ? "3 3" : "none"))
-      .attr("filter", (d) =>
-        d.isIntersecting ? "drop-shadow(0px 0px 8px rgba(245, 158, 11, 0.7))" : "none"
-      );
+      .attr("filter", (d) => {
+        if (d.isIntersecting) return "url(#amber-glow)";
+        if (d.isExpanded) return "url(#cyan-glow)";
+        return "none";
+      });
 
-    // Pulsing outer halo for intersecting medicines
+    // Center Core Dot for Expanded Nodes
     nodeElements
-      .filter((d) => d.isIntersecting)
-      .insert("circle", ":first-child")
-      .attr("class", "node-halo")
-      .attr("r", (d) => d.radius + 6)
-      .attr("fill", "none")
-      .attr("stroke", "#f59e0b")
-      .attr("stroke-width", 2)
-      .attr("stroke-opacity", 0.7)
-      .attr("stroke-dasharray", "4 3");
+      .filter((d) => d.isExpanded)
+      .append("circle")
+      .attr("class", "node-expanded-core")
+      .attr("r", 4)
+      .attr("fill", "#ffffff")
+      .attr("pointer-events", "none")
+      .attr("filter", "url(#cyan-glow)");
 
     // Crisp Typography Node Labels with Halo
-    nodeElements
+    const labelSelection = nodeElements
       .append("text")
-      .text((d) => d.name)
       .attr("x", (d) => d.radius + 8)
       .attr("y", 5)
       .attr("font-size", (d) => (d.isIntersecting || d.isDirectSelection ? "14px" : "13px"))
-      .attr("font-weight", (d) => (d.isIntersecting || d.isDirectSelection ? 700 : 600))
+      .attr("font-weight", (d) =>
+        d.isIntersecting || d.isDirectSelection || d.isExpanded ? 700 : 600
+      )
       .attr("fill", (d) => {
         if (d.isIntersecting) return "#fef08a";
         if (d.isDirectSelection) return "#ffffff";
+        if (d.isExpanded) return "#7dd3fc";
         return "#f1f5f9";
       })
       .attr("stroke", "#020617")
       .attr("stroke-width", 4)
       .attr("paint-order", "stroke fill")
       .attr("stroke-linejoin", "round")
-      .attr("font-family", "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif")
+      .attr(
+        "font-family",
+        "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"
+      )
       .attr("letter-spacing", "0.015em")
       .style("pointer-events", "none")
       .style("display", showLabels ? "block" : "none");
+
+    labelSelection
+      .append("tspan")
+      .text((d) => (d.isDirectSelection ? `★ ${d.name}` : d.name));
+
+    labelSelection
+      .filter((d) => d.isExpanded)
+      .append("tspan")
+      .text((d) => (d.isDirectSelection ? " [ROOT]" : " [EXP]"))
+      .attr("fill", (d) => (d.isDirectSelection ? "#67e8f9" : "#38bdf8"))
+      .attr("font-size", "10px")
+      .attr("font-weight", "800")
+      .attr("dx", "5");
 
     // Initialize highlight for current inspection state
     applyHighlight(inspectedNodeRef.current);
@@ -723,8 +972,6 @@ export default function GraphExplorer() {
             onAddEntity={handleAddSearchEntity}
             onRemoveEntity={handleRemoveSearchEntity}
             onClearAll={handleClearAllSearch}
-            degree={degree}
-            onDegreeChange={setDegree}
             totalIntersectingCount={intersectionSummary.intersectingNodeIds.size}
             intersectionLabel={intersectionSummary.title}
             isIntersectingOnly={isIntersectingOnly}
@@ -851,6 +1098,16 @@ export default function GraphExplorer() {
               <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>
               <span>Disease</span>
             </div>
+            <div className="flex items-center gap-2 text-sky-300 font-bold">
+              <span className="w-3.5 h-3.5 rounded-full border-2 border-sky-400 bg-slate-950 flex items-center justify-center shadow-[0_0_8px_rgba(56,189,248,0.7)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+              </span>
+              <span>Expanded Node</span>
+            </div>
+            <div className="flex items-center gap-2 text-sky-400 font-bold">
+              <span className="w-4 h-1 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.9)]"></span>
+              <span>Expansion Path</span>
+            </div>
             {intersectionSummary.hasIntersection && (
               <div className="flex items-center gap-2 text-amber-300 font-bold">
                 <span className="w-3 h-3 rounded-full bg-amber-500 border border-amber-300 shadow-sm"></span>
@@ -898,11 +1155,17 @@ export default function GraphExplorer() {
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
               <span>
                 Showing <strong>{activeNodes.length}</strong> nodes, <strong>{activeLinks.length}</strong> links
+                {expandedNodeIds.size > 0 && (
+                  <span className="text-blue-300 ml-1">
+                    ({expandedNodeIds.size} expanded)
+                  </span>
+                )}
               </span>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedEntities([]);
+                  setExpandedNodeIds(new Set());
                   setOrphanFilter("none");
                   setIsIntersectingOnly(false);
                 }}

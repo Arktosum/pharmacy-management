@@ -33,9 +33,10 @@ export default function SearchLinker({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
-  const [inspectedFirstHopId, setInspectedFirstHopId] = useState<string | null>(
-    null
-  );
+
+  // 1st Hop & 2nd Hop selection states in the chain
+  const [firstHopSelectedId, setFirstHopSelectedId] = useState<string | null>(null);
+  const [secondHopSelectedId, setSecondHopSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialSelection) {
@@ -62,7 +63,7 @@ export default function SearchLinker({
     return () => clearTimeout(t);
   }, [query]);
 
-  // Instant client-side matches for the active query
+  // Instant client-side matches for the active query in Column 1
   const matches = useMemo(() => {
     const list = type === "medicine" ? meds : ills;
     if (!debouncedQ) return list;
@@ -70,6 +71,7 @@ export default function SearchLinker({
     return list.filter((item) => item.name.toLowerCase().includes(lower));
   }, [type, meds, ills, debouncedQ]);
 
+  // Root entity (M1 if medicine, D1 if disease)
   const selectedItem = useMemo(() => {
     if (!selectedId) return null;
     return (
@@ -79,8 +81,8 @@ export default function SearchLinker({
     );
   }, [selectedId, meds, ills, type]);
 
-  // 1st Hop: Direct opposite-type connections of the selected root item
-  const selectedLinks = useMemo(() => {
+  // Column 2 (1st Hop: D1 if medicine, M1 if disease)
+  const firstHopLinks = useMemo(() => {
     if (!selectedId) return [];
     if (type === "medicine") {
       return links
@@ -95,49 +97,91 @@ export default function SearchLinker({
     }
   }, [selectedId, links, meds, ills, type]);
 
-  // Whenever selectedLinks changes, keep the inspected item if valid, else default to first item
+  // Auto-sync firstHopSelectedId when firstHopLinks changes
   useEffect(() => {
-    if (selectedLinks.length > 0) {
-      setInspectedFirstHopId((prev) => {
-        if (prev && selectedLinks.some((item) => item.id === prev)) {
+    if (firstHopLinks.length > 0) {
+      setFirstHopSelectedId((prev) => {
+        if (prev && firstHopLinks.some((item) => item.id === prev)) {
           return prev;
         }
-        return selectedLinks[0].id;
+        return firstHopLinks[0].id;
       });
     } else {
-      setInspectedFirstHopId(null);
+      setFirstHopSelectedId(null);
     }
-  }, [selectedLinks]);
+  }, [firstHopLinks]);
 
-  // The inspected first-hop item object (opposite entity type)
-  const inspectedFirstHopItem = useMemo(() => {
-    if (!inspectedFirstHopId) return null;
+  // First hop selected item object
+  const firstHopItem = useMemo(() => {
+    if (!firstHopSelectedId) return null;
     return (
       (type === "medicine"
-        ? ills.find((i) => i.id === inspectedFirstHopId)
-        : meds.find((m) => m.id === inspectedFirstHopId)) || null
+        ? ills.find((i) => i.id === firstHopSelectedId)
+        : meds.find((m) => m.id === firstHopSelectedId)) || null
     );
-  }, [inspectedFirstHopId, type, meds, ills]);
+  }, [firstHopSelectedId, type, meds, ills]);
 
-  // Corresponding 1st Hop of the clicked entity in Column 3 (displayed in Column 4)
-  const inspectedFirstHopLinks = useMemo(() => {
-    if (!inspectedFirstHopId) return [];
+  // Column 3 (2nd Hop: M2 if medicine, D2 if disease)
+  const secondHopLinks = useMemo(() => {
+    if (!firstHopSelectedId) return [];
     if (type === "medicine") {
-      // Root is medicine -> clicked 1st hop item is disease -> its 1st hop is medicines!
+      // Root M1 -> D1 -> M2 (medicines linked to D1)
       return links
-        .filter((l) => l.diseaseId === inspectedFirstHopId)
+        .filter((l) => l.diseaseId === firstHopSelectedId)
         .map((l) => meds.find((m) => m.id === l.medicineId))
         .filter(Boolean) as Medicine[];
     } else {
-      // Root is disease -> clicked 1st hop item is medicine -> its 1st hop is diseases!
+      // Root D1 -> M1 -> D2 (diseases linked to M1)
       return links
-        .filter((l) => l.medicineId === inspectedFirstHopId)
+        .filter((l) => l.medicineId === firstHopSelectedId)
         .map((l) => ills.find((i) => i.id === l.diseaseId))
         .filter(Boolean) as Disease[];
     }
-  }, [inspectedFirstHopId, links, meds, ills, type]);
+  }, [firstHopSelectedId, links, meds, ills, type]);
 
-  const handleSelect = (id: string) => {
+  // Auto-sync secondHopSelectedId when secondHopLinks changes
+  useEffect(() => {
+    if (secondHopLinks.length > 0) {
+      setSecondHopSelectedId((prev) => {
+        if (prev && secondHopLinks.some((item) => item.id === prev)) {
+          return prev;
+        }
+        return secondHopLinks[0].id;
+      });
+    } else {
+      setSecondHopSelectedId(null);
+    }
+  }, [secondHopLinks]);
+
+  // Second hop selected item object
+  const secondHopItem = useMemo(() => {
+    if (!secondHopSelectedId) return null;
+    return (
+      (type === "medicine"
+        ? meds.find((m) => m.id === secondHopSelectedId)
+        : ills.find((i) => i.id === secondHopSelectedId)) || null
+    );
+  }, [secondHopSelectedId, type, meds, ills]);
+
+  // Column 4 (3rd Hop: D2 if medicine, M2 if disease)
+  const thirdHopLinks = useMemo(() => {
+    if (!secondHopSelectedId) return [];
+    if (type === "medicine") {
+      // Root M1 -> D1 -> M2 -> D2 (diseases linked to M2)
+      return links
+        .filter((l) => l.medicineId === secondHopSelectedId)
+        .map((l) => ills.find((i) => i.id === l.diseaseId))
+        .filter(Boolean) as Disease[];
+    } else {
+      // Root D1 -> M1 -> D2 -> M2 (medicines linked to D2)
+      return links
+        .filter((l) => l.diseaseId === secondHopSelectedId)
+        .map((l) => meds.find((m) => m.id === l.medicineId))
+        .filter(Boolean) as Medicine[];
+    }
+  }, [secondHopSelectedId, links, meds, ills, type]);
+
+  const handleSelectRoot = (id: string) => {
     setSelectedId(id);
     setEditing(false);
     setEditingName(null);
@@ -199,6 +243,7 @@ export default function SearchLinker({
     if (!selectedItem) return;
     const confirmMsg = `⚠️ ARE YOU SURE?\n\nDelete ${type} "${selectedItem.name}"?\nAll associated links will also be permanently deleted.`;
     if (!window.confirm(confirmMsg)) return;
+
     try {
       if (type === "medicine") {
         await deleteMed(selectedItem.id).unwrap();
@@ -215,46 +260,183 @@ export default function SearchLinker({
     }
   };
 
+  const isMedMode = type === "medicine";
+
   return (
     <div id="search-manage-section" className="scroll-mt-6">
       <Card>
         {/* Header */}
-        <div className="mb-5 pb-3 border-b border-slate-200">
+        <div className="mb-4 pb-3 border-b border-slate-200">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div>
               <h3 className="text-2xl font-black text-slate-900 tracking-tight">
                 Search & Manage Links
               </h3>
-              <p className="text-sm text-slate-500 mt-1">
-                Filter entities, manage 1° direct links, and click any connected item to view its corresponding 1° links.
+              <p className="text-sm text-slate-500 mt-0.5">
+                {isMedMode
+                  ? "Explore 4-hop chain: M1 (Root Medicine) → D1 (Diseases) → M2 (Medicines) → D2 (Diseases)"
+                  : "Explore 4-hop chain: D1 (Root Disease) → M1 (Medicines) → D2 (Diseases) → M2 (Medicines)"}
               </p>
             </div>
+
             {selectedItem && (
-              <div className="flex items-center gap-2">
-                <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide border shadow-sm ${
-                    type === "medicine"
-                      ? "bg-blue-50 text-blue-800 border-blue-200"
-                      : "bg-emerald-50 text-emerald-800 border-emerald-200"
-                  }`}
-                >
-                  {type === "medicine" ? (
-                    <Pill className="w-3.5 h-3.5 text-blue-600" />
-                  ) : (
-                    <Stethoscope className="w-3.5 h-3.5 text-emerald-600" />
-                  )}
-                  <span>Inspecting {type}</span>
-                </span>
-              </div>
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide border shadow-xs ${
+                  isMedMode
+                    ? "bg-blue-50 text-blue-800 border-blue-200"
+                    : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                }`}
+              >
+                {isMedMode ? (
+                  <Pill className="w-3.5 h-3.5 text-blue-600" />
+                ) : (
+                  <Stethoscope className="w-3.5 h-3.5 text-emerald-600" />
+                )}
+                <span>Mode: {type === "medicine" ? "M1 → D1 → M2 → D2" : "D1 → M1 → D2 → M2"}</span>
+              </span>
             )}
           </div>
         </div>
 
-        {/* 4-Column Layout */}
+        {/* Visual Linked List Chain at the Top */}
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2 flex-wrap text-sm">
+            <span className="text-xs uppercase font-extrabold text-slate-500 tracking-wider">
+              Linked Chain:
+            </span>
+
+            {/* Node 1 (Root: M1 or D1) */}
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold border shadow-xs ${
+                isMedMode
+                  ? "bg-blue-600 text-white border-blue-700"
+                  : "bg-emerald-600 text-white border-emerald-700"
+              }`}
+            >
+              {isMedMode ? <Pill className="w-3.5 h-3.5" /> : <Stethoscope className="w-3.5 h-3.5" />}
+              <span className="text-xs uppercase opacity-80">{isMedMode ? "M1" : "D1"}:</span>
+              <span className="truncate max-w-[150px]">{selectedItem ? selectedItem.name : "None"}</span>
+            </div>
+
+            <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
+
+            {/* Node 2 (1st Hop: D1 or M1) */}
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold border shadow-xs ${
+                isMedMode
+                  ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                  : "bg-blue-100 text-blue-900 border-blue-300"
+              }`}
+            >
+              {isMedMode ? (
+                <Stethoscope className="w-3.5 h-3.5 text-emerald-700" />
+              ) : (
+                <Pill className="w-3.5 h-3.5 text-blue-700" />
+              )}
+              <span className="text-xs uppercase opacity-80">{isMedMode ? "D1" : "M1"}:</span>
+              <span className="truncate max-w-[150px]">{firstHopItem ? firstHopItem.name : "None"}</span>
+            </div>
+
+            <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
+
+            {/* Node 3 (2nd Hop: M2 or D2) */}
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold border shadow-xs ${
+                isMedMode
+                  ? "bg-blue-100 text-blue-900 border-blue-300"
+                  : "bg-emerald-100 text-emerald-900 border-emerald-300"
+              }`}
+            >
+              {isMedMode ? (
+                <Pill className="w-3.5 h-3.5 text-blue-700" />
+              ) : (
+                <Stethoscope className="w-3.5 h-3.5 text-emerald-700" />
+              )}
+              <span className="text-xs uppercase opacity-80">{isMedMode ? "M2" : "D2"}:</span>
+              <span className="truncate max-w-[150px]">{secondHopItem ? secondHopItem.name : "None"}</span>
+            </div>
+
+            <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
+
+            {/* Node 4 (3rd Hop: D2 or M2 count) */}
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold border shadow-xs ${
+                isMedMode
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                  : "bg-blue-50 text-blue-800 border-blue-200"
+              }`}
+            >
+              {isMedMode ? (
+                <Stethoscope className="w-3.5 h-3.5 text-emerald-600" />
+              ) : (
+                <Pill className="w-3.5 h-3.5 text-blue-600" />
+              )}
+              <span className="text-xs uppercase opacity-80">{isMedMode ? "D2" : "M2"}:</span>
+              <span>
+                {thirdHopLinks.length}{" "}
+                {isMedMode
+                  ? thirdHopLinks.length === 1 ? "Disease" : "Diseases"
+                  : thirdHopLinks.length === 1 ? "Medicine" : "Medicines"}
+              </span>
+            </div>
+          </div>
+
+          {/* Root Node Controls (Rename & Delete) */}
+          {selectedItem && (
+            <div className="flex items-center gap-2">
+              {!editing ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={startEdit}
+                    className="px-3 py-1.5 text-xs font-bold border border-slate-300 rounded-lg bg-white hover:bg-slate-100 text-slate-700 transition shadow-xs"
+                    title={`Rename root ${type} "${selectedItem.name}"`}
+                  >
+                    Rename Root
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="px-3 py-1.5 text-xs font-bold border border-rose-200 rounded-lg bg-white hover:bg-rose-50 text-rose-600 transition shadow-xs"
+                    title={`Delete root ${type} "${selectedItem.name}"`}
+                  >
+                    Delete Root
+                  </button>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <input
+                    autoFocus
+                    value={editingName ?? ""}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
+                    className="px-3 py-1.5 text-xs font-bold border-2 border-emerald-500 rounded-lg text-slate-900 focus:outline-none shadow-inner"
+                  />
+                  <button
+                    type="button"
+                    onClick={saveName}
+                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition shadow-xs"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 4-Column Layout: M1 -> D1 -> M2 -> D2 (or D1 -> M1 -> D2 -> M2) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Column 1: Search & Matches */}
+          {/* Column 1: Selector & Matches (M1 or D1) */}
           <div className="flex flex-col">
-            {/* Selector for Medicines / Diseases: above filter text & below hr */}
+            {/* Primary Selector Toggle [ Medicines | Diseases ] */}
             <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-300 mb-3.5 shadow-inner">
               <button
                 type="button"
@@ -264,7 +446,7 @@ export default function SearchLinker({
                   setQuery("");
                 }}
                 className={`flex-1 py-2 rounded-lg font-bold text-base transition flex items-center justify-center gap-1.5 ${
-                  type === "medicine"
+                  isMedMode
                     ? "bg-blue-600 text-white shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
@@ -280,7 +462,7 @@ export default function SearchLinker({
                   setQuery("");
                 }}
                 className={`flex-1 py-2 rounded-lg font-bold text-base transition flex items-center justify-center gap-1.5 ${
-                  type === "disease"
+                  !isMedMode
                     ? "bg-emerald-600 text-white shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
@@ -291,7 +473,7 @@ export default function SearchLinker({
             </div>
 
             <label className="text-base font-bold text-slate-800 mb-2 flex items-center justify-between">
-              <span>Filter {type === "medicine" ? "Medicines" : "Diseases"}</span>
+              <span>{isMedMode ? "M1: Filter Medicines" : "D1: Filter Diseases"}</span>
               <span className="text-sm font-semibold text-slate-500">
                 {matches.length} found
               </span>
@@ -309,17 +491,17 @@ export default function SearchLinker({
                 return (
                   <li
                     key={m.id}
-                    onClick={() => handleSelect(m.id)}
+                    onClick={() => handleSelectRoot(m.id)}
                     className={`px-4 py-2.5 cursor-pointer text-base transition flex items-center justify-between ${
                       isSelected
-                        ? type === "medicine"
+                        ? isMedMode
                           ? "bg-blue-100 font-bold text-blue-950 border-l-4 border-blue-600"
                           : "bg-emerald-100 font-bold text-emerald-950 border-l-4 border-emerald-600"
                         : "hover:bg-slate-50 text-slate-800 font-medium"
                     }`}
                   >
                     <div className="flex items-center gap-2 truncate">
-                      {type === "medicine" ? (
+                      {isMedMode ? (
                         <Pill className="w-4 h-4 text-blue-500 shrink-0" />
                       ) : (
                         <Stethoscope className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -329,10 +511,10 @@ export default function SearchLinker({
                     {isSelected && (
                       <span
                         className={`text-xs text-white font-bold px-2 py-0.5 rounded-md ${
-                          type === "medicine" ? "bg-blue-600" : "bg-emerald-600"
+                          isMedMode ? "bg-blue-600" : "bg-emerald-600"
                         }`}
                       >
-                        Selected
+                        Root {isMedMode ? "M1" : "D1"}
                       </span>
                     )}
                   </li>
@@ -346,208 +528,70 @@ export default function SearchLinker({
             </ul>
           </div>
 
-          {/* Column 2: Selected Item & Edit/Delete */}
+          {/* Column 2: 1st Hop (D1 if Medicine, M1 if Disease) */}
           <div className="flex flex-col">
-            {/* Alignment spacer to line up labels horizontally on desktop */}
-            <div className="hidden lg:block h-[54px]" />
-
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-base font-bold text-slate-800 flex items-center gap-1.5">
-                <span>Selected {type === "medicine" ? "Medicine" : "Disease"}</span>
-              </label>
-              {selectedItem && (
-                <span
-                  className={`text-xs font-bold px-2 py-0.5 rounded border uppercase ${
-                    type === "medicine"
-                      ? "bg-blue-100 text-blue-800 border-blue-200"
-                      : "bg-emerald-100 text-emerald-800 border-emerald-200"
-                  }`}
-                >
-                  {type}
-                </span>
-              )}
-            </div>
-
-            <div className="border border-slate-200 rounded-xl p-5 bg-slate-50/90 shadow-sm flex-1 flex flex-col justify-between min-h-[240px]">
-              {selectedItem ? (
-                <div>
-                  {!editing ? (
-                    <div>
-                      <div className="flex items-start gap-2">
-                        {type === "medicine" ? (
-                          <div className="p-2 rounded-lg bg-blue-100 text-blue-700 shrink-0 mt-0.5">
-                            <Pill className="w-5 h-5" />
-                          </div>
-                        ) : (
-                          <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 shrink-0 mt-0.5">
-                            <Stethoscope className="w-5 h-5" />
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <h4 className="text-2xl font-black text-slate-900 leading-snug break-words">
-                            {selectedItem.name}
-                          </h4>
-                          <p className="text-sm font-mono text-slate-500 mt-1">
-                            ID: {selectedItem.id}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2.5 mt-4">
-                        <button
-                          type="button"
-                          onClick={startEdit}
-                          className="px-4 py-2 text-sm font-bold border border-slate-300 rounded-xl bg-white hover:bg-slate-100 text-slate-700 transition shadow-sm"
-                        >
-                          Rename
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleDelete}
-                          className="px-4 py-2 text-sm font-bold border border-rose-200 rounded-xl bg-white hover:bg-rose-50 text-rose-600 transition shadow-sm"
-                        >
-                          Delete
-                        </button>
-                      </div>
-
-                      <div className="mt-5 pt-4 border-t border-slate-200 text-sm text-slate-600 space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-slate-700">1° Direct Links:</span>
-                          <span
-                            className={`px-2.5 py-1 rounded-lg font-bold text-sm ${
-                              type === "medicine"
-                                ? "bg-emerald-100 text-emerald-900 border border-emerald-200"
-                                : "bg-blue-100 text-blue-900 border border-blue-200"
-                            }`}
-                          >
-                            {selectedLinks.length} {type === "medicine" ? "diseases" : "medicines"}
-                          </span>
-                        </div>
-                        {inspectedFirstHopItem && (
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-slate-700">Inspecting:</span>
-                            <span
-                              className={`px-2.5 py-1 rounded-lg font-bold text-sm truncate max-w-[150px] border ${
-                                type === "medicine"
-                                  ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-                                  : "bg-blue-50 text-blue-800 border-blue-300"
-                              }`}
-                              title={inspectedFirstHopItem.name}
-                            >
-                              {inspectedFirstHopItem.name}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">
-                        Rename {type}:
-                      </label>
-                      <input
-                        autoFocus
-                        value={editingName ?? ""}
-                        onChange={(e) => setEditingName(e.target.value)}
-                        style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
-                        className="w-full px-4 py-2.5 border-2 border-emerald-500 rounded-xl text-base font-bold text-slate-900 focus:outline-none shadow-inner"
-                      />
-                      <div className="mt-3.5 flex gap-2.5">
-                        <button
-                          type="button"
-                          onClick={saveName}
-                          className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition shadow-sm"
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="px-4 py-2 border border-slate-300 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-base text-slate-400 italic flex items-center justify-center flex-1 text-center p-6">
-                  Select an item from the list to inspect, edit, or manage its connections.
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Column 3: 1st Hop (Direct Links) - Clicking an item inspects its links in Column 4 */}
-          <div className="flex flex-col">
-            {/* Alignment spacer */}
+            {/* Desktop alignment spacer */}
             <div className="hidden lg:block h-[54px]" />
 
             <div className="flex items-center justify-between mb-2">
               <label className="text-base font-bold text-slate-800 flex items-center gap-2">
                 <span
                   className={`w-3 h-3 rounded-full ${
-                    type === "medicine" ? "bg-emerald-500" : "bg-blue-500"
+                    isMedMode ? "bg-emerald-500" : "bg-blue-500"
                   }`}
                 />
-                <span>1° Linked {type === "medicine" ? "Diseases" : "Medicines"}</span>
+                <span>{isMedMode ? "D1: Linked Diseases" : "M1: Linked Medicines"}</span>
               </label>
               {selectedItem && (
                 <span
                   className={`text-xs font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
-                    type === "medicine"
+                    isMedMode
                       ? "bg-emerald-100 text-emerald-800 border-emerald-300"
                       : "bg-blue-100 text-blue-800 border-blue-300"
                   }`}
                 >
-                  {type === "medicine" ? (
-                    <Stethoscope className="w-3 h-3" />
-                  ) : (
-                    <Pill className="w-3 h-3" />
-                  )}
-                  <span>{selectedLinks.length}</span>
+                  {isMedMode ? <Stethoscope className="w-3 h-3" /> : <Pill className="w-3 h-3" />}
+                  <span>{firstHopLinks.length}</span>
                 </span>
               )}
             </div>
 
             <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
               {selectedItem ? (
-                selectedLinks.length === 0 ? (
+                firstHopLinks.length === 0 ? (
                   <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
-                    No 1st-degree links found (orphan node).
+                    No 1st-hop links found (orphan node).
                   </li>
                 ) : (
-                  selectedLinks.map((item) => {
-                    const isInspected = item.id === inspectedFirstHopId;
-                    const isMedCol = type === "disease"; // if root is disease, Column 3 contains medicines
+                  firstHopLinks.map((item) => {
+                    const isSelectedD1 = item.id === firstHopSelectedId;
 
                     return (
                       <li
                         key={item.id}
-                        onClick={() => setInspectedFirstHopId(item.id)}
+                        onClick={() => setFirstHopSelectedId(item.id)}
                         className={`px-4 py-3 cursor-pointer flex items-center justify-between transition text-base group ${
-                          isInspected
-                            ? isMedCol
-                              ? "bg-blue-100/90 border-l-4 border-blue-600 text-blue-950 font-bold shadow-sm"
-                              : "bg-emerald-100/90 border-l-4 border-emerald-600 text-emerald-950 font-bold shadow-sm"
-                            : isMedCol
-                            ? "hover:bg-blue-50/70 text-slate-800"
-                            : "hover:bg-emerald-50/70 text-slate-800"
+                          isSelectedD1
+                            ? isMedMode
+                              ? "bg-emerald-100/90 border-l-4 border-emerald-600 text-emerald-950 font-bold shadow-xs"
+                              : "bg-blue-100/90 border-l-4 border-blue-600 text-blue-950 font-bold shadow-xs"
+                            : isMedMode
+                            ? "hover:bg-emerald-50/70 text-slate-800"
+                            : "hover:bg-blue-50/70 text-slate-800"
                         }`}
-                        title={`Click to inspect 1° links for "${item.name}"`}
+                        title={`Click to select "${item.name}" and view ${isMedMode ? "M2" : "D2"}`}
                       >
                         <div className="flex items-center gap-2 truncate mr-2 min-w-0">
-                          {isMedCol ? (
-                            <Pill
+                          {isMedMode ? (
+                            <Stethoscope
                               className={`w-4 h-4 shrink-0 ${
-                                isInspected ? "text-blue-700" : "text-blue-500"
+                                isSelectedD1 ? "text-emerald-700" : "text-emerald-500"
                               }`}
                             />
                           ) : (
-                            <Stethoscope
+                            <Pill
                               className={`w-4 h-4 shrink-0 ${
-                                isInspected ? "text-emerald-700" : "text-emerald-500"
+                                isSelectedD1 ? "text-blue-700" : "text-blue-500"
                               }`}
                             />
                           )}
@@ -555,26 +599,24 @@ export default function SearchLinker({
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          {isInspected ? (
+                          {isSelectedD1 ? (
                             <span
                               className={`text-[11px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 ${
-                                isMedCol
-                                  ? "bg-blue-600 text-white"
-                                  : "bg-emerald-600 text-white"
+                                isMedMode ? "bg-emerald-600 text-white" : "bg-blue-600 text-white"
                               }`}
                             >
-                              <span>Viewing</span>
+                              <span>{isMedMode ? "D1" : "M1"}</span>
                               <ChevronRight className="w-3 h-3" />
                             </span>
                           ) : (
                             <span
                               className={`hidden group-hover:inline-flex text-[11px] font-bold px-2 py-0.5 rounded-md border items-center gap-1 ${
-                                isMedCol
-                                  ? "text-blue-700 bg-blue-50 border-blue-200"
-                                  : "text-emerald-700 bg-emerald-50 border-emerald-200"
+                                isMedMode
+                                  ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                                  : "text-blue-700 bg-blue-50 border-blue-200"
                               }`}
                             >
-                              <span>Inspect</span>
+                              <span>Select</span>
                               <ChevronRight className="w-3 h-3" />
                             </span>
                           )}
@@ -585,7 +627,7 @@ export default function SearchLinker({
                               e.stopPropagation();
                               handleUnlink(item.id, item.name);
                             }}
-                            className="px-2.5 py-1 text-xs border border-rose-200 text-rose-600 rounded-lg hover:bg-rose-50 transition shrink-0 font-bold shadow-sm"
+                            className="px-2.5 py-1 text-xs border border-rose-200 text-rose-600 rounded-lg hover:bg-rose-50 transition shrink-0 font-bold shadow-xs"
                             title={`Unlink "${item.name}"`}
                           >
                             Unlink
@@ -597,44 +639,38 @@ export default function SearchLinker({
                 )
               ) : (
                 <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
-                  Select an item to view its 1st-degree links.
+                  Select a root entity in Column 1.
                 </li>
               )}
             </ul>
           </div>
 
-          {/* Column 4: Corresponding 1st Hop of Clicked Item */}
+          {/* Column 3: 2nd Hop (M2 if Medicine, D2 if Disease) */}
           <div className="flex flex-col">
-            {/* Alignment spacer */}
+            {/* Desktop alignment spacer */}
             <div className="hidden lg:block h-[54px]" />
 
             <div className="flex items-center justify-between mb-2">
               <label className="text-base font-bold text-slate-800 flex items-center gap-2 truncate">
                 <span
                   className={`w-3 h-3 rounded-full shrink-0 ${
-                    type === "medicine" ? "bg-blue-500" : "bg-emerald-500"
+                    isMedMode ? "bg-blue-500" : "bg-emerald-500"
                   }`}
                 />
                 <span className="truncate">
-                  {inspectedFirstHopItem
-                    ? `1° Links for "${inspectedFirstHopItem.name}"`
-                    : `1° Links for Selected ${type === "medicine" ? "Disease" : "Medicine"}`}
+                  {isMedMode ? "M2: Linked Medicines" : "D2: Linked Diseases"}
                 </span>
               </label>
-              {inspectedFirstHopItem && (
+              {firstHopItem && (
                 <span
                   className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
-                    type === "medicine"
+                    isMedMode
                       ? "bg-blue-100 text-blue-800 border-blue-200"
                       : "bg-emerald-100 text-emerald-800 border-emerald-200"
                   }`}
                 >
-                  {type === "medicine" ? (
-                    <Pill className="w-3 h-3" />
-                  ) : (
-                    <Stethoscope className="w-3 h-3" />
-                  )}
-                  <span>{inspectedFirstHopLinks.length}</span>
+                  {isMedMode ? <Pill className="w-3 h-3" /> : <Stethoscope className="w-3 h-3" />}
+                  <span>{secondHopLinks.length}</span>
                 </span>
               )}
             </div>
@@ -642,78 +678,178 @@ export default function SearchLinker({
             <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
               {!selectedItem ? (
                 <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
-                  Select an item in Column 1 to begin inspecting links.
+                  Select a root in Column 1 to view {isMedMode ? "M2" : "D2"}.
                 </li>
-              ) : !inspectedFirstHopItem ? (
+              ) : !firstHopItem ? (
                 <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
-                  No 1st-hop items available to inspect.
+                  Select an item in Column 2 to view its connections.
                 </li>
-              ) : inspectedFirstHopLinks.length === 0 ? (
+              ) : secondHopLinks.length === 0 ? (
                 <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
-                  No links found for "{inspectedFirstHopItem.name}".
+                  No connections found for "{firstHopItem.name}".
                 </li>
               ) : (
-                inspectedFirstHopLinks.map((item) => {
-                  const isCurrentRoot = item.id === selectedId;
-                  const isMedCol = type === "medicine"; // Column 4 contains medicines when root is medicine
+                secondHopLinks.map((item) => {
+                  const isSelectedM2 = item.id === secondHopSelectedId;
+                  const isRootMatch = item.id === selectedId;
 
                   return (
                     <li
                       key={item.id}
-                      onClick={() => handleSelect(item.id)}
+                      onClick={() => setSecondHopSelectedId(item.id)}
                       className={`px-4 py-3 cursor-pointer flex items-center justify-between transition text-base group ${
-                        isCurrentRoot
-                          ? isMedCol
-                            ? "bg-blue-100/90 border-l-4 border-blue-600 text-blue-950 font-bold"
-                            : "bg-emerald-100/90 border-l-4 border-emerald-600 text-emerald-950 font-bold"
-                          : isMedCol
+                        isSelectedM2
+                          ? isMedMode
+                            ? "bg-blue-100/90 border-l-4 border-blue-600 text-blue-950 font-bold shadow-xs"
+                            : "bg-emerald-100/90 border-l-4 border-emerald-600 text-emerald-950 font-bold shadow-xs"
+                          : isMedMode
                           ? "hover:bg-blue-50/80 text-slate-800"
                           : "hover:bg-emerald-50/80 text-slate-800"
                       }`}
-                      title={
-                        isCurrentRoot
-                          ? "Currently selected root"
-                          : `Click to select "${item.name}" as the primary ${isMedCol ? "medicine" : "disease"}`
-                      }
+                      title={`Click to view ${isMedMode ? "D2" : "M2"} for "${item.name}"`}
                     >
                       <div className="flex items-center gap-2 truncate mr-2 min-w-0">
-                        {isMedCol ? (
+                        {isMedMode ? (
                           <Pill
                             className={`w-4 h-4 shrink-0 ${
-                              isCurrentRoot ? "text-blue-700" : "text-blue-500"
+                              isSelectedM2 ? "text-blue-700" : "text-blue-500"
                             }`}
                           />
                         ) : (
                           <Stethoscope
                             className={`w-4 h-4 shrink-0 ${
-                              isCurrentRoot ? "text-emerald-700" : "text-emerald-500"
+                              isSelectedM2 ? "text-emerald-700" : "text-emerald-500"
                             }`}
                           />
                         )}
                         <span className="truncate">{item.name}</span>
+                        {isRootMatch && (
+                          <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-normal shrink-0">
+                            Root {isMedMode ? "M1" : "D1"}
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
-                        {isCurrentRoot ? (
+                        {isSelectedM2 ? (
                           <span
-                            className={`text-[11px] font-extrabold px-2 py-0.5 rounded-md ${
-                              isMedCol
-                                ? "bg-blue-600 text-white"
-                                : "bg-emerald-600 text-white"
+                            className={`text-[11px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 ${
+                              isMedMode ? "bg-blue-600 text-white" : "bg-emerald-600 text-white"
                             }`}
                           >
-                            Current Root
+                            <span>{isMedMode ? "M2" : "D2"}</span>
+                            <ChevronRight className="w-3 h-3" />
                           </span>
                         ) : (
                           <span
                             className={`hidden group-hover:inline-flex text-[11px] font-bold px-2 py-0.5 rounded-md border items-center gap-1 transition ${
-                              isMedCol
+                              isMedMode
                                 ? "text-blue-700 bg-blue-50 border-blue-200"
                                 : "text-emerald-700 bg-emerald-50 border-emerald-200"
                             }`}
                           >
-                            <span>Set Root</span>
-                            <ArrowRight className="w-3 h-3" />
+                            <span>View {isMedMode ? "D2" : "M2"}</span>
+                            <ChevronRight className="w-3 h-3" />
+                          </span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })
+              )}
+            </ul>
+          </div>
+
+          {/* Column 4: 3rd Hop (D2 if Medicine, M2 if Disease) - Display Only */}
+          <div className="flex flex-col">
+            {/* Desktop alignment spacer */}
+            <div className="hidden lg:block h-[54px]" />
+
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-base font-bold text-slate-800 flex items-center gap-2 truncate">
+                <span
+                  className={`w-3 h-3 rounded-full shrink-0 ${
+                    isMedMode ? "bg-emerald-500" : "bg-blue-500"
+                  }`}
+                />
+                <span className="truncate">
+                  {isMedMode ? "D2: Linked Diseases" : "M2: Linked Medicines"}
+                </span>
+              </label>
+              {secondHopItem && (
+                <span
+                  className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
+                    isMedMode
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                      : "bg-blue-100 text-blue-800 border-blue-200"
+                  }`}
+                >
+                  {isMedMode ? <Stethoscope className="w-3 h-3" /> : <Pill className="w-3 h-3" />}
+                  <span>{thirdHopLinks.length}</span>
+                </span>
+              )}
+            </div>
+
+            <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
+              {!selectedItem ? (
+                <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
+                  Select a root in Column 1 to view {isMedMode ? "D2" : "M2"}.
+                </li>
+              ) : !secondHopItem ? (
+                <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
+                  Select an item in Column 3 to view its {isMedMode ? "D2" : "M2"} connections.
+                </li>
+              ) : thirdHopLinks.length === 0 ? (
+                <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
+                  No connections found for "{secondHopItem.name}".
+                </li>
+              ) : (
+                thirdHopLinks.map((item) => {
+                  const isD1Match = item.id === firstHopSelectedId;
+
+                  return (
+                    <li
+                      key={item.id}
+                      className={`px-4 py-3 flex items-center justify-between text-base select-none ${
+                        isMedMode
+                          ? "bg-emerald-50/50 hover:bg-emerald-50 text-slate-800"
+                          : "bg-blue-50/50 hover:bg-blue-50 text-slate-800"
+                      }`}
+                      title={
+                        isD1Match
+                          ? `Also matches D1: "${item.name}"`
+                          : `Connection for "${secondHopItem.name}"`
+                      }
+                    >
+                      <div className="flex items-center gap-2 truncate mr-2 min-w-0">
+                        {isMedMode ? (
+                          <Stethoscope className="w-4 h-4 text-emerald-600 shrink-0" />
+                        ) : (
+                          <Pill className="w-4 h-4 text-blue-600 shrink-0" />
+                        )}
+                        <span className="truncate font-medium">{item.name}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {isD1Match ? (
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                              isMedMode
+                                ? "bg-emerald-200 text-emerald-900"
+                                : "bg-blue-200 text-blue-900"
+                            }`}
+                          >
+                            Matches {isMedMode ? "D1" : "M1"}
+                          </span>
+                        ) : (
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                              isMedMode
+                                ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                                : "bg-blue-100 text-blue-800 border border-blue-200"
+                            }`}
+                          >
+                            {isMedMode ? "D2" : "M2"}
                           </span>
                         )}
                       </div>
