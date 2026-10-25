@@ -4,7 +4,7 @@ import fs from 'fs'
 import express from 'express'
 import { nanoid } from 'nanoid'
 
-const DATA_PATH = path.resolve('./databases/tips_mapper.json')
+const DATA_PATH = path.resolve('./databases/tips.json')
 
 interface Medicine { id: string; name: string }
 interface Illness { id: string; name: string }
