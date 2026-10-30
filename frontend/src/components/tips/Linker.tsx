@@ -23,9 +23,11 @@ export default function Linker() {
   const filteredMeds = useMemo(
     () =>
       medSearch.trim()
-        ? meds.filter((m) =>
-            m.name.toLowerCase().includes(medSearch.toLowerCase())
-          )
+        ? meds
+            .filter((m) =>
+              m.name.toLowerCase().includes(medSearch.toLowerCase())
+            )
+            .slice(0, 50)
         : [],
     [meds, medSearch]
   );
@@ -33,9 +35,11 @@ export default function Linker() {
   const filteredIlls = useMemo(
     () =>
       illSearch.trim()
-        ? ills.filter((i) =>
-            i.name.toLowerCase().includes(illSearch.toLowerCase())
-          )
+        ? ills
+            .filter((i) =>
+              i.name.toLowerCase().includes(illSearch.toLowerCase())
+            )
+            .slice(0, 50)
         : [],
     [ills, illSearch]
   );

@@ -12,6 +12,7 @@ import {
   Eye,
   Sparkles,
   PanelRight,
+  Network,
 } from "lucide-react";
 import {
   useGetMedicinesQuery,
@@ -308,10 +309,9 @@ export default function GraphExplorer() {
         }
       }
     }
-    // 4. Default: Show all nodes
+    // 4. Default: Empty state (keep empty so we don't overwhelm the browser with 10k+ nodes)
     else {
-      medicines.forEach((m) => visibleNodeIds.add(m.id));
-      diseases.forEach((d) => visibleNodeIds.add(d.id));
+      // visibleNodeIds remains empty until a search entity is added or orphan filter selected
     }
 
     // Build GraphNode array
@@ -1176,6 +1176,42 @@ export default function GraphExplorer() {
             ref={svgRef}
             className="w-full h-full cursor-grab active:cursor-grabbing"
           ></svg>
+
+          {!isLoading && activeNodes.length === 0 && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 pointer-events-none">
+              <div className="p-8 bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800 shadow-2xl max-w-lg pointer-events-auto">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                  <Network className="w-7 h-7" />
+                </div>
+                <h3 className="text-xl font-black text-slate-100 mb-2">
+                  Explore Remedy Network
+                </h3>
+                <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+                  Search for a medicine or disease using the search bar above to visualize its network and discover interconnected conditions.
+                </p>
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => {
+                      setOrphanFilter("meds");
+                      setSelectedEntities([]);
+                    }}
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-blue-300 border border-slate-700 transition"
+                  >
+                    View Orphan Meds ({orphanMedCount})
+                  </button>
+                  <button
+                    onClick={() => {
+                      setOrphanFilter("diseases");
+                      setSelectedEntities([]);
+                    }}
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 transition"
+                  >
+                    View Orphan Diseases ({orphanDiseaseCount})
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Floating Canvas Controls (Bottom Left) */}
           <div className="absolute bottom-5 left-5 flex items-center gap-1.5 bg-slate-900/95 backdrop-blur border border-slate-800 rounded-xl p-1.5 text-slate-300 shadow-2xl z-10">

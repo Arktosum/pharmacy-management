@@ -307,10 +307,93 @@ export function clusterEntities<T extends { id: string; name: string }>(
     if (rootI !== rootJ) parent[rootI] = rootJ;
   }
 
+  // 1. Group by exact key hashes in O(N): normalized, sorted tokens, stemmed sorted tokens
+  const normMap = new Map<string, number[]>();
+  const stemMap = new Map<string, number[]>();
+  const tokenMap = new Map<string, number[]>();
+  const singleWordMap = new Map<string, number[]>();
+
   for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      if (compareItems(items[i].name, items[j].name)) {
-        union(i, j);
+    const clean = cleanString(items[i].name);
+    const norm = normalize(clean);
+    const stemTok = stemSortedTokens(clean);
+
+    if (norm) {
+      if (!normMap.has(norm)) normMap.set(norm, []);
+      normMap.get(norm)!.push(i);
+    }
+    if (stemTok) {
+      if (!stemMap.has(stemTok)) stemMap.set(stemTok, []);
+      stemMap.get(stemTok)!.push(i);
+    }
+
+    const toks = getTokens(clean);
+    if (toks.length === 1 && norm.length >= 5) {
+      const key = `${norm[0]}-${norm.length}`;
+      if (!singleWordMap.has(key)) singleWordMap.set(key, []);
+      singleWordMap.get(key)!.push(i);
+    } else if (toks.length > 1) {
+      for (const t of toks) {
+        if (t.length >= 3) {
+          if (!tokenMap.has(t)) tokenMap.set(t, []);
+          tokenMap.get(t)!.push(i);
+        }
+      }
+    }
+  }
+
+  // Fast O(N) unions for exact & stemmed/word-order duplicates
+  for (const list of normMap.values()) {
+    for (let k = 1; k < list.length; k++) union(list[0], list[k]);
+  }
+  for (const list of stemMap.values()) {
+    for (let k = 1; k < list.length; k++) union(list[0], list[k]);
+  }
+
+  // 2. Candidate pairwise comparisons (drastically reduces comparisons from 55M to ~5k)
+  const checkedPairs = new Set<string>();
+  const checkCandidate = (a: number, b: number) => {
+    if (find(a) === find(b)) return;
+    const u = Math.min(a, b);
+    const v = Math.max(a, b);
+    const key = `${u}:${v}`;
+    if (checkedPairs.has(key)) return;
+    checkedPairs.add(key);
+
+    if (compareItems(items[u].name, items[v].name)) {
+      union(u, v);
+    }
+  };
+
+  // Compare single-word items sharing first letter & length +/- 1
+  for (const [key, list] of singleWordMap.entries()) {
+    if (list.length > 1 && list.length < 250) {
+      for (let a = 0; a < list.length; a++) {
+        for (let b = a + 1; b < list.length; b++) {
+          checkCandidate(list[a], list[b]);
+        }
+      }
+    }
+    // Also check length + 1 bucket with same first letter
+    const [firstChar, lenStr] = key.split("-");
+    const nextKey = `${firstChar}-${parseInt(lenStr, 10) + 1}`;
+    const nextList = singleWordMap.get(nextKey);
+    if (nextList && list.length < 150 && nextList.length < 150) {
+      for (let a = 0; a < list.length; a++) {
+        for (let b = 0; b < nextList.length; b++) {
+          checkCandidate(list[a], nextList[b]);
+        }
+      }
+    }
+  }
+
+  // Compare multi-word items that share at least 1 significant word
+  for (const list of tokenMap.values()) {
+    if (list.length > 1 && list.length < 120) {
+      for (let a = 0; a < list.length; a++) {
+        for (let b = a + 1; b < list.length; b++) {
+          checkCandidate(list[a], list[b]);
+        }
       }
     }
   }

@@ -38,11 +38,13 @@ export default function IntersectionFinder({
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const selectedIds = new Set(selectedDiseases.map((d) => d.id));
-    return allDiseases.filter(
-      (disease) =>
-        !selectedIds.has(disease.id) &&
-        disease.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return allDiseases
+      .filter(
+        (disease) =>
+          !selectedIds.has(disease.id) &&
+          disease.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .slice(0, 50);
   }, [searchQuery, allDiseases, selectedDiseases]);
 
   // The core logic to find the intersection of medicines

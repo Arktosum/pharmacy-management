@@ -72,15 +72,17 @@ export default function SearchLinker({
     return list.filter((item) => item.name.toLowerCase().includes(lower));
   }, [type, meds, ills, debouncedQ]);
 
+  const medMap = useMemo(() => new Map(meds.map((m) => [m.id, m])), [meds]);
+  const illMap = useMemo(() => new Map(ills.map((i) => [i.id, i])), [ills]);
+
+  const DISPLAY_LIMIT = 100;
+  const visibleMatches = useMemo(() => matches.slice(0, DISPLAY_LIMIT), [matches]);
+
   // Root entity (M1 if medicine, D1 if disease)
   const selectedItem = useMemo(() => {
     if (!selectedId) return null;
-    return (
-      (type === "medicine"
-        ? meds.find((m) => m.id === selectedId)
-        : ills.find((i) => i.id === selectedId)) || null
-    );
-  }, [selectedId, meds, ills, type]);
+    return (type === "medicine" ? medMap.get(selectedId) : illMap.get(selectedId)) || null;
+  }, [selectedId, medMap, illMap, type]);
 
   // Column 2 (1st Hop: D1 if medicine, M1 if disease)
   const firstHopLinks = useMemo(() => {
@@ -88,15 +90,15 @@ export default function SearchLinker({
     if (type === "medicine") {
       return links
         .filter((l) => l.medicineId === selectedId)
-        .map((l) => ills.find((i) => i.id === l.diseaseId))
+        .map((l) => illMap.get(l.diseaseId))
         .filter(Boolean) as Disease[];
     } else {
       return links
         .filter((l) => l.diseaseId === selectedId)
-        .map((l) => meds.find((m) => m.id === l.medicineId))
+        .map((l) => medMap.get(l.medicineId))
         .filter(Boolean) as Medicine[];
     }
-  }, [selectedId, links, meds, ills, type]);
+  }, [selectedId, links, medMap, illMap, type]);
 
   // Auto-sync firstHopSelectedId when firstHopLinks changes
   useEffect(() => {
@@ -115,12 +117,8 @@ export default function SearchLinker({
   // First hop selected item object
   const firstHopItem = useMemo(() => {
     if (!firstHopSelectedId) return null;
-    return (
-      (type === "medicine"
-        ? ills.find((i) => i.id === firstHopSelectedId)
-        : meds.find((m) => m.id === firstHopSelectedId)) || null
-    );
-  }, [firstHopSelectedId, type, meds, ills]);
+    return (type === "medicine" ? illMap.get(firstHopSelectedId) : medMap.get(firstHopSelectedId)) || null;
+  }, [firstHopSelectedId, type, medMap, illMap]);
 
   // Column 3 (2nd Hop: M2 if medicine, D2 if disease)
   const secondHopLinks = useMemo(() => {
@@ -129,16 +127,16 @@ export default function SearchLinker({
       // Root M1 -> D1 -> M2 (medicines linked to D1)
       return links
         .filter((l) => l.diseaseId === firstHopSelectedId)
-        .map((l) => meds.find((m) => m.id === l.medicineId))
+        .map((l) => medMap.get(l.medicineId))
         .filter(Boolean) as Medicine[];
     } else {
       // Root D1 -> M1 -> D2 (diseases linked to M1)
       return links
         .filter((l) => l.medicineId === firstHopSelectedId)
-        .map((l) => ills.find((i) => i.id === l.diseaseId))
+        .map((l) => illMap.get(l.diseaseId))
         .filter(Boolean) as Disease[];
     }
-  }, [firstHopSelectedId, links, meds, ills, type]);
+  }, [firstHopSelectedId, links, medMap, illMap, type]);
 
   // Auto-sync secondHopSelectedId when secondHopLinks changes
   useEffect(() => {
@@ -157,12 +155,8 @@ export default function SearchLinker({
   // Second hop selected item object
   const secondHopItem = useMemo(() => {
     if (!secondHopSelectedId) return null;
-    return (
-      (type === "medicine"
-        ? meds.find((m) => m.id === secondHopSelectedId)
-        : ills.find((i) => i.id === secondHopSelectedId)) || null
-    );
-  }, [secondHopSelectedId, type, meds, ills]);
+    return (type === "medicine" ? medMap.get(secondHopSelectedId) : illMap.get(secondHopSelectedId)) || null;
+  }, [secondHopSelectedId, type, medMap, illMap]);
 
   // Column 4 (3rd Hop: D2 if medicine, M2 if disease)
   const thirdHopLinks = useMemo(() => {
@@ -171,16 +165,16 @@ export default function SearchLinker({
       // Root M1 -> D1 -> M2 -> D2 (diseases linked to M2)
       return links
         .filter((l) => l.medicineId === secondHopSelectedId)
-        .map((l) => ills.find((i) => i.id === l.diseaseId))
+        .map((l) => illMap.get(l.diseaseId))
         .filter(Boolean) as Disease[];
     } else {
       // Root D1 -> M1 -> D2 -> M2 (medicines linked to D2)
       return links
         .filter((l) => l.diseaseId === secondHopSelectedId)
-        .map((l) => meds.find((m) => m.id === l.medicineId))
+        .map((l) => medMap.get(l.medicineId))
         .filter(Boolean) as Medicine[];
     }
-  }, [secondHopSelectedId, links, meds, ills, type]);
+  }, [secondHopSelectedId, links, medMap, illMap, type]);
 
   // Auto-sync thirdHopSelectedId when thirdHopLinks changes
   useEffect(() => {
@@ -199,12 +193,8 @@ export default function SearchLinker({
   // Third hop selected item object
   const thirdHopItem = useMemo(() => {
     if (!thirdHopSelectedId) return null;
-    return (
-      (type === "medicine"
-        ? ills.find((i) => i.id === thirdHopSelectedId)
-        : meds.find((m) => m.id === thirdHopSelectedId)) || null
-    );
-  }, [thirdHopSelectedId, type, meds, ills]);
+    return (type === "medicine" ? illMap.get(thirdHopSelectedId) : medMap.get(thirdHopSelectedId)) || null;
+  }, [thirdHopSelectedId, type, medMap, illMap]);
 
   // Column 5 (4th Hop / End: M3 if medicine, D3 if disease)
   const fourthHopLinks = useMemo(() => {
@@ -213,16 +203,16 @@ export default function SearchLinker({
       // Root M1 -> D1 -> M2 -> D2 -> M3 (medicines linked to D2)
       return links
         .filter((l) => l.diseaseId === thirdHopSelectedId)
-        .map((l) => meds.find((m) => m.id === l.medicineId))
+        .map((l) => medMap.get(l.medicineId))
         .filter(Boolean) as Medicine[];
     } else {
       // Root D1 -> M1 -> D2 -> M2 -> D3 (diseases linked to M2)
       return links
         .filter((l) => l.medicineId === thirdHopSelectedId)
-        .map((l) => ills.find((i) => i.id === l.diseaseId))
+        .map((l) => illMap.get(l.diseaseId))
         .filter(Boolean) as Disease[];
     }
-  }, [thirdHopSelectedId, links, meds, ills, type]);
+  }, [thirdHopSelectedId, links, medMap, illMap, type]);
 
   const handleSelectRoot = (id: string) => {
     setSelectedId(id);
@@ -555,7 +545,7 @@ export default function SearchLinker({
               className="w-full px-4 py-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-emerald-500 text-slate-900 text-base font-semibold placeholder-slate-600 shadow-sm"
             />
             <ul className="mt-2.5 max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
-              {matches.map((m) => {
+              {visibleMatches.map((m) => {
                 const isSelected = selectedId === m.id;
                 return (
                   <li
@@ -589,6 +579,11 @@ export default function SearchLinker({
                   </li>
                 );
               })}
+              {matches.length > DISPLAY_LIMIT && (
+                <li className="px-4 py-2.5 text-center text-xs text-slate-500 bg-slate-50 font-medium">
+                  Showing top {DISPLAY_LIMIT} of {matches.length.toLocaleString()} {type}s. Type to filter...
+                </li>
+              )}
               {matches.length === 0 && (
                 <li className="px-4 py-8 text-center text-sm text-slate-400 italic">
                   No matching {type}s found.

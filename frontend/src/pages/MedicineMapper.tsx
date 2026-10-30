@@ -72,10 +72,19 @@ export default function MedicineMapper() {
     [links, resolvedDeletedIds]
   );
 
-  const auditSummary = useMemo(
-    () => auditSimilarGroups(filteredMeds, filteredIlls, filteredLinks),
-    [filteredMeds, filteredIlls, filteredLinks]
-  );
+  const auditSummary = useMemo(() => {
+    if (classicSubTab !== "duplicates") {
+      return {
+        totalGroups: 0,
+        medicineGroups: 0,
+        diseaseGroups: 0,
+        totalConflictingEntities: 0,
+        dismissedCount: 0,
+        groups: [],
+      };
+    }
+    return auditSimilarGroups(filteredMeds, filteredIlls, filteredLinks);
+  }, [classicSubTab, filteredMeds, filteredIlls, filteredLinks]);
 
   return (
     <div className="h-[90vh] flex flex-col bg-slate-900 text-slate-100 overflow-hidden font-sans">

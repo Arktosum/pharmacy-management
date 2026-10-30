@@ -11,15 +11,36 @@ interface Illness { id: string; name: string }
 interface Link { medicineId: string; diseaseId: string }
 interface DB { medicines: Medicine[]; illnesses: Illness[]; links: Link[] }
 
+let cachedDB: DB | null = null
+let lastMtime: number = 0
+
 function readDB(): DB {
     if (!fs.existsSync(DATA_PATH)) {
         const initial: DB = { medicines: [], illnesses: [], links: [] }
         fs.writeFileSync(DATA_PATH, JSON.stringify(initial, null, 2))
+        cachedDB = initial
+        try { lastMtime = fs.statSync(DATA_PATH).mtimeMs } catch { lastMtime = Date.now() }
         return initial
     }
-    return JSON.parse(fs.readFileSync(DATA_PATH, 'utf8')) as DB
+    try {
+        const stat = fs.statSync(DATA_PATH)
+        if (!cachedDB || stat.mtimeMs > lastMtime) {
+            cachedDB = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8')) as DB
+            lastMtime = stat.mtimeMs
+        }
+    } catch {
+        if (!cachedDB) {
+            cachedDB = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8')) as DB
+        }
+    }
+    return cachedDB!
 }
-function writeDB(db: DB) { fs.writeFileSync(DATA_PATH, JSON.stringify(db, null, 2)) }
+
+function writeDB(db: DB) {
+    cachedDB = db
+    fs.writeFileSync(DATA_PATH, JSON.stringify(db, null, 2))
+    try { lastMtime = fs.statSync(DATA_PATH).mtimeMs } catch { lastMtime = Date.now() }
+}
 
 // Helpers
 const byName = (s: string) => (x: { name: string }) => x.name.toLowerCase() === s.toLowerCase()
@@ -76,24 +97,27 @@ router.get('/search', (req, res) => {
     const db = readDB()
     if (!q) return res.json({ type, query: '', matches: [], related: [] })
 
+    const medMap = new Map(db.medicines.map(m => [m.id, m]))
+    const illMap = new Map(db.illnesses.map(i => [i.id, i]))
+
     if (type === 'medicine') {
         const matches = db.medicines.filter(m => m.name.toLowerCase().includes(q))
+        const matchIds = new Set(matches.map(m => m.id))
         const relatedMap = new Map<string, Illness>()
-        for (const m of matches) {
-            const links = db.links.filter(l => l.medicineId === m.id)
-            for (const l of links) {
-                const ill = db.illnesses.find(i => i.id === l.diseaseId)
+        for (const l of db.links) {
+            if (matchIds.has(l.medicineId)) {
+                const ill = illMap.get(l.diseaseId)
                 if (ill) relatedMap.set(ill.id, ill)
             }
         }
         return res.json({ type, query: q, matches, related: Array.from(relatedMap.values()) })
     } else {
         const matches = db.illnesses.filter(i => i.name.toLowerCase().includes(q))
+        const matchIds = new Set(matches.map(i => i.id))
         const relatedMap = new Map<string, Medicine>()
-        for (const i of matches) {
-            const links = db.links.filter(l => l.diseaseId === i.id)
-            for (const l of links) {
-                const med = db.medicines.find(m => m.id === l.medicineId)
+        for (const l of db.links) {
+            if (matchIds.has(l.diseaseId)) {
+                const med = medMap.get(l.medicineId)
                 if (med) relatedMap.set(med.id, med)
             }
         }
