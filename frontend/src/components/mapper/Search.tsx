@@ -48,7 +48,7 @@ export default function SearchLinker({
   const [expandedColumn, setExpandedColumn] = useState<number | null>(null);
   const [modalSearch, setModalSearch] = useState<string>("");
   const [modalLimit, setModalLimit] = useState<number>(300);
-  const [itemsPerColumn, setItemsPerColumn] = useState<number>(10);
+  const [itemsPerColumn, setItemsPerColumn] = useState<number>(8);
 
   const openExpandedColumn = (col: number) => {
     setExpandedColumn(col);
@@ -1396,7 +1396,7 @@ export default function SearchLinker({
 
               {/* Items per vertical column selector */}
               <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-300 text-xs font-bold shrink-0 self-end sm:self-auto">
-                <span className="text-slate-500 px-1 font-semibold">Items/Col:</span>
+                <span className="text-slate-500 px-1 font-semibold">No. of Rows:</span>
                 {[8, 10, 12, 15, 20].map((count) => (
                   <button
                     key={count}
