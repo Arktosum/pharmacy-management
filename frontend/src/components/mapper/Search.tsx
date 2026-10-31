@@ -47,6 +47,19 @@ export default function SearchLinker({
   // Floating window state for enlarged column flow view
   const [expandedColumn, setExpandedColumn] = useState<number | null>(null);
   const [modalSearch, setModalSearch] = useState<string>("");
+  const [modalLimit, setModalLimit] = useState<number>(300);
+
+  const openExpandedColumn = (col: number) => {
+    setExpandedColumn(col);
+    setModalSearch("");
+    setModalLimit(300);
+  };
+
+  const handleSelectRoot = (id: string) => {
+    setSelectedId(id);
+    setEditing(false);
+    setEditingName(null);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -340,12 +353,6 @@ export default function SearchLinker({
     thirdHopItem,
     fourthHopLinks,
   ]);
-
-  const handleSelectRoot = (id: string) => {
-    setSelectedId(id);
-    setEditing(false);
-    setEditingName(null);
-  };
 
   const startEdit = () => {
     if (!selectedItem) return;
@@ -668,8 +675,7 @@ export default function SearchLinker({
               <button
                 type="button"
                 onClick={() => {
-                  setExpandedColumn(1);
-                  setModalSearch("");
+                  openExpandedColumn(1);
                 }}
                 className="px-2.5 py-1 text-xs font-black text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg flex items-center gap-1.5 transition shadow-xs shrink-0"
                 title="Expand Column 1 into enlarged flow window"
@@ -1322,8 +1328,7 @@ export default function SearchLinker({
                         key={col}
                         type="button"
                         onClick={() => {
-                          setExpandedColumn(col);
-                          setModalSearch("");
+                          openExpandedColumn(col);
                         }}
                         className={`px-2.5 py-1 rounded-lg transition ${
                           isActive
@@ -1397,7 +1402,10 @@ export default function SearchLinker({
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
-                  {expandedColData.filteredItems.map((item) => {
+                  {(modalSearch.trim()
+                    ? expandedColData.filteredItems
+                    : expandedColData.filteredItems.slice(0, modalLimit)
+                  ).map((item) => {
                     const isSelected = item.id === expandedColData.selectedItemId;
                     const linkCount = linkCounts.get(item.id) || 0;
 
@@ -1505,6 +1513,32 @@ export default function SearchLinker({
                       </div>
                     );
                   })}
+                  {!modalSearch.trim() &&
+                    expandedColData.filteredItems.length > modalLimit && (
+                      <div className="col-span-full py-6 flex flex-col items-center justify-center gap-2 bg-white/60 rounded-2xl border-2 border-dashed border-slate-300 mt-2">
+                        <p className="text-sm font-bold text-slate-600">
+                          Showing {modalLimit} of {expandedColData.filteredItems.length} items
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setModalLimit((prev) => prev + 300)}
+                            className="px-5 py-2.5 bg-white border-2 border-slate-300 hover:border-slate-400 text-slate-800 text-sm font-black rounded-xl shadow-xs transition"
+                          >
+                            Load Next 300 Items
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setModalLimit(expandedColData.filteredItems.length)
+                            }
+                            className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-black rounded-xl shadow-xs transition"
+                          >
+                            Show All ({expandedColData.filteredItems.length})
+                          </button>
+                        </div>
+                      </div>
+                    )}
                 </div>
               )}
             </div>
