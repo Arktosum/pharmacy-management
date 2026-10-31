@@ -149,22 +149,22 @@ export default function IntersectionFinder({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Type to search and add a disease..."
               style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
-              className="w-full px-4 py-3 border border-emerald-300 rounded-xl text-base font-semibold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
+              className="w-full px-4 py-3.5 border-2 border-emerald-400 rounded-xl text-lg font-bold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition"
             />
 
             {searchResults.length > 0 ? (
-              <ul className="mt-2.5 max-h-72 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-md flex-1">
+              <ul className="mt-2.5 max-h-72 overflow-y-auto border-2 border-slate-200 rounded-xl bg-white divide-y shadow-md flex-1">
                 {searchResults.map((d) => (
                   <li
                     key={d.id}
                     onClick={() => handleSelectDisease(d)}
-                    className="px-4 py-2.5 cursor-pointer hover:bg-emerald-50 text-base font-medium text-slate-800 transition flex items-center justify-between group"
+                    className="px-4 py-3.5 cursor-pointer hover:bg-emerald-50 text-lg font-bold text-slate-900 transition flex items-center justify-between group"
                   >
-                    <div className="flex items-center gap-2 truncate">
-                      <Stethoscope className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <div className="flex items-center gap-2.5 truncate">
+                      <Stethoscope className="w-5 h-5 text-emerald-600 shrink-0" />
                       <span className="truncate">{d.name}</span>
                     </div>
-                    <span className="text-xs font-bold text-emerald-700 opacity-0 group-hover:opacity-100 transition">
+                    <span className="text-xs font-black uppercase text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition">
                       + Add
                     </span>
                   </li>
@@ -216,10 +216,10 @@ export default function IntersectionFinder({
                 {selectedDiseases.map((d) => (
                   <li
                     key={d.id}
-                    className="px-4 py-2.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between text-base font-semibold text-slate-800 shadow-xs hover:border-slate-300 transition"
+                    className="px-4 py-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between text-base font-bold text-slate-900 shadow-xs hover:border-slate-300 transition"
                   >
-                    <div className="flex items-center gap-2 truncate mr-2">
-                      <Stethoscope className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div className="flex items-center gap-2.5 truncate mr-2">
+                      <Stethoscope className="w-5 h-5 text-emerald-600 shrink-0" />
                       <span className="truncate">{d.name}</span>
                     </div>
                     <button
@@ -276,16 +276,16 @@ export default function IntersectionFinder({
                   <li
                     key={med.id}
                     onClick={() => onSelectMedicine?.(med.id)}
-                    className="px-4 py-3 bg-blue-50/70 hover:bg-blue-100/90 border-l-4 border-blue-600 flex items-center justify-between cursor-pointer transition shadow-xs group"
+                    className="px-4 py-3.5 bg-blue-50/70 hover:bg-blue-100/90 border-l-4 border-blue-600 flex items-center justify-between cursor-pointer transition shadow-xs group"
                     title={`Click to focus and view links for "${med.name}" in Search & Manage Links above`}
                   >
                     <div className="flex items-center gap-2.5 truncate mr-2">
-                      <Pill className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span className="font-bold text-base text-blue-950 group-hover:text-blue-900 truncate">
+                      <Pill className="w-5 h-5 text-blue-600 shrink-0" />
+                      <span className="font-bold text-lg text-blue-950 group-hover:text-blue-900 truncate">
                         {med.name}
                       </span>
                     </div>
-                    <span className="text-xs font-extrabold bg-white text-blue-800 border border-blue-300 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 px-2.5 py-1 rounded-lg transition shrink-0 flex items-center gap-1 shadow-xs">
+                    <span className="text-xs font-black uppercase bg-white text-blue-800 border border-blue-300 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 px-2.5 py-1 rounded-lg transition shrink-0 flex items-center gap-1 shadow-xs">
                       <span>Inspect Links</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </span>

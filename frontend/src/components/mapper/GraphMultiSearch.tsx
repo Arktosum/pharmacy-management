@@ -120,7 +120,7 @@ export default function GraphMultiSearch({
             }}
             onFocus={() => setIsOpen(true)}
             placeholder="Search multiple items (supports * wildcard, e.g. *cillin, para*)..."
-            className="w-full pl-11 pr-10 py-2.5 text-base bg-slate-900 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner transition"
+            className="w-full pl-11 pr-10 py-3 text-lg font-bold bg-slate-900 border-2 border-slate-700 rounded-xl text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner transition"
           />
           {query && (
             <button
@@ -136,7 +136,7 @@ export default function GraphMultiSearch({
             <div className="absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 divide-y divide-slate-700/60">
               {searchResults.meds.length > 0 && (
                 <div className="p-2.5">
-                  <div className="text-xs font-bold text-blue-400 uppercase tracking-wider px-3 py-1.5 flex items-center gap-2">
+                  <div className="text-sm font-black text-blue-400 uppercase tracking-wider px-3.5 py-2 flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
                     Medicines ({searchResults.meds.length})
                   </div>
@@ -144,10 +144,10 @@ export default function GraphMultiSearch({
                     <button
                       key={m.id}
                       onClick={() => handleSelect(m.id, m.name, "medicine")}
-                      className="w-full text-left px-3.5 py-2.5 text-sm text-slate-200 hover:bg-blue-600/25 hover:text-white rounded-lg flex items-center justify-between transition"
+                      className="w-full text-left px-4 py-3 text-base text-slate-100 hover:bg-blue-600/30 hover:text-white rounded-lg flex items-center justify-between transition"
                     >
-                      <span className="font-semibold">{m.name}</span>
-                      <span className="text-xs text-blue-300 bg-blue-900/50 border border-blue-700/60 px-2 py-0.5 rounded font-medium uppercase">
+                      <span className="font-bold text-base">{m.name}</span>
+                      <span className="text-xs text-blue-300 bg-blue-900/50 border border-blue-700/60 px-2.5 py-1 rounded-md font-black uppercase">
                         Medicine
                       </span>
                     </button>
@@ -157,7 +157,7 @@ export default function GraphMultiSearch({
 
               {searchResults.ills.length > 0 && (
                 <div className="p-2.5">
-                  <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider px-3 py-1.5 flex items-center gap-2">
+                  <div className="text-sm font-black text-emerald-400 uppercase tracking-wider px-3.5 py-2 flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                     Diseases / Symptoms ({searchResults.ills.length})
                   </div>
@@ -165,10 +165,10 @@ export default function GraphMultiSearch({
                     <button
                       key={i.id}
                       onClick={() => handleSelect(i.id, i.name, "disease")}
-                      className="w-full text-left px-3.5 py-2.5 text-sm text-slate-200 hover:bg-emerald-600/25 hover:text-white rounded-lg flex items-center justify-between transition"
+                      className="w-full text-left px-4 py-3 text-base text-slate-100 hover:bg-emerald-600/30 hover:text-white rounded-lg flex items-center justify-between transition"
                     >
-                      <span className="font-semibold">{i.name}</span>
-                      <span className="text-xs text-emerald-300 bg-emerald-900/50 border border-emerald-700/60 px-2 py-0.5 rounded font-medium uppercase">
+                      <span className="font-bold text-base">{i.name}</span>
+                      <span className="text-xs text-emerald-300 bg-emerald-900/50 border border-emerald-700/60 px-2.5 py-1 rounded-md font-black uppercase">
                         Disease
                       </span>
                     </button>

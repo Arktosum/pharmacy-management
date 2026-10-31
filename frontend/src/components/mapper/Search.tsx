@@ -6,6 +6,11 @@ import {
   Stethoscope,
   ArrowRight,
   ChevronRight,
+  Maximize2,
+  Minimize2,
+  Search as SearchIcon,
+  X,
+  Check,
 } from "lucide-react";
 import Card from "./Card";
 import {
@@ -38,6 +43,20 @@ export default function SearchLinker({
   const [firstHopSelectedId, setFirstHopSelectedId] = useState<string | null>(null);
   const [secondHopSelectedId, setSecondHopSelectedId] = useState<string | null>(null);
   const [thirdHopSelectedId, setThirdHopSelectedId] = useState<string | null>(null);
+
+  // Floating window state for enlarged column flow view
+  const [expandedColumn, setExpandedColumn] = useState<number | null>(null);
+  const [modalSearch, setModalSearch] = useState<string>("");
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && expandedColumn !== null) {
+        setExpandedColumn(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [expandedColumn]);
 
   useEffect(() => {
     if (initialSelection) {
@@ -213,6 +232,114 @@ export default function SearchLinker({
         .filter(Boolean) as Disease[];
     }
   }, [thirdHopSelectedId, links, medMap, illMap, type]);
+
+  // Pre-calculated link counts for quick display on entity cards
+  const linkCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const l of links) {
+      counts.set(l.medicineId, (counts.get(l.medicineId) || 0) + 1);
+      counts.set(l.diseaseId, (counts.get(l.diseaseId) || 0) + 1);
+    }
+    return counts;
+  }, [links]);
+
+  // Active expanded column modal metadata & filtered list
+  const expandedColData = useMemo(() => {
+    if (expandedColumn === null) return null;
+
+    let title = "";
+    let stepCode = "";
+    let isMedCol = false;
+    let subtitle = "";
+    let rawItems: (Medicine | Disease)[] = [];
+    let selectedItemId: string | null = null;
+    let onSelect: ((id: string) => void) | null = null;
+
+    if (expandedColumn === 1) {
+      isMedCol = type === "medicine";
+      stepCode = isMedCol ? "M1" : "D1";
+      title = isMedCol ? "M1: Root Medicines" : "D1: Root Diseases";
+      subtitle = `Browse & select any ${type} to explore multi-hop connections`;
+      rawItems = type === "medicine" ? meds : ills;
+      selectedItemId = selectedId;
+      onSelect = handleSelectRoot;
+    } else if (expandedColumn === 2) {
+      isMedCol = type !== "medicine";
+      stepCode = isMedCol ? "M1" : "D1";
+      title = type === "medicine" ? "D1: Linked Diseases" : "M1: Linked Medicines";
+      subtitle = selectedItem
+        ? `Connections directly linked to "${selectedItem.name}"`
+        : "No root item selected in Column 1";
+      rawItems = firstHopLinks;
+      selectedItemId = firstHopSelectedId;
+      onSelect = setFirstHopSelectedId;
+    } else if (expandedColumn === 3) {
+      isMedCol = type === "medicine";
+      stepCode = isMedCol ? "M2" : "D2";
+      title = isMedCol ? "M2: Linked Medicines" : "D2: Linked Diseases";
+      subtitle = firstHopItem
+        ? `Connections linked to "${firstHopItem.name}"`
+        : "No item selected in Column 2";
+      rawItems = secondHopLinks;
+      selectedItemId = secondHopSelectedId;
+      onSelect = setSecondHopSelectedId;
+    } else if (expandedColumn === 4) {
+      isMedCol = type !== "medicine";
+      stepCode = isMedCol ? "M2" : "D2";
+      title = type === "medicine" ? "D2: Linked Diseases" : "M2: Linked Medicines";
+      subtitle = secondHopItem
+        ? `Connections linked to "${secondHopItem.name}"`
+        : "No item selected in Column 3";
+      rawItems = thirdHopLinks;
+      selectedItemId = thirdHopSelectedId;
+      onSelect = setThirdHopSelectedId;
+    } else if (expandedColumn === 5) {
+      isMedCol = type === "medicine";
+      stepCode = isMedCol ? "M3" : "D3";
+      title = isMedCol ? "M3: Linked Medicines" : "D3: Linked Diseases";
+      subtitle = thirdHopItem
+        ? `Terminal connections linked to "${thirdHopItem.name}"`
+        : "No item selected in Column 4";
+      rawItems = fourthHopLinks;
+      selectedItemId = null;
+      onSelect = null;
+    }
+
+    const q = modalSearch.trim().toLowerCase();
+    const filteredItems = q
+      ? rawItems.filter((item) => item.name.toLowerCase().includes(q))
+      : rawItems;
+
+    return {
+      colNum: expandedColumn,
+      title,
+      stepCode,
+      isMedCol,
+      subtitle,
+      rawItems,
+      filteredItems,
+      selectedItemId,
+      onSelect,
+    };
+  }, [
+    expandedColumn,
+    modalSearch,
+    type,
+    meds,
+    ills,
+    selectedId,
+    selectedItem,
+    firstHopLinks,
+    firstHopSelectedId,
+    firstHopItem,
+    secondHopLinks,
+    secondHopSelectedId,
+    secondHopItem,
+    thirdHopLinks,
+    thirdHopSelectedId,
+    thirdHopItem,
+    fourthHopLinks,
+  ]);
 
   const handleSelectRoot = (id: string) => {
     setSelectedId(id);
@@ -531,18 +658,32 @@ export default function SearchLinker({
               </button>
             </div>
 
-            <label className="text-base font-bold text-slate-800 mb-2 flex items-center justify-between">
-              <span>{isMedMode ? "M1: Filter Medicines" : "D1: Filter Diseases"}</span>
-              <span className="text-sm font-semibold text-slate-500">
-                {matches.length} found
-              </span>
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-base font-bold text-slate-800 flex items-center justify-between flex-1 pr-2">
+                <span>{isMedMode ? "M1: Filter Medicines" : "D1: Filter Diseases"}</span>
+                <span className="text-sm font-semibold text-slate-500">
+                  {matches.length} found
+                </span>
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setExpandedColumn(1);
+                  setModalSearch("");
+                }}
+                className="px-2.5 py-1 text-xs font-black text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg flex items-center gap-1.5 transition shadow-xs shrink-0"
+                title="Expand Column 1 into enlarged flow window"
+              >
+                <Maximize2 className="w-3.5 h-3.5 text-slate-600" />
+                <span>Expand</span>
+              </button>
+            </div>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Type to search ${type}...`}
               style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
-              className="w-full px-4 py-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-emerald-500 text-slate-900 text-base font-semibold placeholder-slate-600 shadow-sm"
+              className="w-full px-4 py-3.5 border-2 border-slate-400 rounded-xl focus:ring-2 focus:ring-emerald-500 text-slate-900 text-lg font-bold placeholder-slate-600 shadow-sm transition"
             />
             <ul className="mt-2.5 max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
               {visibleMatches.map((m) => {
@@ -551,25 +692,25 @@ export default function SearchLinker({
                   <li
                     key={m.id}
                     onClick={() => handleSelectRoot(m.id)}
-                    className={`px-4 py-2.5 cursor-pointer text-base transition flex items-center justify-between ${
+                    className={`px-4 py-3.5 cursor-pointer text-lg transition flex items-center justify-between ${
                       isSelected
                         ? isMedMode
-                          ? "bg-blue-100 font-bold text-blue-950 border-l-4 border-blue-600"
-                          : "bg-emerald-100 font-bold text-emerald-950 border-l-4 border-emerald-600"
-                        : "hover:bg-slate-50 text-slate-800 font-medium"
+                          ? "bg-blue-100 font-black text-blue-950 border-l-4 border-blue-600"
+                          : "bg-emerald-100 font-black text-emerald-950 border-l-4 border-emerald-600"
+                        : "hover:bg-slate-50 text-slate-900 font-bold"
                     }`}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       {isMedMode ? (
-                        <Pill className="w-4 h-4 text-blue-500 shrink-0" />
+                        <Pill className="w-5 h-5 text-blue-500 shrink-0" />
                       ) : (
-                        <Stethoscope className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <Stethoscope className="w-5 h-5 text-emerald-500 shrink-0" />
                       )}
-                      <span className="break-words font-medium">{m.name}</span>
+                      <span className="break-words font-bold text-lg">{m.name}</span>
                     </div>
                     {isSelected && (
                       <span
-                        className={`text-xs text-white font-bold px-2 py-0.5 rounded-md shrink-0 ml-2 ${
+                        className={`text-xs text-white font-black px-2.5 py-1 rounded-md shrink-0 ml-2 ${
                           isMedMode ? "bg-blue-600" : "bg-emerald-600"
                         }`}
                       >
@@ -606,18 +747,32 @@ export default function SearchLinker({
                 />
                 <span>{isMedMode ? "D1: Linked Diseases" : "M1: Linked Medicines"}</span>
               </label>
-              {selectedItem && (
-                <span
-                  className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
-                    isMedMode
-                      ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                      : "bg-blue-100 text-blue-800 border-blue-300"
-                  }`}
+              <div className="flex items-center gap-2">
+                {selectedItem && (
+                  <span
+                    className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
+                      isMedMode
+                        ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                        : "bg-blue-100 text-blue-800 border-blue-300"
+                    }`}
+                  >
+                    {isMedMode ? <Stethoscope className="w-3 h-3" /> : <Pill className="w-3 h-3" />}
+                    <span>{firstHopLinks.length}</span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExpandedColumn(2);
+                    setModalSearch("");
+                  }}
+                  className="px-2.5 py-1 text-xs font-black text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg flex items-center gap-1.5 transition shadow-xs shrink-0"
+                  title="Expand Column 2 into enlarged flow window"
                 >
-                  {isMedMode ? <Stethoscope className="w-3 h-3" /> : <Pill className="w-3 h-3" />}
-                  <span>{firstHopLinks.length}</span>
-                </span>
-              )}
+                  <Maximize2 className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Expand</span>
+                </button>
+              </div>
             </div>
 
             <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
@@ -634,14 +789,14 @@ export default function SearchLinker({
                       <li
                         key={item.id}
                         onClick={() => setFirstHopSelectedId(item.id)}
-                        className={`px-4 py-3 cursor-pointer flex items-center justify-between transition text-base group ${
+                        className={`px-4 py-3.5 cursor-pointer flex items-center justify-between transition text-base group ${
                           isSelectedD1
                             ? isMedMode
-                              ? "bg-emerald-100/90 border-l-4 border-emerald-600 text-emerald-950 font-bold shadow-xs"
-                              : "bg-blue-100/90 border-l-4 border-blue-600 text-blue-950 font-bold shadow-xs"
+                              ? "bg-emerald-100/90 border-l-4 border-emerald-600 text-emerald-950 font-black shadow-xs"
+                              : "bg-blue-100/90 border-l-4 border-blue-600 text-blue-950 font-black shadow-xs"
                             : isMedMode
-                            ? "hover:bg-emerald-50/70 text-slate-800"
-                            : "hover:bg-blue-50/70 text-slate-800"
+                            ? "hover:bg-emerald-50/70 text-slate-900 font-bold"
+                            : "hover:bg-blue-50/70 text-slate-900 font-bold"
                         }`}
                         title={`Click to select "${item.name}" and view ${isMedMode ? "M2" : "D2"}`}
                       >
@@ -659,7 +814,7 @@ export default function SearchLinker({
                               }`}
                             />
                           )}
-                          <span className="break-words font-medium">{item.name}</span>
+                          <span className="break-words font-bold">{item.name}</span>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
@@ -725,18 +880,32 @@ export default function SearchLinker({
                   {isMedMode ? "M2: Linked Medicines" : "D2: Linked Diseases"}
                 </span>
               </label>
-              {firstHopItem && (
-                <span
-                  className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
-                    isMedMode
-                      ? "bg-blue-100 text-blue-800 border-blue-200"
-                      : "bg-emerald-100 text-emerald-800 border-emerald-200"
-                  }`}
+              <div className="flex items-center gap-2">
+                {firstHopItem && (
+                  <span
+                    className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
+                      isMedMode
+                        ? "bg-blue-100 text-blue-800 border-blue-200"
+                        : "bg-emerald-100 text-emerald-800 border-emerald-200"
+                    }`}
+                  >
+                    {isMedMode ? <Pill className="w-3 h-3" /> : <Stethoscope className="w-3 h-3" />}
+                    <span>{secondHopLinks.length}</span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExpandedColumn(3);
+                    setModalSearch("");
+                  }}
+                  className="px-2.5 py-1 text-xs font-black text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg flex items-center gap-1.5 transition shadow-xs shrink-0"
+                  title="Expand Column 3 into enlarged flow window"
                 >
-                  {isMedMode ? <Pill className="w-3 h-3" /> : <Stethoscope className="w-3 h-3" />}
-                  <span>{secondHopLinks.length}</span>
-                </span>
-              )}
+                  <Maximize2 className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Expand</span>
+                </button>
+              </div>
             </div>
 
             <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
@@ -761,14 +930,14 @@ export default function SearchLinker({
                     <li
                       key={item.id}
                       onClick={() => setSecondHopSelectedId(item.id)}
-                      className={`px-4 py-3 cursor-pointer flex items-center justify-between transition text-base group ${
+                      className={`px-4 py-3.5 cursor-pointer flex items-center justify-between transition text-base group ${
                         isSelectedM2
                           ? isMedMode
-                            ? "bg-blue-100/90 border-l-4 border-blue-600 text-blue-950 font-bold shadow-xs"
-                            : "bg-emerald-100/90 border-l-4 border-emerald-600 text-emerald-950 font-bold shadow-xs"
+                            ? "bg-blue-100/90 border-l-4 border-blue-600 text-blue-950 font-black shadow-xs"
+                            : "bg-emerald-100/90 border-l-4 border-emerald-600 text-emerald-950 font-black shadow-xs"
                           : isMedMode
-                          ? "hover:bg-blue-50/80 text-slate-800"
-                          : "hover:bg-emerald-50/80 text-slate-800"
+                          ? "hover:bg-blue-50/80 text-slate-900 font-bold"
+                          : "hover:bg-emerald-50/80 text-slate-900 font-bold"
                       }`}
                       title={`Click to view ${isMedMode ? "D2" : "M2"} for "${item.name}"`}
                     >
@@ -786,7 +955,7 @@ export default function SearchLinker({
                             }`}
                           />
                         )}
-                        <span className="break-words font-medium">{item.name}</span>
+                        <span className="break-words font-bold">{item.name}</span>
                         {isRootMatch && (
                           <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-normal shrink-0">
                             Root {isMedMode ? "M1" : "D1"}
@@ -840,18 +1009,32 @@ export default function SearchLinker({
                   {isMedMode ? "D2: Linked Diseases" : "M2: Linked Medicines"}
                 </span>
               </label>
-              {secondHopItem && (
-                <span
-                  className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
-                    isMedMode
-                      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-                      : "bg-blue-100 text-blue-800 border-blue-200"
-                  }`}
+              <div className="flex items-center gap-2">
+                {secondHopItem && (
+                  <span
+                    className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
+                      isMedMode
+                        ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                        : "bg-blue-100 text-blue-800 border-blue-200"
+                    }`}
+                  >
+                    {isMedMode ? <Stethoscope className="w-3 h-3" /> : <Pill className="w-3 h-3" />}
+                    <span>{thirdHopLinks.length}</span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExpandedColumn(4);
+                    setModalSearch("");
+                  }}
+                  className="px-2.5 py-1 text-xs font-black text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg flex items-center gap-1.5 transition shadow-xs shrink-0"
+                  title="Expand Column 4 into enlarged flow window"
                 >
-                  {isMedMode ? <Stethoscope className="w-3 h-3" /> : <Pill className="w-3 h-3" />}
-                  <span>{thirdHopLinks.length}</span>
-                </span>
-              )}
+                  <Maximize2 className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Expand</span>
+                </button>
+              </div>
             </div>
 
             <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
@@ -876,14 +1059,14 @@ export default function SearchLinker({
                     <li
                       key={item.id}
                       onClick={() => setThirdHopSelectedId(item.id)}
-                      className={`px-4 py-3 cursor-pointer flex items-center justify-between transition text-base group ${
+                      className={`px-4 py-3.5 cursor-pointer flex items-center justify-between transition text-base group ${
                         isSelectedD2
                           ? isMedMode
-                            ? "bg-emerald-100/90 border-l-4 border-emerald-600 text-emerald-950 font-bold shadow-xs"
-                            : "bg-blue-100/90 border-l-4 border-blue-600 text-blue-950 font-bold shadow-xs"
+                            ? "bg-emerald-100/90 border-l-4 border-emerald-600 text-emerald-950 font-black shadow-xs"
+                            : "bg-blue-100/90 border-l-4 border-blue-600 text-blue-950 font-black shadow-xs"
                           : isMedMode
-                          ? "hover:bg-emerald-50/80 text-slate-800"
-                          : "hover:bg-blue-50/80 text-slate-800"
+                          ? "hover:bg-emerald-50/80 text-slate-900 font-bold"
+                          : "hover:bg-blue-50/80 text-slate-900 font-bold"
                       }`}
                       title={`Click to view ${isMedMode ? "M3" : "D3"} for "${item.name}"`}
                     >
@@ -901,7 +1084,7 @@ export default function SearchLinker({
                             }`}
                           />
                         )}
-                        <span className="break-words font-medium">{item.name}</span>
+                        <span className="break-words font-bold">{item.name}</span>
                         {isD1Match && (
                           <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-normal shrink-0">
                             Matches {isMedMode ? "D1" : "M1"}
@@ -955,18 +1138,32 @@ export default function SearchLinker({
                   {isMedMode ? "M3: Linked Medicines" : "D3: Linked Diseases"}
                 </span>
               </label>
-              {thirdHopItem && (
-                <span
-                  className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
-                    isMedMode
-                      ? "bg-blue-100 text-blue-800 border-blue-200"
-                      : "bg-emerald-100 text-emerald-800 border-emerald-200"
-                  }`}
+              <div className="flex items-center gap-2">
+                {thirdHopItem && (
+                  <span
+                    className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
+                      isMedMode
+                        ? "bg-blue-100 text-blue-800 border-blue-200"
+                        : "bg-emerald-100 text-emerald-800 border-emerald-200"
+                    }`}
+                  >
+                    {isMedMode ? <Pill className="w-3 h-3" /> : <Stethoscope className="w-3 h-3" />}
+                    <span>{fourthHopLinks.length}</span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExpandedColumn(5);
+                    setModalSearch("");
+                  }}
+                  className="px-2.5 py-1 text-xs font-black text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg flex items-center gap-1.5 transition shadow-xs shrink-0"
+                  title="Expand Column 5 into enlarged flow window"
                 >
-                  {isMedMode ? <Pill className="w-3 h-3" /> : <Stethoscope className="w-3 h-3" />}
-                  <span>{fourthHopLinks.length}</span>
-                </span>
-              )}
+                  <Maximize2 className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Expand</span>
+                </button>
+              </div>
             </div>
 
             <ul className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
@@ -990,10 +1187,10 @@ export default function SearchLinker({
                   return (
                     <li
                       key={item.id}
-                      className={`px-4 py-3 flex items-center justify-between text-base select-none ${
+                      className={`px-4 py-3.5 flex items-center justify-between text-base select-none font-bold ${
                         isMedMode
-                          ? "bg-blue-50/50 hover:bg-blue-50 text-slate-800"
-                          : "bg-emerald-50/50 hover:bg-emerald-50 text-slate-800"
+                          ? "bg-blue-50/50 hover:bg-blue-50 text-slate-900"
+                          : "bg-emerald-50/50 hover:bg-emerald-50 text-slate-900"
                       }`}
                       title={
                         isRootMatch
@@ -1009,7 +1206,7 @@ export default function SearchLinker({
                         ) : (
                           <Stethoscope className="w-4 h-4 text-emerald-600 shrink-0" />
                         )}
-                        <span className="break-words font-medium">{item.name}</span>
+                        <span className="break-words font-bold">{item.name}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
@@ -1054,6 +1251,280 @@ export default function SearchLinker({
         </div>
       </div>
       </Card>
+
+      {/* Floating Window Modal: Enlarged Multi-Column Flow View */}
+      {expandedColData && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 md:p-6 animate-fadeIn"
+          onClick={() => setExpandedColumn(null)}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl border-2 border-slate-300 w-full max-w-7xl h-[92vh] max-h-[960px] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Top Bar */}
+            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-4 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className={`p-2.5 rounded-2xl border text-white shadow-xs ${
+                    expandedColData.isMedCol
+                      ? "bg-blue-600 border-blue-700"
+                      : "bg-emerald-600 border-emerald-700"
+                  }`}
+                >
+                  {expandedColData.isMedCol ? (
+                    <Pill className="w-6 h-6" />
+                  ) : (
+                    <Stethoscope className="w-6 h-6" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span
+                      className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-md border ${
+                        expandedColData.isMedCol
+                          ? "bg-blue-100 text-blue-900 border-blue-300"
+                          : "bg-emerald-100 text-emerald-900 border-emerald-300"
+                      }`}
+                    >
+                      Column {expandedColData.colNum} • {expandedColData.stepCode}
+                    </span>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight truncate">
+                      {expandedColData.title}
+                    </h3>
+                    <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800">
+                      {expandedColData.filteredItems.length} of {expandedColData.rawItems.length} items
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-500 mt-0.5 truncate">
+                    {expandedColData.subtitle}
+                  </p>
+                </div>
+              </div>
+
+              {/* Quick Column Switchers & Minimize Button */}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="hidden sm:flex items-center bg-slate-200 p-1 rounded-xl gap-1 text-xs font-black">
+                  {[1, 2, 3, 4, 5].map((col) => {
+                    const isActive = expandedColumn === col;
+                    const code =
+                      col === 1
+                        ? isMedMode ? "M1" : "D1"
+                        : col === 2
+                        ? isMedMode ? "D1" : "M1"
+                        : col === 3
+                        ? isMedMode ? "M2" : "D2"
+                        : col === 4
+                        ? isMedMode ? "D2" : "M2"
+                        : isMedMode ? "M3" : "D3";
+                    return (
+                      <button
+                        key={col}
+                        type="button"
+                        onClick={() => {
+                          setExpandedColumn(col);
+                          setModalSearch("");
+                        }}
+                        className={`px-2.5 py-1 rounded-lg transition ${
+                          isActive
+                            ? "bg-slate-900 text-white shadow-xs"
+                            : "text-slate-700 hover:text-slate-900 hover:bg-slate-300"
+                        }`}
+                        title={`Switch to Column ${col} (${code})`}
+                      >
+                        Col {col} ({code})
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setExpandedColumn(null)}
+                  className="p-2 sm:px-3.5 sm:py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold text-sm flex items-center gap-1.5 transition shadow-xs"
+                  title="Minimize window (Esc)"
+                >
+                  <Minimize2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Minimize</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Filter Toolbar */}
+            <div className="px-6 py-3 border-b border-slate-200 bg-white flex items-center gap-3 shrink-0">
+              <div className="relative flex-1">
+                <SearchIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  autoFocus
+                  value={modalSearch}
+                  onChange={(e) => setModalSearch(e.target.value)}
+                  placeholder={`Filter among ${expandedColData.rawItems.length} items in this column (e.g. name)...`}
+                  style={{ backgroundColor: "rgb(118 213 133 / 35%)" }}
+                  className="w-full pl-12 pr-10 py-3 text-lg font-bold border-2 border-slate-300 rounded-xl text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-inner transition"
+                />
+                {modalSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setModalSearch("")}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-200"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Main Expanded Flow Grid */}
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-100/70">
+              {expandedColData.filteredItems.length === 0 ? (
+                <div className="py-20 text-center flex flex-col items-center justify-center text-slate-400">
+                  <SearchIcon className="w-12 h-12 mb-3 text-slate-300" />
+                  <p className="text-lg font-bold text-slate-700">
+                    {modalSearch
+                      ? `No items matching "${modalSearch}" in this column`
+                      : "No items available in this column"}
+                  </p>
+                  {modalSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setModalSearch("")}
+                      className="mt-3 px-4 py-1.5 text-sm font-bold bg-white border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition"
+                    >
+                      Clear Search
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+                  {expandedColData.filteredItems.map((item) => {
+                    const isSelected = item.id === expandedColData.selectedItemId;
+                    const linkCount = linkCounts.get(item.id) || 0;
+
+                    // Check special match badges for hops
+                    const isRootMatch =
+                      expandedColData.colNum > 1 && item.id === selectedId;
+                    const isFirstHopMatch =
+                      expandedColData.colNum > 2 && item.id === firstHopSelectedId;
+                    const isSecondHopMatch =
+                      expandedColData.colNum > 3 && item.id === secondHopSelectedId;
+
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => expandedColData.onSelect?.(item.id)}
+                        className={`p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between gap-2 shadow-xs group ${
+                          expandedColData.onSelect
+                            ? "cursor-pointer hover:shadow-md transform hover:-translate-y-0.5"
+                            : "cursor-default"
+                        } ${
+                          isSelected
+                            ? expandedColData.isMedCol
+                              ? "bg-blue-600 border-blue-700 text-white shadow-md ring-2 ring-blue-300"
+                              : "bg-emerald-600 border-emerald-700 text-white shadow-md ring-2 ring-emerald-300"
+                            : expandedColData.isMedCol
+                            ? "bg-white hover:bg-blue-50/70 border-slate-200 hover:border-blue-300 text-slate-900"
+                            : "bg-white hover:bg-emerald-50/70 border-slate-200 hover:border-emerald-300 text-slate-900"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {expandedColData.isMedCol ? (
+                              <Pill
+                                className={`w-4 h-4 shrink-0 ${
+                                  isSelected ? "text-white" : "text-blue-500"
+                                }`}
+                              />
+                            ) : (
+                              <Stethoscope
+                                className={`w-4 h-4 shrink-0 ${
+                                  isSelected ? "text-white" : "text-emerald-500"
+                                }`}
+                              />
+                            )}
+                            <span
+                              className={`text-base font-black truncate ${
+                                isSelected ? "text-white" : "text-slate-900"
+                              }`}
+                              title={item.name}
+                            >
+                              {item.name}
+                            </span>
+                          </div>
+
+                          {isSelected && (
+                            <span className="shrink-0 p-0.5 bg-white text-slate-900 rounded-full shadow-xs">
+                              <Check className="w-3.5 h-3.5" />
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs font-bold pt-1.5 border-t border-black/10">
+                          <span
+                            className={`text-[11px] font-extrabold ${
+                              isSelected ? "text-white/80" : "text-slate-500"
+                            }`}
+                          >
+                            {linkCount} {linkCount === 1 ? "link" : "links"}
+                          </span>
+
+                          {isRootMatch && (
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded font-black uppercase ${
+                                isSelected
+                                  ? "bg-white/20 text-white"
+                                  : "bg-purple-100 text-purple-800 border border-purple-200"
+                              }`}
+                            >
+                              Root {isMedMode ? "M1" : "D1"}
+                            </span>
+                          )}
+                          {isFirstHopMatch && !isRootMatch && (
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded font-black uppercase ${
+                                isSelected
+                                  ? "bg-white/20 text-white"
+                                  : "bg-blue-100 text-blue-800 border border-blue-200"
+                              }`}
+                            >
+                              Matches {isMedMode ? "D1" : "M1"}
+                            </span>
+                          )}
+                          {isSecondHopMatch && !isRootMatch && !isFirstHopMatch && (
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded font-black uppercase ${
+                                isSelected
+                                  ? "bg-white/20 text-white"
+                                  : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                              }`}
+                            >
+                              Matches {isMedMode ? "M2" : "D2"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 border-t border-slate-200 bg-white flex items-center justify-between text-sm text-slate-500 font-bold shrink-0">
+              <span>
+                Click any element to select it • Press <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-xs font-mono">Esc</kbd> or Minimize to return
+              </span>
+              <button
+                type="button"
+                onClick={() => setExpandedColumn(null)}
+                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-black text-sm rounded-xl transition shadow-sm"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

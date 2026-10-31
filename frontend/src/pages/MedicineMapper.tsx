@@ -6,6 +6,7 @@ import {
   Stethoscope,
   Link as LinkIcon,
   AlertTriangle,
+  GitMerge,
 } from "lucide-react";
 import {
   useGetMedicinesQuery,
@@ -17,14 +18,15 @@ import { Adddisease, AddMedicine } from "../components/mapper/AddEntity";
 import IntersectionFinder from "../components/mapper/IntersectionFinder";
 import Linker from "../components/mapper/Linker";
 import Search from "../components/mapper/Search";
+import MultiMergeTool from "../components/mapper/MultiMergeTool";
 import SimilarGroupsAudit from "../components/mapper/SimilarGroupsAudit";
 import { auditSimilarGroups } from "../utils/similarityAudit";
 
 export default function MedicineMapper() {
   const [activeTab, setActiveTab] = useState<"graph" | "classic">("classic");
-  const [classicSubTab, setClassicSubTab] = useState<"manage" | "duplicates">(
-    "manage"
-  );
+  const [classicSubTab, setClassicSubTab] = useState<
+    "manage" | "merge" | "duplicates"
+  >("manage");
   const [searchSelection, setSearchSelection] = useState<{
     type: "medicine" | "disease";
     id: string;
@@ -182,6 +184,19 @@ export default function MedicineMapper() {
 
                 <button
                   type="button"
+                  onClick={() => setClassicSubTab("merge")}
+                  className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
+                    classicSubTab === "merge"
+                      ? "bg-purple-700 text-white shadow"
+                      : "bg-white text-slate-700 hover:bg-purple-50 border border-slate-300"
+                  }`}
+                >
+                  <GitMerge className="w-5 h-5 text-purple-400" />
+                  <span>Multi-Entity Merge</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setClassicSubTab("duplicates")}
                   className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
                     classicSubTab === "duplicates"
@@ -214,22 +229,29 @@ export default function MedicineMapper() {
               <div className="text-sm text-slate-500 font-bold hidden md:block">
                 {classicSubTab === "manage"
                   ? "Manage, search, link & find intersections"
+                  : classicSubTab === "merge"
+                  ? "Consolidate multiple duplicate medicines or diseases"
                   : `Auditing ${medicines.length} medicines & ${diseases.length} diseases`}
               </div>
             </div>
 
-            {/* Sub-tab Body (Reordered: Search -> IntersectionFinder -> AddEntity -> Linker) */}
+            {/* Sub-tab Body */}
             {classicSubTab === "manage" ? (
               <div className="grid gap-6 w-full min-w-0">
                 <Search initialSelection={searchSelection} />
                 <IntersectionFinder
                   onSelectMedicine={handleSelectMedicineFromIntersection}
                 />
+                <MultiMergeTool />
                 <section className="grid md:grid-cols-2 gap-6">
                   <AddMedicine />
                   <Adddisease />
                 </section>
                 <Linker />
+              </div>
+            ) : classicSubTab === "merge" ? (
+              <div className="w-full min-w-0">
+                <MultiMergeTool />
               </div>
             ) : (
               <SimilarGroupsAudit

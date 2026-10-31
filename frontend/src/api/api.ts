@@ -102,6 +102,24 @@ export const api = createApi({
             query: () => '/links',
             providesTags: [{ type: 'Link', id: 'LIST' }],
         }),
+        mergeEntities: builder.mutation<
+            { ok: boolean; survivor: any; finalLinkCount: number; transferredCount: number; mergedCount: number },
+            { type: 'medicine' | 'disease'; survivorId: string; victimIds: string[]; finalName?: string }
+        >({
+            query: body => ({
+                url: '/merge',
+                method: 'POST',
+                body: {
+                    ...body,
+                    type: body.type === 'disease' ? 'illness' : body.type,
+                },
+            }),
+            invalidatesTags: [
+                { type: 'Medicine', id: 'LIST' },
+                { type: 'Illness', id: 'LIST' },
+                { type: 'Link', id: 'LIST' },
+            ],
+        }),
 
     }),
 })
@@ -118,5 +136,6 @@ export const {
     useLinkMutation,
     useUnlinkMutation,
     useLazySearchQuery,
-    useGetLinksQuery
+    useGetLinksQuery,
+    useMergeEntitiesMutation,
 } = api

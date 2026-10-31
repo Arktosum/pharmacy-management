@@ -39,7 +39,7 @@ export function AddMedicine() {
       <form onSubmit={submit} className="flex flex-col gap-2">
         <div className="flex gap-2">
           <input
-            className="input flex-1 w-full px-4 py-3 border border-emerald-300 rounded-lg text-base font-semibold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
+            className="input flex-1 w-full px-4 py-3.5 border-2 border-emerald-400 rounded-xl text-lg font-bold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition"
             placeholder="e.g., Abroma Augusta"
             style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
             value={name}
@@ -47,7 +47,7 @@ export function AddMedicine() {
           />
           <button
             type="submit"
-            className="btn bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
+            className="btn bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-xl text-lg font-black disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
             disabled={isLoading || hasExact || !trimmedLower}
           >
             Add
@@ -62,12 +62,12 @@ export function AddMedicine() {
 
         {/* Live Dropdown showing ALL matching medicines */}
         {matchingMeds.length > 0 && (
-          <div className="mt-2 border border-slate-200 rounded-lg bg-white overflow-hidden shadow-md">
-            <div className="px-4 py-2 bg-slate-100 border-b text-sm text-slate-700 flex justify-between items-center font-bold">
+          <div className="mt-2 border-2 border-slate-200 rounded-xl bg-white overflow-hidden shadow-lg">
+            <div className="px-4 py-2.5 bg-slate-100 border-b text-base text-slate-800 flex justify-between items-center font-bold">
               <span>Matching medicines ({matchingMeds.length}):</span>
               <span className="text-xs text-slate-500 font-normal">Click to autofill</span>
             </div>
-            <ul className="max-h-44 overflow-y-auto divide-y">
+            <ul className="max-h-52 overflow-y-auto divide-y">
               {matchingMeds.map((m) => {
                 const isExact = m.name.toLowerCase() === trimmedLower;
                 return (
@@ -75,15 +75,15 @@ export function AddMedicine() {
                     <button
                       type="button"
                       onClick={() => setName(m.name)}
-                      className={`w-full text-left px-4 py-2.5 text-base flex items-center justify-between transition ${
+                      className={`w-full text-left px-4 py-3 text-lg flex items-center justify-between transition ${
                         isExact
-                          ? "bg-red-50 text-red-700 font-bold"
-                          : "hover:bg-emerald-50 text-slate-800 font-medium"
+                          ? "bg-red-50 text-red-800 font-black"
+                          : "hover:bg-emerald-50 text-slate-900 font-bold"
                       }`}
                     >
                       <span className="truncate">{m.name}</span>
                       {isExact && (
-                        <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-700 font-bold">
+                        <span className="text-xs px-2.5 py-1 rounded-md bg-red-100 text-red-800 font-black uppercase">
                           Exact Match
                         </span>
                       )}
@@ -135,7 +135,7 @@ export function Adddisease() {
       <form onSubmit={submit} className="flex flex-col gap-2">
         <div className="flex gap-2">
           <input
-            className="input flex-1 w-full px-4 py-3 border border-emerald-300 rounded-lg text-base font-semibold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
+            className="input flex-1 w-full px-4 py-3.5 border-2 border-emerald-400 rounded-xl text-lg font-bold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition"
             placeholder="e.g., Migraine"
             style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
             value={name}
@@ -143,7 +143,7 @@ export function Adddisease() {
           />
           <button
             type="submit"
-            className="btn bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
+            className="btn bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-xl text-lg font-black disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
             disabled={isLoading || hasExact || !trimmedLower}
           >
             Add
@@ -158,12 +158,12 @@ export function Adddisease() {
 
         {/* Live Dropdown showing ALL matching diseases */}
         {matchingIlls.length > 0 && (
-          <div className="mt-2 border border-slate-200 rounded-lg bg-white overflow-hidden shadow-md">
-            <div className="px-4 py-2 bg-slate-100 border-b text-sm text-slate-700 flex justify-between items-center font-bold">
+          <div className="mt-2 border-2 border-slate-200 rounded-xl bg-white overflow-hidden shadow-lg">
+            <div className="px-4 py-2.5 bg-slate-100 border-b text-base text-slate-800 flex justify-between items-center font-bold">
               <span>Matching diseases ({matchingIlls.length}):</span>
               <span className="text-xs text-slate-500 font-normal">Click to autofill</span>
             </div>
-            <ul className="max-h-44 overflow-y-auto divide-y">
+            <ul className="max-h-52 overflow-y-auto divide-y">
               {matchingIlls.map((i) => {
                 const isExact = i.name.toLowerCase() === trimmedLower;
                 return (
@@ -171,15 +171,15 @@ export function Adddisease() {
                     <button
                       type="button"
                       onClick={() => setName(i.name)}
-                      className={`w-full text-left px-4 py-2.5 text-base flex items-center justify-between transition ${
+                      className={`w-full text-left px-4 py-3 text-lg flex items-center justify-between transition ${
                         isExact
-                          ? "bg-red-50 text-red-700 font-bold"
-                          : "hover:bg-emerald-50 text-slate-800 font-medium"
+                          ? "bg-red-50 text-red-800 font-black"
+                          : "hover:bg-emerald-50 text-slate-900 font-bold"
                       }`}
                     >
                       <span className="truncate">{i.name}</span>
                       {isExact && (
-                        <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-700 font-bold">
+                        <span className="text-xs px-2.5 py-1 rounded-md bg-red-100 text-red-800 font-black uppercase">
                           Exact Match
                         </span>
                       )}

@@ -192,4 +192,90 @@ router.delete('/links', (req, res) => {
     res.json({ ok: true });
 });
 
+// Merge multiple entities into one survivor
+router.post('/merge', (req, res) => {
+    const { type, survivorId, victimIds, finalName } = req.body as {
+        type?: 'medicine' | 'illness';
+        survivorId?: string;
+        victimIds?: string[];
+        finalName?: string;
+    };
+
+    if (!type || !survivorId || !victimIds || !Array.isArray(victimIds) || victimIds.length === 0) {
+        return res.status(400).json({ error: 'type, survivorId and non-empty victimIds are required' });
+    }
+
+    const db = readDB();
+    const isMed = type === 'medicine';
+
+    const survivor = isMed
+        ? db.medicines.find((m) => m.id === survivorId)
+        : db.illnesses.find((i) => i.id === survivorId);
+
+    if (!survivor) {
+        return res.status(404).json({ error: `${type} survivor not found` });
+    }
+
+    if (finalName && finalName.trim()) {
+        survivor.name = finalName.trim();
+    }
+
+    const victimSet = new Set(victimIds);
+
+    // Existing opposite IDs already linked to survivor
+    const existingOpposites = new Set<string>();
+    for (const l of db.links) {
+        if (isMed && l.medicineId === survivorId) {
+            existingOpposites.add(l.diseaseId);
+        } else if (!isMed && l.diseaseId === survivorId) {
+            existingOpposites.add(l.medicineId);
+        }
+    }
+
+    let transferredCount = 0;
+    const updatedLinks: Link[] = [];
+
+    for (const l of db.links) {
+        if (isMed) {
+            if (victimSet.has(l.medicineId)) {
+                if (!existingOpposites.has(l.diseaseId)) {
+                    existingOpposites.add(l.diseaseId);
+                    updatedLinks.push({ medicineId: survivorId, diseaseId: l.diseaseId });
+                    transferredCount++;
+                }
+            } else {
+                updatedLinks.push(l);
+            }
+        } else {
+            if (victimSet.has(l.diseaseId)) {
+                if (!existingOpposites.has(l.medicineId)) {
+                    existingOpposites.add(l.medicineId);
+                    updatedLinks.push({ medicineId: l.medicineId, diseaseId: survivorId });
+                    transferredCount++;
+                }
+            } else {
+                updatedLinks.push(l);
+            }
+        }
+    }
+
+    db.links = updatedLinks;
+
+    if (isMed) {
+        db.medicines = db.medicines.filter((m) => !victimSet.has(m.id));
+    } else {
+        db.illnesses = db.illnesses.filter((i) => !victimSet.has(i.id));
+    }
+
+    writeDB(db);
+
+    res.json({
+        ok: true,
+        survivor,
+        finalLinkCount: existingOpposites.size,
+        transferredCount,
+        mergedCount: victimIds.length,
+    });
+});
+
 export default router;
