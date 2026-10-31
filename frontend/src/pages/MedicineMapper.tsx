@@ -165,7 +165,7 @@ export default function MedicineMapper() {
         {activeTab === "graph" ? (
           <GraphExplorer />
         ) : (
-          <main className="h-full overflow-y-auto overflow-x-hidden px-4 py-6 flex flex-col gap-4 max-w-7xl xl:max-w-[1600px] mx-auto w-full min-w-0">
+          <main className="h-full overflow-y-auto overflow-x-hidden px-3 sm:px-6 py-6 flex flex-col gap-4 max-w-[98vw] 2xl:max-w-[98vw] mx-auto w-full min-w-0">
             {/* Sub-tab Navigation */}
             <div className="flex items-center justify-between border-b border-slate-300 pb-3 shrink-0">
               <div className="flex items-center gap-2">

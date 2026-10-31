@@ -1261,11 +1261,11 @@ export default function SearchLinker({
       {/* Floating Window Modal: Enlarged Multi-Column Flow View */}
       {expandedColData && (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 md:p-6 animate-fadeIn"
+          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-2 sm:p-3 md:p-4 animate-fadeIn"
           onClick={() => setExpandedColumn(null)}
         >
           <div
-            className="bg-white rounded-3xl shadow-2xl border-2 border-slate-300 w-full max-w-7xl h-[92vh] max-h-[960px] flex flex-col overflow-hidden"
+            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-slate-300 w-full max-w-[98vw] 2xl:max-w-[97vw] h-[95vh] max-h-[98vh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Top Bar */}
@@ -1401,7 +1401,7 @@ export default function SearchLinker({
                   )}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-3.5">
                   {(modalSearch.trim()
                     ? expandedColData.filteredItems
                     : expandedColData.filteredItems.slice(0, modalLimit)
