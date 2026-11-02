@@ -32,7 +32,7 @@ interface SearchLinkerProps {
 export default function SearchLinker({
   initialSelection,
 }: SearchLinkerProps = {}): JSX.Element {
-  const [type, setType] = useState<"medicine" | "disease">("medicine");
+  const [type, setType] = useState<"medicine" | "disease">("disease");
   const [query, setQuery] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -452,7 +452,7 @@ export default function SearchLinker({
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div>
               <h3 className="text-2xl font-black text-slate-900 tracking-tight">
-                Search & Manage Links
+                Search Medicine and Diseases
               </h3>
               <p className="text-sm text-slate-500 mt-0.5">
                 {isMedMode
@@ -644,24 +644,8 @@ export default function SearchLinker({
           <div className="flex gap-5 min-w-[1850px] w-max">
             {/* Column 1: Selector & Matches (M1 or D1) */}
             <div className="w-[360px] min-w-[360px] shrink-0 flex flex-col">
-            {/* Primary Selector Toggle [ Medicines | Diseases ] */}
+            {/* Primary Selector Toggle [ Diseases | Medicines ] */}
             <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-300 mb-3.5 shadow-inner">
-              <button
-                type="button"
-                onClick={() => {
-                  setType("medicine");
-                  setSelectedId(null);
-                  setQuery("");
-                }}
-                className={`flex-1 py-2 rounded-lg font-bold text-base transition flex items-center justify-center gap-1.5 ${
-                  isMedMode
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Pill className="w-4 h-4" />
-                <span>Medicines</span>
-              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -677,6 +661,22 @@ export default function SearchLinker({
               >
                 <Stethoscope className="w-4 h-4" />
                 <span>Diseases</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setType("medicine");
+                  setSelectedId(null);
+                  setQuery("");
+                }}
+                className={`flex-1 py-2 rounded-lg font-bold text-base transition flex items-center justify-center gap-1.5 ${
+                  isMedMode
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Pill className="w-4 h-4" />
+                <span>Medicines</span>
               </button>
             </div>
 

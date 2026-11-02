@@ -22,7 +22,7 @@ import {
 import { Medicine, Disease } from "../../types";
 
 export default function MultiMergeTool(): JSX.Element {
-  const [type, setType] = useState<"medicine" | "disease">("medicine");
+  const [type, setType] = useState<"medicine" | "disease">("disease");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEntities, setSelectedEntities] = useState<
     (Medicine | Disease)[]
@@ -231,50 +231,20 @@ export default function MultiMergeTool(): JSX.Element {
     <Card className="w-full min-w-0 max-w-full">
       {/* Section Header */}
       <div className="mb-6 pb-4 border-b border-slate-200">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-purple-100 text-purple-700 rounded-2xl border border-purple-200 shadow-xs">
-              <GitMerge className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                <span>Multi-Entity Merge Tool</span>
-                <span className="text-xs uppercase px-2.5 py-0.5 rounded-full font-extrabold bg-purple-100 text-purple-800 border border-purple-200">
-                  Consolidator
-                </span>
-              </h3>
-              <p className="text-sm font-semibold text-slate-500 mt-0.5">
-                Search and select multiple duplicate or related entities, compare their link counts, and merge them into one canonical node.
-              </p>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-purple-100 text-purple-700 rounded-2xl border border-purple-200 shadow-xs">
+            <GitMerge className="w-6 h-6" />
           </div>
-
-          {/* Primary Type Toggle */}
-          <div className="flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-300 shadow-inner">
-            <button
-              type="button"
-              onClick={() => handleTypeChange("medicine")}
-              className={`px-5 py-2.5 rounded-lg text-base font-extrabold transition flex items-center gap-2 ${
-                isMed
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Pill className="w-5 h-5" />
-              <span>Medicines ({medicines.length})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTypeChange("disease")}
-              className={`px-5 py-2.5 rounded-lg text-base font-extrabold transition flex items-center gap-2 ${
-                !isMed
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Stethoscope className="w-5 h-5" />
-              <span>Diseases ({diseases.length})</span>
-            </button>
+          <div>
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Multi-Entity Merge Tool</span>
+              <span className="text-xs uppercase px-2.5 py-0.5 rounded-full font-extrabold bg-purple-100 text-purple-800 border border-purple-200">
+                Consolidator
+              </span>
+            </h3>
+            <p className="text-sm font-semibold text-slate-500 mt-0.5">
+              Search and select multiple duplicate or related entities, compare their link counts, and merge them into one canonical node.
+            </p>
           </div>
         </div>
       </div>
@@ -283,6 +253,34 @@ export default function MultiMergeTool(): JSX.Element {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Column 1: Search & Pick Entities (5 Cols) */}
         <div className="lg:col-span-5 flex flex-col min-w-0">
+          {/* Primary Type Toggle - placed just above search bar */}
+          <div className="flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-300 shadow-inner mb-3.5">
+            <button
+              type="button"
+              onClick={() => handleTypeChange("disease")}
+              className={`flex-1 py-2.5 rounded-lg text-base font-extrabold transition flex items-center justify-center gap-2 ${
+                !isMed
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Stethoscope className="w-5 h-5" />
+              <span>Diseases ({diseases.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTypeChange("medicine")}
+              className={`flex-1 py-2.5 rounded-lg text-base font-extrabold transition flex items-center justify-center gap-2 ${
+                isMed
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Pill className="w-5 h-5" />
+              <span>Medicines ({medicines.length})</span>
+            </button>
+          </div>
+
           <div className="flex items-center justify-between mb-2">
             <label className="text-lg font-black text-slate-800 flex items-center gap-2">
               <Search className="w-5 h-5 text-slate-500" />

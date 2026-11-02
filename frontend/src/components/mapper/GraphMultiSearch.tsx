@@ -134,27 +134,6 @@ export default function GraphMultiSearch({
           {/* Autocomplete dropdown */}
           {isOpen && query.trim() && (
             <div className="absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 divide-y divide-slate-700/60">
-              {searchResults.meds.length > 0 && (
-                <div className="p-2.5">
-                  <div className="text-sm font-black text-blue-400 uppercase tracking-wider px-3.5 py-2 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                    Medicines ({searchResults.meds.length})
-                  </div>
-                  {searchResults.meds.map((m) => (
-                    <button
-                      key={m.id}
-                      onClick={() => handleSelect(m.id, m.name, "medicine")}
-                      className="w-full text-left px-4 py-3 text-base text-slate-100 hover:bg-blue-600/30 hover:text-white rounded-lg flex items-center justify-between transition"
-                    >
-                      <span className="font-bold text-base">{m.name}</span>
-                      <span className="text-xs text-blue-300 bg-blue-900/50 border border-blue-700/60 px-2.5 py-1 rounded-md font-black uppercase">
-                        Medicine
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
               {searchResults.ills.length > 0 && (
                 <div className="p-2.5">
                   <div className="text-sm font-black text-emerald-400 uppercase tracking-wider px-3.5 py-2 flex items-center gap-2">
@@ -170,6 +149,27 @@ export default function GraphMultiSearch({
                       <span className="font-bold text-base">{i.name}</span>
                       <span className="text-xs text-emerald-300 bg-emerald-900/50 border border-emerald-700/60 px-2.5 py-1 rounded-md font-black uppercase">
                         Disease
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {searchResults.meds.length > 0 && (
+                <div className="p-2.5">
+                  <div className="text-sm font-black text-blue-400 uppercase tracking-wider px-3.5 py-2 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                    Medicines ({searchResults.meds.length})
+                  </div>
+                  {searchResults.meds.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => handleSelect(m.id, m.name, "medicine")}
+                      className="w-full text-left px-4 py-3 text-base text-slate-100 hover:bg-blue-600/30 hover:text-white rounded-lg flex items-center justify-between transition"
+                    >
+                      <span className="font-bold text-base">{m.name}</span>
+                      <span className="text-xs text-blue-300 bg-blue-900/50 border border-blue-700/60 px-2.5 py-1 rounded-md font-black uppercase">
+                        Medicine
                       </span>
                     </button>
                   ))}

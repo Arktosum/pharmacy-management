@@ -1,4 +1,4 @@
-import { useState, useMemo, FormEvent } from "react";
+import { useState, useMemo, useEffect, FormEvent } from "react";
 import { X, Plus, AlertCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -21,13 +21,20 @@ export default function AddEntityModal({
   onClose,
   medicines,
   diseases,
-  initialType = "medicine",
+  initialType = "disease",
   onCreated,
 }: AddEntityModalProps) {
   const [type, setType] = useState<"medicine" | "disease">(initialType);
   const [name, setName] = useState("");
   const [addMedicine, { isLoading: addingMed }] = useAddMedicineMutation();
   const [addDisease, { isLoading: addingIll }] = useAddDiseaseMutation();
+
+  useEffect(() => {
+    if (isOpen) {
+      setType(initialType);
+      setName("");
+    }
+  }, [isOpen, initialType]);
 
   const trimmed = name.trim();
   const trimmedLower = trimmed.toLowerCase();
@@ -97,18 +104,6 @@ export default function AddEntityModal({
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setType("medicine")}
-                className={`py-3 px-4 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2.5 transition ${
-                  type === "medicine"
-                    ? "bg-blue-600/20 border-blue-500 text-blue-200 font-bold shadow-sm"
-                    : "bg-slate-800/80 border-slate-700 text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                <span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm"></span>
-                Medicine / Remedy
-              </button>
-              <button
-                type="button"
                 onClick={() => setType("disease")}
                 className={`py-3 px-4 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2.5 transition ${
                   type === "disease"
@@ -118,6 +113,18 @@ export default function AddEntityModal({
               >
                 <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>
                 Disease / Symptom
+              </button>
+              <button
+                type="button"
+                onClick={() => setType("medicine")}
+                className={`py-3 px-4 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2.5 transition ${
+                  type === "medicine"
+                    ? "bg-blue-600/20 border-blue-500 text-blue-200 font-bold shadow-sm"
+                    : "bg-slate-800/80 border-slate-700 text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm"></span>
+                Medicine / Remedy
               </button>
             </div>
           </div>

@@ -110,12 +110,12 @@ export default function MedicineMapper() {
           {/* Quick Stats Badges */}
           <div className="hidden lg:flex items-center gap-3 text-sm text-slate-300">
             <span className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shadow-sm">
-              <Pill className="w-4 h-4 text-blue-400" />
-              <span>Medicines: <strong className="text-blue-400 font-bold">{medicines.length}</strong></span>
-            </span>
-            <span className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shadow-sm">
               <Stethoscope className="w-4 h-4 text-emerald-400" />
               <span>Diseases: <strong className="text-emerald-400 font-bold">{diseases.length}</strong></span>
+            </span>
+            <span className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shadow-sm">
+              <Pill className="w-4 h-4 text-blue-400" />
+              <span>Medicines: <strong className="text-blue-400 font-bold">{medicines.length}</strong></span>
             </span>
             <span className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shadow-sm">
               <LinkIcon className="w-4 h-4 text-purple-400" />
@@ -179,7 +179,7 @@ export default function MedicineMapper() {
                   }`}
                 >
                   <LayoutGrid className="w-5 h-5" />
-                  <span>Entity & Link Tools</span>
+                  <span>Search Medicine and Diseases</span>
                 </button>
 
                 <button
@@ -244,8 +244,8 @@ export default function MedicineMapper() {
                 />
                 <MultiMergeTool />
                 <section className="grid md:grid-cols-2 gap-6">
-                  <AddMedicine />
                   <Adddisease />
+                  <AddMedicine />
                 </section>
                 <Linker />
               </div>
