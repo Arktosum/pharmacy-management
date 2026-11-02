@@ -295,8 +295,8 @@ export default function MultiMergeTool(): JSX.Element {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={`Type to search ${type}...`}
-            style={{ backgroundColor: "rgb(118 213 133 / 40%)" }}
-            className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 text-slate-900 text-lg font-bold placeholder-slate-600 shadow-sm transition"
+            style={{ backgroundColor: "rgb(85 185 105 / 65%)" }}
+            className="w-full px-4 py-3.5 border-2 border-emerald-600 rounded-xl focus:ring-2 focus:ring-purple-500 text-slate-950 text-lg font-black placeholder-slate-800 shadow-sm transition"
           />
 
           {/* Search Dropdown / List */}

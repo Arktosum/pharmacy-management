@@ -452,7 +452,7 @@ export default function SearchLinker({
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div>
               <h3 className="text-2xl font-black text-slate-900 tracking-tight">
-                Search Medicine and Diseases
+                Search M&D
               </h3>
               <p className="text-sm text-slate-500 mt-0.5">
                 {isMedMode
@@ -703,8 +703,8 @@ export default function SearchLinker({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Type to search ${type}...`}
-              style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
-              className="w-full px-4 py-3.5 border-2 border-slate-400 rounded-xl focus:ring-2 focus:ring-emerald-500 text-slate-900 text-lg font-bold placeholder-slate-600 shadow-sm transition"
+              style={{ backgroundColor: "rgb(85 185 105 / 65%)" }}
+              className="w-full px-4 py-3.5 border-2 border-emerald-600 rounded-xl focus:ring-2 focus:ring-emerald-500 text-slate-950 text-lg font-black placeholder-slate-800 shadow-sm transition"
             />
             <ul className="mt-2.5 max-h-80 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
               {visibleMatches.map((m) => {

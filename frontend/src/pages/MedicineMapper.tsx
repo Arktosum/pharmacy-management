@@ -7,6 +7,9 @@ import {
   Link as LinkIcon,
   AlertTriangle,
   GitMerge,
+  Layers,
+  Search as SearchIcon,
+  PlusCircle,
 } from "lucide-react";
 import {
   useGetMedicinesQuery,
@@ -14,7 +17,7 @@ import {
   useGetLinksQuery,
 } from "../api/api";
 import GraphExplorer from "../components/mapper/GraphExplorer";
-import { Adddisease, AddMedicine } from "../components/mapper/AddEntity";
+import AddEntity from "../components/mapper/AddEntity";
 import IntersectionFinder from "../components/mapper/IntersectionFinder";
 import Linker from "../components/mapper/Linker";
 import Search from "../components/mapper/Search";
@@ -25,8 +28,8 @@ import { auditSimilarGroups } from "../utils/similarityAudit";
 export default function MedicineMapper() {
   const [activeTab, setActiveTab] = useState<"graph" | "classic">("classic");
   const [classicSubTab, setClassicSubTab] = useState<
-    "manage" | "merge" | "duplicates"
-  >("manage");
+    "common" | "search" | "create" | "merge" | "duplicates"
+  >("common");
   const [searchSelection, setSearchSelection] = useState<{
     type: "medicine" | "disease";
     id: string;
@@ -39,13 +42,16 @@ export default function MedicineMapper() {
       id: medicineId,
       key: Date.now(),
     });
+    setClassicSubTab("search");
     // Smoothly scroll up to the Search & Manage Links section
-    const searchEl = document.getElementById("search-manage-section");
-    if (searchEl) {
-      searchEl.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    setTimeout(() => {
+      const searchEl = document.getElementById("search-manage-section");
+      if (searchEl) {
+        searchEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 50);
   };
 
   const [resolvedDeletedIds, setResolvedDeletedIds] = useState<Set<string>>(
@@ -168,20 +174,50 @@ export default function MedicineMapper() {
           <main className="h-full overflow-y-auto overflow-x-hidden px-3 sm:px-6 py-6 flex flex-col gap-4 max-w-[98vw] 2xl:max-w-[98vw] mx-auto w-full min-w-0">
             {/* Sub-tab Navigation */}
             <div className="flex items-center justify-between border-b border-slate-300 pb-3 shrink-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* 1st Tab: Common Remedies */}
                 <button
                   type="button"
-                  onClick={() => setClassicSubTab("manage")}
+                  onClick={() => setClassicSubTab("common")}
                   className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
-                    classicSubTab === "manage"
+                    classicSubTab === "common"
+                      ? "bg-emerald-600 text-white shadow"
+                      : "bg-white text-slate-700 hover:bg-emerald-50 border border-slate-300"
+                  }`}
+                >
+                  <Layers className="w-5 h-5 text-emerald-400" />
+                  <span>Common Remedies</span>
+                </button>
+
+                {/* 2nd Tab: Search M&D */}
+                <button
+                  type="button"
+                  onClick={() => setClassicSubTab("search")}
+                  className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
+                    classicSubTab === "search"
                       ? "bg-slate-900 text-white shadow"
                       : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-300"
                   }`}
                 >
-                  <LayoutGrid className="w-5 h-5" />
-                  <span>Search Medicine and Diseases</span>
+                  <SearchIcon className="w-5 h-5" />
+                  <span>Search M&D</span>
                 </button>
 
+                {/* 3rd Tab: Create & Add M&D */}
+                <button
+                  type="button"
+                  onClick={() => setClassicSubTab("create")}
+                  className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
+                    classicSubTab === "create"
+                      ? "bg-blue-600 text-white shadow"
+                      : "bg-white text-slate-700 hover:bg-blue-50 border border-slate-300"
+                  }`}
+                >
+                  <PlusCircle className="w-5 h-5 text-blue-400" />
+                  <span>Create & Add M&D</span>
+                </button>
+
+                {/* 4th Tab: Multi-Entity Merge */}
                 <button
                   type="button"
                   onClick={() => setClassicSubTab("merge")}
@@ -195,6 +231,7 @@ export default function MedicineMapper() {
                   <span>Multi-Entity Merge</span>
                 </button>
 
+                {/* 5th Tab: Similar Names & Duplicates */}
                 <button
                   type="button"
                   onClick={() => setClassicSubTab("duplicates")}
@@ -226,9 +263,13 @@ export default function MedicineMapper() {
                 </button>
               </div>
 
-              <div className="text-sm text-slate-500 font-bold hidden md:block">
-                {classicSubTab === "manage"
-                  ? "Manage, search, link & find intersections"
+              <div className="text-sm text-slate-500 font-bold hidden xl:block">
+                {classicSubTab === "common"
+                  ? "Find common remedies that treat multiple diseases simultaneously"
+                  : classicSubTab === "search"
+                  ? "Search, explore multi-hop chains & filter remedies"
+                  : classicSubTab === "create"
+                  ? "Create new diseases/medicines and link them together"
                   : classicSubTab === "merge"
                   ? "Consolidate multiple duplicate medicines or diseases"
                   : `Auditing ${medicines.length} medicines & ${diseases.length} diseases`}
@@ -236,17 +277,19 @@ export default function MedicineMapper() {
             </div>
 
             {/* Sub-tab Body */}
-            {classicSubTab === "manage" ? (
-              <div className="grid gap-6 w-full min-w-0">
-                <Search initialSelection={searchSelection} />
+            {classicSubTab === "common" ? (
+              <div className="w-full min-w-0">
                 <IntersectionFinder
                   onSelectMedicine={handleSelectMedicineFromIntersection}
                 />
-                <MultiMergeTool />
-                <section className="grid md:grid-cols-2 gap-6">
-                  <Adddisease />
-                  <AddMedicine />
-                </section>
+              </div>
+            ) : classicSubTab === "search" ? (
+              <div className="w-full min-w-0">
+                <Search initialSelection={searchSelection} />
+              </div>
+            ) : classicSubTab === "create" ? (
+              <div className="grid gap-6 w-full min-w-0">
+                <AddEntity />
                 <Linker />
               </div>
             ) : classicSubTab === "merge" ? (
@@ -257,7 +300,7 @@ export default function MedicineMapper() {
               <SimilarGroupsAudit
                 onInspectEntity={(type, id) => {
                   setSearchSelection({ type, id, key: Date.now() });
-                  setClassicSubTab("manage");
+                  setClassicSubTab("search");
                   setTimeout(() => {
                     document
                       .getElementById("search-manage-section")
