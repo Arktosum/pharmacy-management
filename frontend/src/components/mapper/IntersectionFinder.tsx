@@ -8,6 +8,8 @@ import {
   Layers,
   X,
   Search as SearchIcon,
+  Check,
+  Link as LinkIcon,
 } from "lucide-react";
 import {
   useGetDiseasesQuery,
@@ -34,18 +36,30 @@ export default function IntersectionFinder({
   const { data: allDiseases = [] } = useGetDiseasesQuery();
   const { data: allLinks = [] } = useGetLinksQuery();
 
-  // Filter diseases based on search query, excluding already selected ones
+  // Map of diseaseId -> Set of linked medicine IDs
+  const diseaseRemedyCounts = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const link of allLinks) {
+      if (!map.has(link.diseaseId)) map.set(link.diseaseId, new Set());
+      map.get(link.diseaseId)!.add(link.medicineId);
+    }
+    return map;
+  }, [allLinks]);
+
+  // Set of selected disease IDs for fast lookup
+  const selectedIdSet = useMemo(
+    () => new Set(selectedDiseases.map((d) => d.id)),
+    [selectedDiseases]
+  );
+
+  // Search results capped to top 50 for speed (showing top 50 by default when no query, matching MultiMergeTool)
   const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const selectedIds = new Set(selectedDiseases.map((d) => d.id));
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return allDiseases.slice(0, 50);
     return allDiseases
-      .filter(
-        (disease) =>
-          !selectedIds.has(disease.id) &&
-          disease.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      .filter((disease) => disease.name.toLowerCase().includes(q))
       .slice(0, 50);
-  }, [searchQuery, allDiseases, selectedDiseases]);
+  }, [searchQuery, allDiseases]);
 
   // The core logic to find the intersection of medicines
   const intersectingMedicines = useMemo(() => {
@@ -79,12 +93,10 @@ export default function IntersectionFinder({
   }, [selectedDiseases, allLinks, allMeds]);
 
   const handleSelectDisease = (disease: Disease) => {
+    if (selectedIdSet.has(disease.id)) return;
     setSelectedDiseases((prev) => [...prev, disease]);
-    setSearchQuery(""); // Clear search after selection
-    // Ease of life: immediately refocus search input so user can type next disease without clicking
-    setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 0);
+    // NOTE: do NOT clear searchQuery so the dropdown/results list stays open,
+    // allowing the user to continuously add diseases just like in MultiMergeTool!
   };
 
   const handleRemoveDisease = (diseaseId: string) => {
@@ -93,7 +105,6 @@ export default function IntersectionFinder({
 
   const handleClearAll = () => {
     setSelectedDiseases([]);
-    setSearchQuery("");
     searchInputRef.current?.focus();
   };
 
@@ -133,54 +144,97 @@ export default function IntersectionFinder({
         <div className="grid md:grid-cols-3 gap-6 flex-1">
           {/* Column 1: Disease Search & Selection */}
           <div className="flex flex-col min-h-[340px]">
-            <h4 className="text-base font-bold text-slate-800 mb-2 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-base font-bold text-slate-800 flex items-center gap-1.5">
                 <SearchIcon className="w-4 h-4 text-slate-500" />
                 <span>Search Diseases</span>
+              </label>
+              <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                Showing top {searchResults.length}
               </span>
-              <span className="text-xs text-slate-500 font-semibold">
-                Auto-refocuses on select
-              </span>
-            </h4>
+            </div>
 
-            <input
-              ref={searchInputRef}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Type to search and add a disease..."
-              style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
-              className="w-full px-4 py-3.5 border-2 border-emerald-400 rounded-xl text-lg font-bold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition"
-            />
+            <div className="relative">
+              <input
+                ref={searchInputRef}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Type to search diseases..."
+                style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
+                className="w-full px-4 py-3.5 pr-10 border-2 border-emerald-400 rounded-xl text-lg font-bold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    searchInputRef.current?.focus();
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 p-1 rounded-lg hover:bg-emerald-200/50 transition"
+                  title="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
 
-            {searchResults.length > 0 ? (
-              <ul className="mt-2.5 max-h-72 overflow-y-auto border-2 border-slate-200 rounded-xl bg-white divide-y shadow-md flex-1">
-                {searchResults.map((d) => (
+            <ul className="mt-3 max-h-80 overflow-y-auto border-2 border-slate-200 rounded-xl bg-white divide-y shadow-sm flex-1">
+              {searchResults.map((d) => {
+                const isSelected = selectedIdSet.has(d.id);
+                const count = diseaseRemedyCounts.get(d.id)?.size || 0;
+                return (
                   <li
                     key={d.id}
-                    onClick={() => handleSelectDisease(d)}
-                    className="px-4 py-3.5 cursor-pointer hover:bg-emerald-50 text-lg font-bold text-slate-900 transition flex items-center justify-between group"
+                    onClick={() => !isSelected && handleSelectDisease(d)}
+                    className={`px-4 py-3.5 text-lg font-bold transition flex items-center justify-between group ${
+                      isSelected
+                        ? "bg-slate-100 text-slate-400 cursor-not-allowed opacity-75"
+                        : "cursor-pointer hover:bg-emerald-50 text-slate-900 hover:text-emerald-950"
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5 truncate">
-                      <Stethoscope className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <div className="flex items-center gap-2.5 truncate mr-2">
+                      <Stethoscope
+                        className={`w-5 h-5 shrink-0 ${
+                          isSelected ? "text-slate-400" : "text-emerald-600"
+                        }`}
+                      />
                       <span className="truncate">{d.name}</span>
                     </div>
-                    <span className="text-xs font-black uppercase text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition">
-                      + Add
-                    </span>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span
+                        className={`text-xs px-2.5 py-1 rounded-full font-bold flex items-center gap-1 border ${
+                          isSelected
+                            ? "bg-slate-200 text-slate-500 border-slate-300"
+                            : "bg-slate-50 text-slate-600 border-slate-200"
+                        }`}
+                      >
+                        <LinkIcon className="w-3 h-3" />
+                        <span>
+                          {count} {count === 1 ? "remedy" : "remedies"}
+                        </span>
+                      </span>
+
+                      {isSelected ? (
+                        <span className="text-xs font-black uppercase text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-md flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Added</span>
+                        </span>
+                      ) : (
+                        <span className="text-xs font-black uppercase text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md group-hover:bg-emerald-600 group-hover:text-white transition">
+                          + Add
+                        </span>
+                      )}
+                    </div>
                   </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="mt-3 p-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 flex-1 flex flex-col justify-center text-slate-500 text-sm space-y-2">
-                <div className="flex items-center gap-2 font-bold text-slate-700">
-                  <Stethoscope className="w-4 h-4 text-emerald-600" />
-                  <span>Quick Tip</span>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Type any disease name above and click to add it to the intersection list. Focus returns automatically to the input box so you can quickly chain multiple conditions!
-                </p>
-              </div>
-            )}
+                );
+              })}
+              {searchResults.length === 0 && (
+                <li className="px-4 py-8 text-center text-base font-bold text-slate-400 italic">
+                  No matching diseases found.
+                </li>
+              )}
+            </ul>
           </div>
 
           {/* Column 2: Selected Diseases */}
@@ -202,7 +256,7 @@ export default function IntersectionFinder({
             </div>
 
             {selectedDiseases.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl p-6 text-center bg-slate-50/50 min-h-[260px]">
+              <div className="mt-3 flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl p-6 text-center bg-slate-50/50 min-h-[260px]">
                 <Stethoscope className="w-10 h-10 text-slate-300 mb-2" />
                 <p className="text-base font-semibold text-slate-600">
                   No diseases selected yet
@@ -212,26 +266,35 @@ export default function IntersectionFinder({
                 </p>
               </div>
             ) : (
-              <ul className="space-y-2 max-h-80 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50/50 flex-1">
-                {selectedDiseases.map((d) => (
-                  <li
-                    key={d.id}
-                    className="px-4 py-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between text-base font-bold text-slate-900 shadow-xs hover:border-slate-300 transition"
-                  >
-                    <div className="flex items-center gap-2.5 truncate mr-2">
-                      <Stethoscope className="w-5 h-5 text-emerald-600 shrink-0" />
-                      <span className="truncate">{d.name}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveDisease(d.id)}
-                      className="text-slate-400 hover:text-rose-600 font-bold text-lg px-1.5 py-0.5 rounded hover:bg-rose-50 transition leading-none shrink-0"
-                      title={`Remove "${d.name}"`}
+              <ul className="mt-3 space-y-2 max-h-80 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50/50 flex-1">
+                {selectedDiseases.map((d) => {
+                  const count = diseaseRemedyCounts.get(d.id)?.size || 0;
+                  return (
+                    <li
+                      key={d.id}
+                      className="px-4 py-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between text-base font-bold text-slate-900 shadow-xs hover:border-slate-300 transition"
                     >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </li>
-                ))}
+                      <div className="flex items-center gap-2.5 truncate mr-2">
+                        <Stethoscope className="w-5 h-5 text-emerald-600 shrink-0" />
+                        <span className="truncate">{d.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs px-2.5 py-1 rounded-full font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
+                          <LinkIcon className="w-3 h-3" />
+                          <span>{count}</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveDisease(d.id)}
+                          className="text-slate-400 hover:text-rose-600 font-bold text-lg px-1.5 py-0.5 rounded hover:bg-rose-50 transition leading-none shrink-0"
+                          title={`Remove "${d.name}"`}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
@@ -251,7 +314,7 @@ export default function IntersectionFinder({
             </div>
 
             {selectedDiseases.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-blue-200/60 rounded-xl p-6 text-center bg-blue-50/20 min-h-[260px]">
+              <div className="mt-3 flex-1 flex flex-col items-center justify-center border-2 border-dashed border-blue-200/60 rounded-xl p-6 text-center bg-blue-50/20 min-h-[260px]">
                 <Pill className="w-10 h-10 text-blue-300 mb-2" />
                 <p className="text-base font-semibold text-blue-950">
                   Awaiting Disease Selection
@@ -261,7 +324,7 @@ export default function IntersectionFinder({
                 </p>
               </div>
             ) : intersectingMedicines.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center border border-amber-200 rounded-xl p-6 text-center bg-amber-50/40 min-h-[260px]">
+              <div className="mt-3 flex-1 flex flex-col items-center justify-center border border-amber-200 rounded-xl p-6 text-center bg-amber-50/40 min-h-[260px]">
                 <AlertTriangle className="w-8 h-8 text-amber-500 mb-2" />
                 <p className="text-base font-bold text-amber-900">
                   No Common Remedies Found
@@ -271,7 +334,7 @@ export default function IntersectionFinder({
                 </p>
               </div>
             ) : (
-              <ul className="max-h-80 overflow-y-auto border border-blue-200 rounded-xl bg-white divide-y divide-blue-100 shadow-sm flex-1">
+              <ul className="mt-3 max-h-80 overflow-y-auto border border-blue-200 rounded-xl bg-white divide-y divide-blue-100 shadow-sm flex-1">
                 {intersectingMedicines.map((med) => (
                   <li
                     key={med.id}
