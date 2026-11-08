@@ -72,8 +72,9 @@ export default function Linker() {
         diseaseId: selectedIll.id,
       }).unwrap();
       toast.success(`Linked "${selectedIll.name}" with "${selectedMed.name}"`);
-    } catch (err: any) {
-      toast.error(err?.data?.error || "Failed to create link");
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { error?: string }; message?: string };
+      toast.error(apiErr?.data?.error || apiErr?.message || "Failed to create link");
     }
   }, [duplicateExists, isLinking, link, selectedIll, selectedMed]);
 

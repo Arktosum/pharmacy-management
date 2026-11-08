@@ -103,7 +103,7 @@ export const api = createApi({
             providesTags: [{ type: 'Link', id: 'LIST' }],
         }),
         mergeEntities: builder.mutation<
-            { ok: boolean; survivor: any; finalLinkCount: number; transferredCount: number; mergedCount: number },
+            { ok: boolean; survivor: Medicine | Disease; finalLinkCount: number; transferredCount: number; mergedCount: number },
             { type: 'medicine' | 'disease'; survivorId: string; victimIds: string[]; finalName?: string }
         >({
             query: body => ({

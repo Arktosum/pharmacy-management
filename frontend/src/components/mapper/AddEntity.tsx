@@ -63,8 +63,9 @@ export default function AddEntity() {
         toast.success(`Disease "${res.name}" added successfully!`);
       }
       setName("");
-    } catch (err: any) {
-      toast.error(err?.data?.error || `Failed to add ${type}`);
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { error?: string }; message?: string };
+      toast.error(apiErr?.data?.error || apiErr?.message || `Failed to add ${type}`);
     }
   };
 

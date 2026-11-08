@@ -221,9 +221,10 @@ export default function MultiMergeTool(): JSX.Element {
       refetchLinks();
       if (isMed) refetchMeds();
       else refetchIlls();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Merge error:", err);
-      toast.error(err?.data?.error || err?.message || "Failed to execute merge");
+      const apiErr = err as { data?: { error?: string }; message?: string };
+      toast.error(apiErr?.data?.error || apiErr?.message || "Failed to execute merge");
     }
   };
 

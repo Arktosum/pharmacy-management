@@ -254,7 +254,7 @@ export default function GraphExplorer() {
       }
     });
 
-    let visibleNodeIds = new Set<string>();
+    const visibleNodeIds = new Set<string>();
     const directSelectedSet = new Set(selectedEntities.map((e) => e.id));
 
     // 1. Orphan Filter mode
@@ -1029,6 +1029,7 @@ export default function GraphExplorer() {
     handleSelectNode,
     handleInspectNode,
     handleCloseInspector,
+    handleToggleExpandNode,
   ]);
 
   // Sync highlight whenever inspectedNode changes from outside D3 (e.g. drawer navigation or close)

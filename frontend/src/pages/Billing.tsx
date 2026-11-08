@@ -15,7 +15,7 @@ export default function Billing() {
   useEffect(() => {
     const localStorageData = localStorage.getItem("bill-items");
     if (!localStorageData) {
-      updateLocalStorage(billingState);
+      updateLocalStorage(BILLING_STATE_INITIAL);
       return;
     }
     const localData = JSON.parse(localStorageData) as BillingStateType;

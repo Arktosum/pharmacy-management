@@ -13,8 +13,14 @@ import moment from "moment";
 import { updateStockCount } from "../redux/stockSlice";
 import { toast } from "react-toastify";
 
-function ExcelColumns({ excelData, setexcelData }: { excelData: any; setexcelData: any }) {
-  function updateColumns(row: any, col: any, val: any) {
+function ExcelColumns({
+  excelData,
+  setexcelData,
+}: {
+  excelData: string[][];
+  setexcelData: (data: string[][]) => void;
+}) {
+  function updateColumns(row: number, col: number, val: string) {
     excelData[row][col] = val;
     axios.post(ORIGIN + "/excels/", excelData).then((response) => {
       setexcelData(response.data);
@@ -24,7 +30,7 @@ function ExcelColumns({ excelData, setexcelData }: { excelData: any; setexcelDat
   const copyToExcel = () => {
     const tsvData = excelData
       .slice(0, 40)
-      .map((row: any) => `${row[0] || ""}\t${row[1] || ""}`)
+      .map((row: string[]) => `${row[0] || ""}\t${row[1] || ""}`)
       .join("\n");
 
     navigator.clipboard.writeText(tsvData).then(() => {
@@ -148,7 +154,7 @@ function ExcelColumns({ excelData, setexcelData }: { excelData: any; setexcelDat
 }
 
 export default function LogData() {
-  const [excelData, setexcelData] = useState<[[string], [string]] | []>([]);
+  const [excelData, setexcelData] = useState<string[][]>([]);
   const [selectedDate, setselectedDate] = useState("");
   const currentDate = moment().format("YYYY-MM-DD");
   const [selectedID, setSelectedID] = useState<Set<string>>(new Set());
