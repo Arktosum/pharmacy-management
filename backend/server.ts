@@ -8,6 +8,7 @@ import logRouter from "./routes/logRoutes";
 import excelRouter from "./routes/excelRoutes";
 import mapperRoutes from "./routes/mapperRoutes";
 import tipsRoutes from "./routes/tipsRoutes";
+import patientRoutes from "./routes/patientRoutes";
 import { readJSON, writeJSON } from './routes/utils';
 
 const PORT = 3000;
@@ -21,6 +22,7 @@ app.use("/api/logs", logRouter);
 app.use("/api/excels", excelRouter);
 app.use("/api/mapper", mapperRoutes);
 app.use("/api/tips", tipsRoutes);
+app.use("/api/patients", patientRoutes);
 
 app.get("/", (req, res) => {
   res.send("<h1>Welcome to the backend!</h1>");

@@ -16,6 +16,7 @@ import { fetchLogs } from "./redux/logSlice";
 import { ToastContainer } from "react-toastify";
 import MedicineMapper from "./pages/MedicineMapper";
 import TipsMapper from "./pages/TipsMapper";
+import Patients from "./pages/Patients";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -38,6 +39,7 @@ function App() {
         <Route path="/medicineMapper" element={<MedicineMapper />}></Route>
         <Route path="/tips" element={<TipsMapper />}></Route>
         <Route path="/tipsMapper" element={<TipsMapper />}></Route>
+        <Route path="/patient" element={<Patients />}></Route>
       </Routes>
       <ToastContainer />
     </>

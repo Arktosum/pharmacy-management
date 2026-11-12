@@ -15,6 +15,7 @@ export default function Navbar() {
     if (path === "/medicineCount") return "medicineCount";
     if (path === "/medicineMapper") return "medicineMapper";
     if (path === "/tips" || path === "/tipsMapper") return "tips";
+    if (path === "/patient") return "patient";
     return "home";
   };
 
@@ -170,6 +171,21 @@ export default function Navbar() {
           } text-sm sm:text-base xl:text-xl hover:text-blue-500 duration-200 font-extrabold whitespace-nowrap`}
         >
           Tips
+        </div>
+      </Link>
+
+      <Link to="/patient" className="shrink-0">
+        <div
+          onClick={() => {
+            setselected("patient");
+          }}
+          className={`${
+            selected == "patient"
+              ? "text-white animate-pulse"
+              : "text-indigo-400"
+          } text-sm sm:text-base xl:text-xl hover:text-blue-500 duration-200 font-extrabold whitespace-nowrap`}
+        >
+          Patient
         </div>
       </Link>
     </div>

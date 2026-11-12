@@ -188,7 +188,7 @@ export default function TipsMapper() {
                   }`}
                 >
                   <Layers className="w-5 h-5 text-emerald-400" />
-                  <span>Common Remedies</span>
+                  <span>Remedy Filter</span>
                 </button>
 
                 {/* 2nd Tab: Search M&D */}
@@ -267,7 +267,7 @@ export default function TipsMapper() {
 
               <div className="text-sm text-slate-500 font-bold hidden xl:block">
                 {classicSubTab === "common"
-                  ? "Find common remedies that treat multiple diseases simultaneously"
+                  ? "Filter remedies by AND, OR, or Entry Point across selected symptoms"
                   : classicSubTab === "search"
                   ? "Search, explore multi-hop chains & filter remedies"
                   : classicSubTab === "create"
