@@ -8,6 +8,9 @@ import {
   AlertTriangle,
   CheckCircle2,
   X,
+  Leaf,
+  Gem,
+  PawPrint,
 } from "lucide-react";
 import Card from "./Card";
 import {
@@ -16,10 +19,13 @@ import {
   useGetDiseasesQuery,
   useAddDiseaseMutation,
 } from "../../api/tipsApi";
+import { Kingdom, Medicine } from "../../types";
+import KingdomBadge from "../shared/KingdomBadge";
 
 export default function AddEntity() {
   const [type, setType] = useState<"disease" | "medicine">("disease");
   const [name, setName] = useState("");
+  const [kingdom, setKingdom] = useState<Kingdom>("Plant");
   const trimmed = name.trim();
   const trimmedLower = trimmed.toLowerCase();
 
@@ -56,8 +62,8 @@ export default function AddEntity() {
 
     try {
       if (isMed) {
-        const res = await addMedicine({ name: trimmed }).unwrap();
-        toast.success(`Medicine "${res.name}" added successfully!`);
+        const res = await addMedicine({ name: trimmed, kingdom }).unwrap();
+        toast.success(`Medicine "${res.name}" (${kingdom}) added successfully!`);
       } else {
         const res = await addDisease({ name: trimmed }).unwrap();
         toast.success(`Disease "${res.name}" added successfully!`);
@@ -136,6 +142,53 @@ export default function AddEntity() {
             <span>Medicines ({meds.length})</span>
           </button>
         </div>
+
+        {/* Kingdom Selection for New Medicine */}
+        {isMed && (
+          <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+            <span className="text-xs font-black uppercase text-slate-500 tracking-wider">
+              Kingdom:
+            </span>
+            <div className="flex items-center gap-1.5" role="group" aria-label="Select kingdom">
+              <button
+                type="button"
+                onClick={() => setKingdom("Plant")}
+                className={`px-3 py-1 text-xs font-bold rounded-lg flex items-center gap-1.5 transition ${
+                  kingdom === "Plant"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-white text-emerald-800 border border-slate-300 hover:bg-emerald-50"
+                }`}
+              >
+                <Leaf className="w-3.5 h-3.5" />
+                <span>Plant</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setKingdom("Mineral")}
+                className={`px-3 py-1 text-xs font-bold rounded-lg flex items-center gap-1.5 transition ${
+                  kingdom === "Mineral"
+                    ? "bg-amber-600 text-white shadow-xs"
+                    : "bg-white text-amber-800 border border-slate-300 hover:bg-amber-50"
+                }`}
+              >
+                <Gem className="w-3.5 h-3.5" />
+                <span>Mineral</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setKingdom("Animal")}
+                className={`px-3 py-1 text-xs font-bold rounded-lg flex items-center gap-1.5 transition ${
+                  kingdom === "Animal"
+                    ? "bg-rose-600 text-white shadow-xs"
+                    : "bg-white text-rose-800 border border-slate-300 hover:bg-rose-50"
+                }`}
+              >
+                <PawPrint className="w-3.5 h-3.5" />
+                <span>Animal</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Input Bar & Add Button with Darker Input Background */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -244,7 +297,15 @@ export default function AddEntity() {
                           : "hover:bg-slate-50 text-slate-800 font-bold"
                       }`}
                     >
-                      <span className="truncate">{item.name}</span>
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="truncate">{item.name}</span>
+                        {isMed && (
+                          <KingdomBadge
+                            kingdom={(item as Medicine).kingdom}
+                            size="xs"
+                          />
+                        )}
+                      </div>
                       {isItemExact ? (
                         <span className="text-xs px-2.5 py-1 rounded-md bg-rose-200 text-rose-900 font-black uppercase tracking-wider flex items-center gap-1">
                           <AlertTriangle className="w-3.5 h-3.5" />

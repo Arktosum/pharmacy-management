@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid'
 
 const DATA_PATH = path.resolve('./databases/mapper.json')
 
-interface Medicine { id: string; name: string }
+interface Medicine { id: string; name: string; kingdom?: string }
 interface Illness { id: string; name: string }
 interface Link { medicineId: string; diseaseId: string }
 interface DB { medicines: Medicine[]; illnesses: Illness[]; links: Link[] }
@@ -53,11 +53,12 @@ router.get('/medicines', (req, res) => {
 })
 
 router.post('/medicines', (req, res) => {
-    const { name } = req.body as { name?: string }
+    const { name, kingdom } = req.body as { name?: string; kingdom?: string }
     if (!name || !name.trim()) return res.status(400).json({ error: 'name required' })
     const db = readDB()
     if (db.medicines.find(byName(name))) return res.status(409).json({ error: 'duplicate medicine' })
     const m: Medicine = { id: nanoid(), name: name.trim() }
+    if (kingdom && kingdom.trim()) m.kingdom = kingdom.trim()
     db.medicines.push(m)
     writeDB(db)
     res.status(201).json(m)
@@ -128,11 +129,12 @@ router.get('/search', (req, res) => {
 // Update medicine
 router.put('/medicines/:id', (req, res) => {
     const { id } = req.params
-    const { name } = req.body as { name?: string }
+    const { name, kingdom } = req.body as { name?: string; kingdom?: string }
     const db = readDB()
     const med = db.medicines.find((m) => m.id === id)
     if (!med) return res.status(404).json({ error: 'Medicine not found' })
-    med.name = name?.trim() || med.name
+    if (name !== undefined) med.name = name.trim() || med.name
+    if (kingdom !== undefined) med.kingdom = kingdom.trim()
     writeDB(db)
     res.json(med)
 })
@@ -218,6 +220,16 @@ router.post('/merge', (req, res) => {
 
     if (finalName && finalName.trim()) {
         survivor.name = finalName.trim();
+    }
+
+    if (isMed) {
+        const medSurvivor = survivor as Medicine;
+        if (!medSurvivor.kingdom) {
+            const victimWithKingdom = db.medicines.find((m) => victimSet.has(m.id) && m.kingdom);
+            if (victimWithKingdom?.kingdom) {
+                medSurvivor.kingdom = victimWithKingdom.kingdom;
+            }
+        }
     }
 
     const victimSet = new Set(victimIds);

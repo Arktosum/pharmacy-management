@@ -1,5 +1,6 @@
 export type ID = string
-export interface Medicine { id: ID; name: string }
+export type Kingdom = 'Plant' | 'Mineral' | 'Animal';
+export interface Medicine { id: ID; name: string; kingdom?: Kingdom }
 export interface Disease { id: ID; name: string }
 export interface Link { medicineId: ID; diseaseId: ID }
 

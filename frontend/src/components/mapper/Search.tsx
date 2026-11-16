@@ -11,8 +11,10 @@ import {
   Search as SearchIcon,
   X,
   Check,
+  SlidersHorizontal,
 } from "lucide-react";
 import Card from "./Card";
+import GraphInspectorDrawer, { InspectedNode } from "./GraphInspectorDrawer";
 import {
   useGetMedicinesQuery,
   useGetDiseasesQuery,
@@ -50,6 +52,45 @@ export default function SearchLinker({
   const [modalLimit, setModalLimit] = useState<number>(300);
   const [itemsPerColumn, setItemsPerColumn] = useState<number>(8);
 
+  // Dedicated Entity Inspector Drawer state (opens for ANY cell)
+  const [inspectedNode, setInspectedNode] = useState<InspectedNode | null>(null);
+  const [inspectorHistory, setInspectorHistory] = useState<InspectedNode[]>([]);
+
+  const handleOpenInspector = (node: InspectedNode, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setInspectedNode(node);
+    setInspectorHistory([]);
+  };
+
+  const handleInspectFromDrawer = (newNode: InspectedNode) => {
+    if (inspectedNode) {
+      setInspectorHistory((prev) => [...prev, inspectedNode]);
+    }
+    setInspectedNode(newNode);
+  };
+
+  const handleBackHistory = () => {
+    setInspectorHistory((prev) => {
+      if (prev.length === 0) return prev;
+      const next = [...prev];
+      const last = next.pop()!;
+      setInspectedNode(last);
+      return next;
+    });
+  };
+
+  const handleSetAsRootFromDrawer = (targetNode: InspectedNode) => {
+    if (targetNode.type === "medicine") {
+      setType("medicine");
+      setSelectedId(targetNode.id);
+    } else {
+      setType("disease");
+      setSelectedId(targetNode.id);
+    }
+    setInspectedNode(null);
+    setExpandedColumn(null);
+  };
+
   const openExpandedColumn = (col: number) => {
     setExpandedColumn(col);
     setModalSearch("");
@@ -64,13 +105,17 @@ export default function SearchLinker({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && expandedColumn !== null) {
-        setExpandedColumn(null);
+      if (e.key === "Escape") {
+        if (inspectedNode !== null) {
+          setInspectedNode(null);
+        } else if (expandedColumn !== null) {
+          setExpandedColumn(null);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [expandedColumn]);
+  }, [expandedColumn, inspectedNode]);
 
   useEffect(() => {
     if (initialSelection) {
@@ -721,7 +766,7 @@ export default function SearchLinker({
                         : "hover:bg-slate-50 text-slate-900 font-bold"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2.5 truncate mr-2">
                       {isMedMode ? (
                         <Pill className="w-5 h-5 text-blue-500 shrink-0" />
                       ) : (
@@ -729,15 +774,35 @@ export default function SearchLinker({
                       )}
                       <span className="break-words font-bold text-lg">{m.name}</span>
                     </div>
-                    {isSelected && (
-                      <span
-                        className={`text-xs text-white font-black px-2.5 py-1 rounded-md shrink-0 ml-2 ${
-                          isMedMode ? "bg-blue-600" : "bg-emerald-600"
-                        }`}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {isSelected && (
+                        <span
+                          className={`text-xs text-white font-black px-2.5 py-1 rounded-md shrink-0 ${
+                            isMedMode ? "bg-blue-600" : "bg-emerald-600"
+                          }`}
+                        >
+                          Root {isMedMode ? "M1" : "D1"}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) =>
+                          handleOpenInspector(
+                            {
+                              id: m.id,
+                              name: m.name,
+                              type: type,
+                              kingdom: isMedMode ? (m as Medicine).kingdom : undefined,
+                            },
+                            e
+                          )
+                        }
+                        className="p-1.5 text-xs font-bold border border-slate-300 rounded-lg hover:bg-slate-100 text-slate-700 bg-white transition shadow-xs flex items-center justify-center shrink-0"
+                        title={`Manage, edit, or delete "${m.name}"`}
                       >
-                        Root {isMedMode ? "M1" : "D1"}
-                      </span>
-                    )}
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-slate-600" />
+                      </button>
+                    </div>
                   </li>
                 );
               })}
@@ -838,7 +903,7 @@ export default function SearchLinker({
                           <span className="break-words font-bold">{item.name}</span>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           {isSelectedD1 ? (
                             <span
                               className={`text-[11px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 ${
@@ -860,6 +925,25 @@ export default function SearchLinker({
                               <ChevronRight className="w-3 h-3" />
                             </span>
                           )}
+
+                          <button
+                            type="button"
+                            onClick={(e) =>
+                              handleOpenInspector(
+                                {
+                                  id: item.id,
+                                  name: item.name,
+                                  type: isMedMode ? "disease" : "medicine",
+                                  kingdom: !isMedMode ? (item as Medicine).kingdom : undefined,
+                                },
+                                e
+                              )
+                            }
+                            className="p-1.5 text-xs border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 bg-white transition shrink-0 font-bold shadow-xs flex items-center justify-center"
+                            title={`Manage, edit, or delete "${item.name}"`}
+                          >
+                            <SlidersHorizontal className="w-3.5 h-3.5 text-slate-600" />
+                          </button>
 
                           <button
                             type="button"
@@ -1006,6 +1090,25 @@ export default function SearchLinker({
                             <ChevronRight className="w-3 h-3" />
                           </span>
                         )}
+
+                        <button
+                          type="button"
+                          onClick={(e) =>
+                            handleOpenInspector(
+                              {
+                                id: item.id,
+                                name: item.name,
+                                type: isMedMode ? "medicine" : "disease",
+                                kingdom: isMedMode ? (item as Medicine).kingdom : undefined,
+                              },
+                              e
+                            )
+                          }
+                          className="p-1.5 text-xs border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 bg-white transition shrink-0 font-bold shadow-xs flex items-center justify-center"
+                          title={`Manage, edit, or delete "${item.name}"`}
+                        >
+                          <SlidersHorizontal className="w-3.5 h-3.5 text-slate-600" />
+                        </button>
                       </div>
                     </li>
                   );
@@ -1135,6 +1238,25 @@ export default function SearchLinker({
                             <ChevronRight className="w-3 h-3" />
                           </span>
                         )}
+
+                        <button
+                          type="button"
+                          onClick={(e) =>
+                            handleOpenInspector(
+                              {
+                                id: item.id,
+                                name: item.name,
+                                type: isMedMode ? "disease" : "medicine",
+                                kingdom: !isMedMode ? (item as Medicine).kingdom : undefined,
+                              },
+                              e
+                            )
+                          }
+                          className="p-1.5 text-xs border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 bg-white transition shrink-0 font-bold shadow-xs flex items-center justify-center"
+                          title={`Manage, edit, or delete "${item.name}"`}
+                        >
+                          <SlidersHorizontal className="w-3.5 h-3.5 text-slate-600" />
+                        </button>
                       </div>
                     </li>
                   );
@@ -1262,6 +1384,25 @@ export default function SearchLinker({
                             {isMedMode ? "M3" : "D3"}
                           </span>
                         )}
+
+                        <button
+                          type="button"
+                          onClick={(e) =>
+                            handleOpenInspector(
+                              {
+                                id: item.id,
+                                name: item.name,
+                                type: isMedMode ? "medicine" : "disease",
+                                kingdom: isMedMode ? (item as Medicine).kingdom : undefined,
+                              },
+                              e
+                            )
+                          }
+                          className="p-1.5 text-xs border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 bg-white transition shrink-0 font-bold shadow-xs flex items-center justify-center"
+                          title={`Manage, edit, or delete "${item.name}"`}
+                        >
+                          <SlidersHorizontal className="w-3.5 h-3.5 text-slate-600" />
+                        </button>
                       </div>
                     </li>
                   );
@@ -1533,39 +1674,64 @@ export default function SearchLinker({
                                   {linkCount} {linkCount === 1 ? "link" : "links"}
                                 </span>
 
-                                {isRootMatch && (
-                                  <span
-                                    className={`text-[9px] px-1 py-0.5 rounded font-black uppercase tracking-tight ${
+                                <div className="flex items-center gap-1 shrink-0">
+                                  {isRootMatch && (
+                                    <span
+                                      className={`text-[9px] px-1 py-0.5 rounded font-black uppercase tracking-tight ${
+                                        isSelected
+                                          ? "bg-white/20 text-white"
+                                          : "bg-purple-100 text-purple-800 border border-purple-200"
+                                      }`}
+                                    >
+                                      Root {isMedMode ? "M1" : "D1"}
+                                    </span>
+                                  )}
+                                  {isFirstHopMatch && !isRootMatch && (
+                                    <span
+                                      className={`text-[9px] px-1 py-0.5 rounded font-black uppercase tracking-tight ${
+                                        isSelected
+                                          ? "bg-white/20 text-white"
+                                          : "bg-blue-100 text-blue-800 border border-blue-200"
+                                      }`}
+                                    >
+                                      Matches {isMedMode ? "D1" : "M1"}
+                                    </span>
+                                  )}
+                                  {isSecondHopMatch && !isRootMatch && !isFirstHopMatch && (
+                                    <span
+                                      className={`text-[9px] px-1 py-0.5 rounded font-black uppercase tracking-tight ${
+                                        isSelected
+                                          ? "bg-white/20 text-white"
+                                          : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                                      }`}
+                                    >
+                                      Matches {isMedMode ? "M2" : "D2"}
+                                    </span>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={(e) =>
+                                      handleOpenInspector(
+                                        {
+                                          id: item.id,
+                                          name: item.name,
+                                          type: expandedColData.isMedCol ? "medicine" : "disease",
+                                          kingdom: expandedColData.isMedCol ? (item as Medicine).kingdom : undefined,
+                                        },
+                                        e
+                                      )
+                                    }
+                                    className={`p-1 rounded transition ml-0.5 ${
                                       isSelected
-                                        ? "bg-white/20 text-white"
-                                        : "bg-purple-100 text-purple-800 border border-purple-200"
+                                        ? "text-white/90 hover:text-white hover:bg-white/20"
+                                        : "text-slate-400 hover:text-slate-800 hover:bg-slate-200"
                                     }`}
+                                    title={`Manage, edit, or delete "${item.name}"`}
                                   >
-                                    Root {isMedMode ? "M1" : "D1"}
-                                  </span>
-                                )}
-                                {isFirstHopMatch && !isRootMatch && (
-                                  <span
-                                    className={`text-[9px] px-1 py-0.5 rounded font-black uppercase tracking-tight ${
-                                      isSelected
-                                        ? "bg-white/20 text-white"
-                                        : "bg-blue-100 text-blue-800 border border-blue-200"
-                                    }`}
-                                  >
-                                    Matches {isMedMode ? "D1" : "M1"}
-                                  </span>
-                                )}
-                                {isSecondHopMatch && !isRootMatch && !isFirstHopMatch && (
-                                  <span
-                                    className={`text-[9px] px-1 py-0.5 rounded font-black uppercase tracking-tight ${
-                                      isSelected
-                                        ? "bg-white/20 text-white"
-                                        : "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                                    }`}
-                                  >
-                                    Matches {isMedMode ? "M2" : "D2"}
-                                  </span>
-                                )}
+                                    <SlidersHorizontal className="w-3 h-3" />
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           );
@@ -1616,6 +1782,31 @@ export default function SearchLinker({
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Slide-Over Entity Inspector Drawer for Any Node */}
+      {inspectedNode && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex justify-end animate-fadeIn"
+          onClick={() => setInspectedNode(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="h-full flex shadow-2xl"
+          >
+            <GraphInspectorDrawer
+              node={inspectedNode}
+              onClose={() => setInspectedNode(null)}
+              onInspectNode={handleInspectFromDrawer}
+              medicines={meds}
+              diseases={ills}
+              links={links}
+              history={inspectorHistory}
+              onBackHistory={handleBackHistory}
+              onSetAsRoot={handleSetAsRootFromDrawer}
+            />
           </div>
         </div>
       )}

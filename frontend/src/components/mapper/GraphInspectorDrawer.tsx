@@ -9,6 +9,10 @@ import {
   ArrowLeft,
   Plus,
   Sparkles,
+  Target,
+  Leaf,
+  Gem,
+  PawPrint,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -19,12 +23,14 @@ import {
   useLinkMutation,
   useUnlinkMutation,
 } from "../../api/api";
-import { Medicine, Disease, Link } from "../../types";
+import { Medicine, Disease, Link, Kingdom } from "../../types";
+import KingdomBadge, { normalizeKingdom } from "../shared/KingdomBadge";
 
 export interface InspectedNode {
   id: string;
   name: string;
   type: "medicine" | "disease";
+  kingdom?: Kingdom | string;
 }
 
 interface GraphInspectorDrawerProps {
@@ -37,6 +43,7 @@ interface GraphInspectorDrawerProps {
   history: InspectedNode[];
   onBackHistory: () => void;
   intersectingMedicineIds?: Set<string>;
+  onSetAsRoot?: (node: InspectedNode) => void;
 }
 
 export default function GraphInspectorDrawer({
@@ -49,6 +56,7 @@ export default function GraphInspectorDrawer({
   history,
   onBackHistory,
   intersectingMedicineIds = new Set(),
+  onSetAsRoot,
 }: GraphInspectorDrawerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
@@ -121,6 +129,23 @@ export default function GraphInspectorDrawer({
   }, [node, diseases, medicines, connectedIdSet, searchLink]);
 
   if (!node) return null;
+
+  const currentMed = useMemo(() => {
+    if (!node || node.type !== "medicine") return null;
+    return medicines.find((m) => m.id === node.id) || null;
+  }, [node, medicines]);
+
+  const activeKingdom = currentMed?.kingdom || normalizeKingdom(node?.kingdom);
+
+  const handleUpdateKingdom = async (newKingdom: Kingdom) => {
+    if (!node || node.type !== "medicine") return;
+    try {
+      await updateMedicine({ id: node.id, kingdom: newKingdom }).unwrap();
+      toast.success(`Updated kingdom to ${newKingdom}`);
+    } catch {
+      toast.error("Failed to update kingdom");
+    }
+  };
 
   const isIntersecting = node.type === "medicine" && intersectingMedicineIds.has(node.id);
 
@@ -304,6 +329,72 @@ export default function GraphInspectorDrawer({
             </div>
           </div>
         )}
+
+        {/* Kingdom Classification & Selection for Medicine */}
+        {node.type === "medicine" && (
+          <div className="mt-4 pt-3.5 border-t border-slate-800/80">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Kingdom Classification:
+              </span>
+              {activeKingdom && <KingdomBadge kingdom={activeKingdom} size="xs" />}
+            </div>
+            <div className="grid grid-cols-3 gap-2" role="group" aria-label="Select kingdom">
+              <button
+                type="button"
+                onClick={() => handleUpdateKingdom("Plant")}
+                className={`py-1.5 px-2.5 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5 border ${
+                  activeKingdom === "Plant"
+                    ? "bg-emerald-600 text-white border-emerald-500 shadow-xs"
+                    : "bg-slate-800/90 text-slate-300 border-slate-700 hover:bg-slate-750 hover:text-white"
+                }`}
+                title="Set as Plant Kingdom"
+              >
+                <Leaf className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Plant</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleUpdateKingdom("Mineral")}
+                className={`py-1.5 px-2.5 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5 border ${
+                  activeKingdom === "Mineral"
+                    ? "bg-amber-600 text-white border-amber-500 shadow-xs"
+                    : "bg-slate-800/90 text-slate-300 border-slate-700 hover:bg-slate-750 hover:text-white"
+                }`}
+                title="Set as Mineral Kingdom"
+              >
+                <Gem className="w-3.5 h-3.5 text-amber-400" />
+                <span>Mineral</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleUpdateKingdom("Animal")}
+                className={`py-1.5 px-2.5 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5 border ${
+                  activeKingdom === "Animal"
+                    ? "bg-rose-600 text-white border-rose-500 shadow-xs"
+                    : "bg-slate-800/90 text-slate-300 border-slate-700 hover:bg-slate-750 hover:text-white"
+                }`}
+                title="Set as Animal Kingdom"
+              >
+                <PawPrint className="w-3.5 h-3.5 text-rose-400" />
+                <span>Animal</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Set as Search Root Node Button */}
+        {onSetAsRoot && (
+          <button
+            type="button"
+            onClick={() => onSetAsRoot(node)}
+            className="w-full mt-3 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm"
+            title={`Set "${node.name}" as the Root node in Search M&D`}
+          >
+            <Target className="w-4 h-4" />
+            <span>Set as Search Root Node ({node.type === "medicine" ? "M1" : "D1"})</span>
+          </button>
+        )}
       </div>
 
       {/* Quick Link Tool */}
@@ -380,12 +471,22 @@ export default function GraphInspectorDrawer({
                       id: item.id,
                       name: item.name,
                       type: node.type === "medicine" ? "disease" : "medicine",
+                      kingdom:
+                        node.type === "disease"
+                          ? (item as Medicine).kingdom
+                          : undefined,
                     })
                   }
-                  className="font-semibold text-slate-200 group-hover:text-blue-300 truncate text-left flex-1 mr-3 text-sm leading-snug"
+                  className="font-semibold text-slate-200 group-hover:text-blue-300 truncate text-left flex-1 mr-3 text-sm leading-snug flex items-center gap-2"
                   title="Click to inspect this connected node"
                 >
-                  {item.name}
+                  <span className="truncate">{item.name}</span>
+                  {node.type === "disease" && (
+                    <KingdomBadge
+                      kingdom={(item as Medicine).kingdom}
+                      size="xs"
+                    />
+                  )}
                 </button>
                 <button
                   onClick={() => handleUnlink(item.id, item.name)}

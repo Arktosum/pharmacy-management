@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Disease, Link, Medicine, SearchResponse } from '../types';
+import { Disease, Kingdom, Link, Medicine, SearchResponse } from '../types';
 
 const base = 'http://localhost:3000/api/tips'
 
@@ -18,12 +18,12 @@ export const tipsApi = createApi({
                     ]
                     : [{ type: 'Medicine', id: 'LIST' }],
         }),
-        addMedicine: builder.mutation<Medicine, { name: string }>({
+        addMedicine: builder.mutation<Medicine, { name: string; kingdom?: Kingdom }>({
             query: body => ({ url: '/medicines', method: 'POST', body }),
             invalidatesTags: [{ type: 'Medicine', id: 'LIST' }],
         }),
-        updateMedicine: builder.mutation<Medicine, { id: string; name: string }>({
-            query: ({ id, name }) => ({ url: `/medicines/${id}`, method: 'PUT', body: { name } }),
+        updateMedicine: builder.mutation<Medicine, { id: string; name?: string; kingdom?: Kingdom }>({
+            query: ({ id, ...body }) => ({ url: `/medicines/${id}`, method: 'PUT', body }),
             invalidatesTags: (_res, _err, { id }) => [
                 { type: 'Medicine', id },
                 { type: 'Medicine', id: 'LIST' },

@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect, FormEvent } from "react";
-import { X, Plus, AlertCircle } from "lucide-react";
+import { X, Plus, AlertCircle, Leaf, Gem, PawPrint } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   useAddMedicineMutation,
   useAddDiseaseMutation,
 } from "../../api/api";
-import { Medicine, Disease } from "../../types";
+import { Medicine, Disease, Kingdom } from "../../types";
 
 interface AddEntityModalProps {
   isOpen: boolean;
@@ -26,6 +26,7 @@ export default function AddEntityModal({
 }: AddEntityModalProps) {
   const [type, setType] = useState<"medicine" | "disease">(initialType);
   const [name, setName] = useState("");
+  const [kingdom, setKingdom] = useState<Kingdom>("Plant");
   const [addMedicine, { isLoading: addingMed }] = useAddMedicineMutation();
   const [addDisease, { isLoading: addingIll }] = useAddDiseaseMutation();
 
@@ -33,6 +34,7 @@ export default function AddEntityModal({
     if (isOpen) {
       setType(initialType);
       setName("");
+      setKingdom("Plant");
     }
   }, [isOpen, initialType]);
 
@@ -58,8 +60,8 @@ export default function AddEntityModal({
 
     try {
       if (type === "medicine") {
-        const result = await addMedicine({ name: trimmed }).unwrap();
-        toast.success(`Medicine "${result.name}" created!`);
+        const result = await addMedicine({ name: trimmed, kingdom }).unwrap();
+        toast.success(`Medicine "${result.name}" (${kingdom}) created!`);
         if (onCreated) onCreated({ id: result.id, name: result.name, type: "medicine" });
       } else {
         const result = await addDisease({ name: trimmed }).unwrap();
@@ -128,6 +130,53 @@ export default function AddEntityModal({
               </button>
             </div>
           </div>
+
+          {/* Kingdom Selection when adding Medicine */}
+          {type === "medicine" && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                Kingdom Classification
+              </label>
+              <div className="grid grid-cols-3 gap-2" role="group" aria-label="Select kingdom">
+                <button
+                  type="button"
+                  onClick={() => setKingdom("Plant")}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                    kingdom === "Plant"
+                      ? "bg-emerald-600 border-emerald-500 text-white shadow-sm"
+                      : "bg-slate-800/80 border-slate-700 text-slate-300 hover:text-white"
+                  }`}
+                >
+                  <Leaf className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Plant</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setKingdom("Mineral")}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                    kingdom === "Mineral"
+                      ? "bg-amber-600 border-amber-500 text-white shadow-sm"
+                      : "bg-slate-800/80 border-slate-700 text-slate-300 hover:text-white"
+                  }`}
+                >
+                  <Gem className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Mineral</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setKingdom("Animal")}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                    kingdom === "Animal"
+                      ? "bg-rose-600 border-rose-500 text-white shadow-sm"
+                      : "bg-slate-800/80 border-slate-700 text-slate-300 hover:text-white"
+                  }`}
+                >
+                  <PawPrint className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Animal</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Name Input & Live Matching Dropdown */}
           <div>

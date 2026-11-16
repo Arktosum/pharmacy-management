@@ -11,9 +11,17 @@ import {
   Link as LinkIcon,
   Target,
   Filter,
+  Leaf,
+  Gem,
+  PawPrint,
+  Sparkles,
 } from "lucide-react";
 import Card from "../mapper/Card";
-import { Disease, Link, Medicine } from "../../types";
+import { Disease, Kingdom, Link, Medicine } from "../../types";
+import KingdomBadge, {
+  KingdomIcon,
+  normalizeKingdom,
+} from "./KingdomBadge";
 
 export type RemedyFilterMode = "and" | "or" | "entry";
 
@@ -49,6 +57,8 @@ export default function RemedyFilterFinder({
   const [entryDiseaseIds, setEntryDiseaseIds] = useState<Set<string>>(
     () => new Set()
   );
+  const [selectedKingdom, setSelectedKingdom] = useState<Kingdom | "all">("all");
+  const [kingdomSearchQuery, setKingdomSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Map of diseaseId -> Set of linked medicine IDs
@@ -155,6 +165,40 @@ export default function RemedyFilterFinder({
     return results;
   }, [selectedDiseases, filterMode, entryDiseaseIds, allMeds, diseaseToMedsMap]);
 
+  // Breakdown of matching remedies by kingdom
+  const kingdomCounts = useMemo(() => {
+    let plant = 0;
+    let mineral = 0;
+    let animal = 0;
+    for (const r of filteredResults) {
+      const k = normalizeKingdom(r.medicine.kingdom);
+      if (k === "Plant") plant++;
+      else if (k === "Mineral") mineral++;
+      else if (k === "Animal") animal++;
+    }
+    return {
+      all: filteredResults.length,
+      Plant: plant,
+      Mineral: mineral,
+      Animal: animal,
+    };
+  }, [filteredResults]);
+
+  // Matching remedies filtered further by kingdom selection
+  const kingdomFilteredResults = useMemo(() => {
+    let list = filteredResults;
+    if (selectedKingdom !== "all") {
+      list = list.filter(
+        (r) => normalizeKingdom(r.medicine.kingdom) === selectedKingdom
+      );
+    }
+    if (kingdomSearchQuery.trim()) {
+      const q = kingdomSearchQuery.trim().toLowerCase();
+      list = list.filter((r) => r.medicine.name.toLowerCase().includes(q));
+    }
+    return list;
+  }, [filteredResults, selectedKingdom, kingdomSearchQuery]);
+
   const handleSelectDisease = (disease: Disease) => {
     if (selectedIdSet.has(disease.id)) return;
     setSelectedDiseases((prev) => [...prev, disease]);
@@ -185,6 +229,8 @@ export default function RemedyFilterFinder({
   const handleClearAll = () => {
     setSelectedDiseases([]);
     setEntryDiseaseIds(new Set());
+    setSelectedKingdom("all");
+    setKingdomSearchQuery("");
     searchInputRef.current?.focus();
   };
 
@@ -273,8 +319,8 @@ export default function RemedyFilterFinder({
           </div>
         </div>
 
-        {/* 3-Column Grid */}
-        <div className="grid md:grid-cols-3 gap-6 flex-1">
+        {/* 4-Column Responsive Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 flex-1">
           {/* Column 1: Disease Search & Selection */}
           <div className="flex flex-col min-h-[340px]">
             <div className="flex items-center justify-between mb-2">
@@ -538,18 +584,19 @@ export default function RemedyFilterFinder({
                   <li
                     key={result.medicine.id}
                     onClick={() => onSelectMedicine?.(result.medicine.id)}
-                    className="px-4 py-3.5 bg-blue-50/70 hover:bg-blue-100/90 border-l-4 border-blue-600 flex items-center justify-between cursor-pointer transition shadow-xs group gap-2"
+                    className="px-4 py-3 bg-blue-50/70 hover:bg-blue-100/90 border-l-4 border-blue-600 flex items-center justify-between cursor-pointer transition shadow-xs group gap-2"
                     title={`Matches: ${result.matchedDiseaseNames.join(", ")}`}
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2.5 truncate">
-                        <Pill className="w-5 h-5 text-blue-600 shrink-0" />
-                        <span className="font-bold text-lg text-blue-950 group-hover:text-blue-900 truncate">
+                      <div className="flex items-center gap-2 truncate flex-wrap">
+                        <Pill className="w-4 h-4 text-blue-600 shrink-0" />
+                        <span className="font-bold text-base text-blue-950 group-hover:text-blue-900 truncate">
                           {result.medicine.name}
                         </span>
+                        <KingdomBadge kingdom={result.medicine.kingdom} size="xs" />
                       </div>
                       {filterMode !== "and" && (
-                        <div className="mt-1 pl-7 text-xs font-semibold text-slate-600 truncate">
+                        <div className="mt-1 pl-6 text-xs font-semibold text-slate-600 truncate">
                           Solves:{" "}
                           <span className="text-slate-800">
                             {result.matchedDiseaseNames.join(", ")}
@@ -558,24 +605,267 @@ export default function RemedyFilterFinder({
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {filterMode === "or" && (
-                        <span className="text-xs font-black px-2.5 py-1 rounded-full bg-blue-600 text-white shadow-xs">
+                        <span className="text-xs font-black px-2 py-0.5 rounded-full bg-blue-600 text-white shadow-xs">
                           {result.matchedCount} / {result.totalSelected}
                         </span>
                       )}
                       {filterMode === "entry" && (
-                        <span className="text-xs font-black px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 shadow-xs">
+                        <span className="text-xs font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 shadow-xs">
                           {result.matchedCount} / {result.totalSelected}
                         </span>
                       )}
-                      <span className="text-xs font-black uppercase bg-white text-blue-800 border border-blue-300 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 px-2.5 py-1 rounded-lg transition shrink-0 flex items-center gap-1 shadow-xs">
-                        <span>Inspect Links</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      <span className="text-[11px] font-black uppercase bg-white text-blue-800 border border-blue-300 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 px-2 py-1 rounded-lg transition shrink-0 flex items-center gap-1 shadow-xs">
+                        <span>Inspect</span>
+                        <ArrowUpRight className="w-3 h-3" />
                       </span>
                     </div>
                   </li>
                 ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Column 4: Kingdom Filter & Refined Remedies */}
+          <div className="flex flex-col min-h-[340px]">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+                <span>
+                  By Kingdom (
+                  {selectedKingdom === "all"
+                    ? kingdomCounts.all
+                    : `${kingdomFilteredResults.length} ${selectedKingdom}`}
+                  )
+                </span>
+              </h4>
+              {selectedKingdom !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedKingdom("all");
+                    setKingdomSearchQuery("");
+                  }}
+                  className="text-xs font-bold text-purple-600 hover:text-purple-800 hover:underline"
+                >
+                  Show All
+                </button>
+              )}
+            </div>
+
+            {/* Kingdom Filter Options */}
+            <div
+              className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200 mb-2 shadow-inner"
+              role="group"
+              aria-label="Filter remedies by kingdom"
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedKingdom("all")}
+                className={`py-1.5 px-1 rounded-lg text-xs font-black transition flex flex-col items-center justify-center gap-0.5 ${
+                  selectedKingdom === "all"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                }`}
+                title="All matching remedies"
+              >
+                <span>All</span>
+                <span className="text-[10px] font-extrabold opacity-80">
+                  {kingdomCounts.all}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedKingdom("Plant")}
+                className={`py-1.5 px-1 rounded-lg text-xs font-black transition flex flex-col items-center justify-center gap-0.5 ${
+                  selectedKingdom === "Plant"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-emerald-800 hover:bg-emerald-100/70"
+                }`}
+                title="Filter to Plant Kingdom remedies"
+              >
+                <span className="flex items-center gap-1">
+                  <Leaf className="w-3 h-3" />
+                  <span>Plant</span>
+                </span>
+                <span className="text-[10px] font-extrabold opacity-80">
+                  {kingdomCounts.Plant}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedKingdom("Mineral")}
+                className={`py-1.5 px-1 rounded-lg text-xs font-black transition flex flex-col items-center justify-center gap-0.5 ${
+                  selectedKingdom === "Mineral"
+                    ? "bg-amber-600 text-white shadow-xs"
+                    : "text-amber-900 hover:bg-amber-100/70"
+                }`}
+                title="Filter to Mineral Kingdom remedies"
+              >
+                <span className="flex items-center gap-1">
+                  <Gem className="w-3 h-3" />
+                  <span>Mineral</span>
+                </span>
+                <span className="text-[10px] font-extrabold opacity-80">
+                  {kingdomCounts.Mineral}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedKingdom("Animal")}
+                className={`py-1.5 px-1 rounded-lg text-xs font-black transition flex flex-col items-center justify-center gap-0.5 ${
+                  selectedKingdom === "Animal"
+                    ? "bg-rose-600 text-white shadow-xs"
+                    : "text-rose-900 hover:bg-rose-100/70"
+                }`}
+                title="Filter to Animal Kingdom remedies"
+              >
+                <span className="flex items-center gap-1">
+                  <PawPrint className="w-3 h-3" />
+                  <span>Animal</span>
+                </span>
+                <span className="text-[10px] font-extrabold opacity-80">
+                  {kingdomCounts.Animal}
+                </span>
+              </button>
+            </div>
+
+            {/* Quick search input if there are remedies */}
+            {filteredResults.length > 4 && (
+              <div className="relative mb-2">
+                <input
+                  value={kingdomSearchQuery}
+                  onChange={(e) => setKingdomSearchQuery(e.target.value)}
+                  placeholder={`Search ${
+                    selectedKingdom === "all" ? "remedies" : `${selectedKingdom} remedies`
+                  }...`}
+                  className="w-full px-3 py-1.5 pr-8 border border-slate-300 rounded-lg text-xs font-bold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400 shadow-xs"
+                />
+                {kingdomSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setKingdomSearchQuery("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    title="Clear filter search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {selectedDiseases.length === 0 ? (
+              <div className="mt-1 flex-1 flex flex-col items-center justify-center border-2 border-dashed border-purple-200/60 rounded-xl p-6 text-center bg-purple-50/20 min-h-[260px]">
+                <Sparkles className="w-10 h-10 text-purple-300 mb-2" />
+                <p className="text-base font-semibold text-purple-950">
+                  Kingdom Breakdown
+                </p>
+                <p className="text-xs text-slate-500 mt-1 max-w-xs">
+                  Select diseases to view matching remedies categorized into
+                  Plant, Mineral, and Animal kingdoms.
+                </p>
+              </div>
+            ) : filteredResults.length === 0 ? (
+              <div className="mt-1 flex-1 flex flex-col items-center justify-center border border-slate-200 rounded-xl p-6 text-center bg-slate-50 min-h-[260px]">
+                <AlertTriangle className="w-8 h-8 text-slate-400 mb-2" />
+                <p className="text-sm font-bold text-slate-700">
+                  No Remedies to Classify
+                </p>
+                <p className="text-xs text-slate-500 mt-1 max-w-xs">
+                  Adjust disease selections in Column 2 to find remedies.
+                </p>
+              </div>
+            ) : kingdomFilteredResults.length === 0 ? (
+              <div className="mt-1 flex-1 flex flex-col items-center justify-center border border-amber-200 rounded-xl p-6 text-center bg-amber-50/50 min-h-[260px]">
+                <AlertTriangle className="w-8 h-8 text-amber-500 mb-2" />
+                <p className="text-sm font-bold text-amber-900">
+                  No {selectedKingdom} Remedies Found
+                </p>
+                <p className="text-xs text-slate-600 mt-1 max-w-xs">
+                  None of the {filteredResults.length} matching remedies belong
+                  to the {selectedKingdom} Kingdom for these symptoms.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedKingdom("all");
+                    setKingdomSearchQuery("");
+                  }}
+                  className="mt-3 px-3 py-1.5 text-xs font-black bg-white border border-amber-300 text-amber-800 rounded-lg hover:bg-amber-100 shadow-xs transition"
+                >
+                  View All Kingdoms ({filteredResults.length})
+                </button>
+              </div>
+            ) : (
+              <ul className="mt-1 max-h-80 overflow-y-auto border border-purple-200 rounded-xl bg-white divide-y divide-purple-100 shadow-sm flex-1">
+                {kingdomFilteredResults.map((result) => {
+                  const kMeta = normalizeKingdom(result.medicine.kingdom);
+                  const isPlant = kMeta === "Plant";
+                  const isMineral = kMeta === "Mineral";
+                  const isAnimal = kMeta === "Animal";
+
+                  const borderAccent = isPlant
+                    ? "border-emerald-500 bg-emerald-50/40 hover:bg-emerald-100/70"
+                    : isMineral
+                    ? "border-amber-500 bg-amber-50/40 hover:bg-amber-100/70"
+                    : isAnimal
+                    ? "border-rose-500 bg-rose-50/40 hover:bg-rose-100/70"
+                    : "border-purple-500 bg-purple-50/40 hover:bg-purple-100/70";
+
+                  return (
+                    <li
+                      key={`k-${result.medicine.id}`}
+                      onClick={() => onSelectMedicine?.(result.medicine.id)}
+                      className={`px-3.5 py-3 border-l-4 flex items-center justify-between cursor-pointer transition shadow-xs group gap-2 ${borderAccent}`}
+                      title={`${result.medicine.name} (${result.medicine.kingdom || "Unknown"}) • Matches: ${result.matchedDiseaseNames.join(", ")}`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 truncate flex-wrap">
+                          <KingdomIcon
+                            kingdom={result.medicine.kingdom}
+                            className="w-4 h-4 shrink-0"
+                          />
+                          <span className="font-bold text-sm text-slate-900 group-hover:text-purple-950 truncate">
+                            {result.medicine.name}
+                          </span>
+                          <KingdomBadge
+                            kingdom={result.medicine.kingdom}
+                            size="xs"
+                          />
+                        </div>
+                        {filterMode !== "and" && (
+                          <div className="mt-0.5 pl-5 text-[11px] font-semibold text-slate-600 truncate">
+                            Solves:{" "}
+                            <span className="text-slate-800">
+                              {result.matchedDiseaseNames.join(", ")}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {filterMode === "or" && (
+                          <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-slate-800 text-white shadow-xs">
+                            {result.matchedCount}/{result.totalSelected}
+                          </span>
+                        )}
+                        {filterMode === "entry" && (
+                          <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 shadow-xs">
+                            {result.matchedCount}/{result.totalSelected}
+                          </span>
+                        )}
+                        <span className="text-[10px] font-black uppercase bg-white text-purple-900 border border-purple-300 group-hover:bg-purple-700 group-hover:text-white group-hover:border-purple-700 px-2 py-1 rounded-lg transition shrink-0 flex items-center gap-1 shadow-xs">
+                          <span>Inspect</span>
+                          <ArrowUpRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
