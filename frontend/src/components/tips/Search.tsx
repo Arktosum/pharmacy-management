@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Card from "./Card";
 import GraphInspectorDrawer, { InspectedNode } from "./GraphInspectorDrawer";
+import { matchesSearch } from "../Utils";
 import {
   useGetMedicinesQuery,
   useGetDiseasesQuery,
@@ -29,28 +30,95 @@ import { Disease, Medicine } from "../../types";
 
 interface SearchLinkerProps {
   initialSelection?: { type: "medicine" | "disease"; id: string; key?: number } | null;
+  storageKey?: string;
 }
 
 export default function SearchLinker({
   initialSelection,
+  storageKey = "tips_search",
 }: SearchLinkerProps = {}): JSX.Element {
-  const [type, setType] = useState<"medicine" | "disease">("disease");
-  const [query, setQuery] = useState("");
-  const [debouncedQ, setDebouncedQ] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [type, setType] = useState<"medicine" | "disease">(() => {
+    if (initialSelection?.type) return initialSelection.type;
+    try {
+      const saved = localStorage.getItem(`${storageKey}_type`);
+      if (saved === "medicine" || saved === "disease") return saved;
+    } catch {}
+    return "disease";
+  });
+  const [query, setQuery] = useState(() => {
+    try {
+      return localStorage.getItem(`${storageKey}_query`) || "";
+    } catch {
+      return "";
+    }
+  });
+  const [debouncedQ, setDebouncedQ] = useState(() => {
+    try {
+      return localStorage.getItem(`${storageKey}_query`) || "";
+    } catch {
+      return "";
+    }
+  });
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    if (initialSelection?.id) return initialSelection.id;
+    try {
+      return localStorage.getItem(`${storageKey}_selectedId`);
+    } catch {
+      return null;
+    }
+  });
   const [editingName, setEditingName] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
 
   // 1st Hop, 2nd Hop & 3rd Hop selection states in the chain
-  const [firstHopSelectedId, setFirstHopSelectedId] = useState<string | null>(null);
-  const [secondHopSelectedId, setSecondHopSelectedId] = useState<string | null>(null);
-  const [thirdHopSelectedId, setThirdHopSelectedId] = useState<string | null>(null);
+  const [firstHopSelectedId, setFirstHopSelectedId] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(`${storageKey}_firstHop`);
+    } catch {
+      return null;
+    }
+  });
+  const [secondHopSelectedId, setSecondHopSelectedId] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(`${storageKey}_secondHop`);
+    } catch {
+      return null;
+    }
+  });
+  const [thirdHopSelectedId, setThirdHopSelectedId] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(`${storageKey}_thirdHop`);
+    } catch {
+      return null;
+    }
+  });
 
   // Floating window state for enlarged column flow view
   const [expandedColumn, setExpandedColumn] = useState<number | null>(null);
   const [modalSearch, setModalSearch] = useState<string>("");
   const [modalLimit, setModalLimit] = useState<number>(300);
   const [itemsPerColumn, setItemsPerColumn] = useState<number>(8);
+
+  // Sync state to localStorage so selections survive tab switches & reloads
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      localStorage.setItem(`${storageKey}_type`, type);
+      if (selectedId) localStorage.setItem(`${storageKey}_selectedId`, selectedId);
+      else localStorage.removeItem(`${storageKey}_selectedId`);
+
+      if (firstHopSelectedId) localStorage.setItem(`${storageKey}_firstHop`, firstHopSelectedId);
+      else localStorage.removeItem(`${storageKey}_firstHop`);
+
+      if (secondHopSelectedId) localStorage.setItem(`${storageKey}_secondHop`, secondHopSelectedId);
+      else localStorage.removeItem(`${storageKey}_secondHop`);
+
+      if (thirdHopSelectedId) localStorage.setItem(`${storageKey}_thirdHop`, thirdHopSelectedId);
+      else localStorage.removeItem(`${storageKey}_thirdHop`);
+
+      localStorage.setItem(`${storageKey}_query`, query);
+    } catch {}
+  }, [storageKey, type, selectedId, firstHopSelectedId, secondHopSelectedId, thirdHopSelectedId, query]);
 
   // Dedicated Entity Inspector Drawer state (opens for ANY cell)
   const [inspectedNode, setInspectedNode] = useState<InspectedNode | null>(null);
@@ -142,12 +210,11 @@ export default function SearchLinker({
     return () => clearTimeout(t);
   }, [query]);
 
-  // Instant client-side matches for the active query in Column 1
+  // Instant client-side matches for the active query in Column 1 (Regex & Substring enabled)
   const matches = useMemo(() => {
     const list = type === "medicine" ? meds : ills;
     if (!debouncedQ) return list;
-    const lower = debouncedQ.toLowerCase();
-    return list.filter((item) => item.name.toLowerCase().includes(lower));
+    return list.filter((item) => matchesSearch(debouncedQ, item.name));
   }, [type, meds, ills, debouncedQ]);
 
   const medMap = useMemo(() => new Map(meds.map((m) => [m.id, m])), [meds]);
@@ -364,9 +431,9 @@ export default function SearchLinker({
       onSelect = null;
     }
 
-    const q = modalSearch.trim().toLowerCase();
+    const q = modalSearch.trim();
     const filteredItems = q
-      ? rawItems.filter((item) => item.name.toLowerCase().includes(q))
+      ? rawItems.filter((item) => matchesSearch(q, item.name))
       : rawItems;
 
     return {
@@ -747,7 +814,7 @@ export default function SearchLinker({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Type to search ${type}...`}
+              placeholder={`Type to search ${type} (regex supported, e.g. bell|arnica)...`}
               style={{ backgroundColor: "rgb(85 185 105 / 65%)" }}
               className="w-full px-4 py-3.5 border-2 border-emerald-600 rounded-xl focus:ring-2 focus:ring-emerald-500 text-slate-950 text-lg font-black placeholder-slate-800 shadow-sm transition"
             />
@@ -1520,7 +1587,7 @@ export default function SearchLinker({
                   autoFocus
                   value={modalSearch}
                   onChange={(e) => setModalSearch(e.target.value)}
-                  placeholder={`Filter among ${expandedColData.rawItems.length} items in this column (e.g. name)...`}
+                  placeholder={`Filter among ${expandedColData.rawItems.length} items (regex supported, e.g. a|b)...`}
                   style={{ backgroundColor: "rgb(118 213 133 / 35%)" }}
                   className="w-full pl-12 pr-10 py-3 text-lg font-bold border-2 border-slate-300 rounded-xl text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-inner transition"
                 />

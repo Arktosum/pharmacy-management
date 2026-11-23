@@ -20,6 +20,7 @@ import {
   useUpdatePatientMutation,
 } from "../../api/patientApi";
 import { Patient } from "../../types";
+import { matchesSearch } from "../Utils";
 import { getLocalDateISO } from "../../utils/patientHelpers";
 
 interface PatientDirectoryProps {
@@ -138,18 +139,17 @@ export default function PatientDirectory({
   };
 
   const filteredPatients = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase().replace(/^#/, "");
+    const rawQ = searchQuery.trim();
+    const q = rawQ.replace(/^#/, "");
     return patients.filter((p) => {
       if (dateFilter && !p.visits.some((v) => v.date === dateFilter)) {
         return false;
       }
-      if (!q) return true;
-      const numMatch = String(p.patientNumber).includes(q);
-      const nameMatch = p.name.toLowerCase().includes(q);
-      const descMatch = (p.description || "").toLowerCase().includes(q);
-      const visitDateMatch = p.visits.some((v) =>
-        v.date.toLowerCase().includes(q)
-      );
+      if (!rawQ) return true;
+      const numMatch = matchesSearch(q, String(p.patientNumber));
+      const nameMatch = matchesSearch(rawQ, p.name);
+      const descMatch = matchesSearch(rawQ, p.description || "");
+      const visitDateMatch = p.visits.some((v) => matchesSearch(rawQ, v.date));
       return numMatch || nameMatch || descMatch || visitDateMatch;
     });
   }, [patients, searchQuery, dateFilter]);

@@ -22,6 +22,7 @@ export default function IntersectionFinder({
       allDiseases={allDiseases}
       allLinks={allLinks}
       onSelectMedicine={onSelectMedicine}
+      storageKey="mapper_remedy_filter"
     />
   );
 }

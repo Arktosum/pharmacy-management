@@ -8,7 +8,7 @@ import {
 import { useAppSelector, useAppDispatch } from "../hooks";
 import { updateStockCount } from "../redux/stockSlice";
 import moment from "moment";
-import { isBetween, setState } from "../components/Utils";
+import { isBetween, setState, matchesSearch } from "../components/Utils";
 
 export default function Log() {
   const [showModal, setshowModal] = useState(false);
@@ -29,9 +29,7 @@ export default function Log() {
     isBetween(fromDate, toDate, item.id)
   );
   const logElements = filterLog.map((item) => {
-    const regex = new RegExp(patientName);
-    const search = regex.test(item.data.patientName);
-    if (patientName != "" && !search) return;
+    if (patientName != "" && !matchesSearch(patientName, item.data.patientName)) return;
     const id = item.id;
     let infoString = "Something went wrong";
     const [date, time] = moment(parseInt(id))

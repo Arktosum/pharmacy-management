@@ -20,6 +20,7 @@ import {
   useMergeEntitiesMutation,
 } from "../../api/tipsApi";
 import { Medicine, Disease } from "../../types";
+import { matchesSearch } from "../Utils";
 
 export default function MultiMergeTool(): JSX.Element {
   const [type, setType] = useState<"medicine" | "disease">("disease");
@@ -75,12 +76,12 @@ export default function MultiMergeTool(): JSX.Element {
     setSearchQuery("");
   };
 
-  // Search results capped to top 50 for speed
+  // Search results capped to top 50 for speed (Regex & Substring enabled)
   const searchResults = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = searchQuery.trim();
     if (!q) return currentList.slice(0, 50);
     return currentList
-      .filter((item) => item.name.toLowerCase().includes(q))
+      .filter((item) => matchesSearch(q, item.name))
       .slice(0, 50);
   }, [searchQuery, currentList]);
 
@@ -295,7 +296,7 @@ export default function MultiMergeTool(): JSX.Element {
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={`Type to search ${type}...`}
+            placeholder={`Type to search ${type} (regex supported, e.g. a|b)...`}
             style={{ backgroundColor: "rgb(85 185 105 / 65%)" }}
             className="w-full px-4 py-3.5 border-2 border-emerald-600 rounded-xl focus:ring-2 focus:ring-purple-500 text-slate-950 text-lg font-black placeholder-slate-800 shadow-sm transition"
           />

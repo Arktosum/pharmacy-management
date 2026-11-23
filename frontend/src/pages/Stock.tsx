@@ -7,7 +7,7 @@ import {
   updateStockItem,
 } from "../redux/stockSlice";
 import "react-toastify/dist/ReactToastify.css";
-import { setState } from "../components/Utils";
+import { setState, matchesSearch } from "../components/Utils";
 import moment from "moment";
 
 function sortStockItems(
@@ -307,8 +307,7 @@ function StockTable(props: StockTableProps) {
   let stockData: StockItem[] = useAppSelector((state) => state.stocks.data);
   stockData = sortStockItems(stockData, filter);
   const rowElements = stockData.map((item) => {
-    const regex = new RegExp(regexString, "i");
-    if (!(regex.test(item.name) && regexString != "")) return;
+    if (regexString != "" && !matchesSearch(regexString, item.name)) return;
     return (
       <StockRowItem
         key={item.id}

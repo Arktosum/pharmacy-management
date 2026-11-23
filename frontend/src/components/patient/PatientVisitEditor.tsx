@@ -24,6 +24,7 @@ import {
   VisitSymptomRef,
 } from "../../types";
 import { normalizeSymptomName } from "../../utils/patientHelpers";
+import { matchesSearch } from "../Utils";
 
 interface PatientVisitEditorProps {
   patientId: string;
@@ -137,10 +138,10 @@ export default function PatientVisitEditor({
   }, [visit, draftSymptoms, draftNotes]);
 
   const searchResults = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = searchQuery.trim();
     if (!q) return diseases.slice(0, 50);
     return diseases
-      .filter((d) => d.name.toLowerCase().includes(q))
+      .filter((d) => matchesSearch(q, d.name))
       .slice(0, 50);
   }, [searchQuery, diseases]);
 

@@ -48,19 +48,60 @@ export const toastErroroptions: ToastOptions<unknown> = {
   theme: "dark",
   transition: Zoom,
 };
-export function regexUtil(regexPattern: string, testString: string) {
-  if (regexPattern == "") return false;
-  let regex;
+/**
+ * Safe, powerful Regex-enabled search utility.
+ * Supports:
+ * - Substring matching (e.g. "bell" -> matches "Belladonna")
+ * - OR expressions (e.g. "bell|arnica" or "bell | arnica" -> matches either)
+ * - Wildcards & Quantifiers (e.g. "calc.*carb" or "*cillin")
+ * - Anchors (e.g. "^acid" for starting with, "phos$" for ending with)
+ * - Character classes (e.g. "b[ae]ll")
+ * - Groupings (e.g. "(calc|kali).*phos")
+ * - Mid-typing fault tolerance (auto-closes unclosed parens, strips trailing pipes, falls back on invalid syntax)
+ */
+export function matchesSearch(query: string, text: string): boolean {
+  if (!query || !query.trim()) return true;
+  if (!text) return false;
+
+  let trimmed = query.trim();
+
+  // Strip trailing pipes so typing 'bell|' continues matching 'bell' instead of matching everything
+  trimmed = trimmed.replace(/\|+\s*$/, "");
+  if (!trimmed) return true;
+
+  // Normalize leading * so common wildcard typo '*cillin' becomes '.*cillin'
+  if (trimmed.startsWith("*")) {
+    trimmed = "." + trimmed;
+  }
+
+  // Normalize whitespace around OR pipe: 'bell | arnica' -> 'bell|arnica'
+  let normalized = trimmed.replace(/\s*\|\s*/g, "|");
+
+  // Auto-close unclosed '(' if user is mid-typing a group
+  const openParens = (normalized.match(/\(/g) || []).length;
+  const closeParens = (normalized.match(/\)/g) || []).length;
+  if (openParens > closeParens) {
+    normalized += ")".repeat(openParens - closeParens);
+  }
+
   try {
-    regex = new RegExp(regexPattern, "i");
+    const rx = new RegExp(normalized, "i");
+    return rx.test(text);
   } catch {
-    // alert("Invalid regex expression!!! " + regexPattern);
-    return false;
+    // If complex invalid regex while typing, clean special chars and do safe word/substring check
+    const fallback = query.trim().replace(/[-[\]{}()+*?.,\\^$|#\s]/g, " ").toLowerCase();
+    const cleanTokens = fallback.split(/\s+/).filter(Boolean);
+    if (cleanTokens.length > 0) {
+      const lowerText = text.toLowerCase();
+      return cleanTokens.some((tok) => lowerText.includes(tok));
+    }
+    return text.toLowerCase().includes(query.trim().toLowerCase());
   }
-  if (regex) {
-    return regex.test(testString);
-  }
-  return false;
+}
+
+export function regexUtil(regexPattern: string, testString: string) {
+  if (!regexPattern || regexPattern.trim() === "") return false;
+  return matchesSearch(regexPattern, testString);
 }
 
 export interface BillingStateType {

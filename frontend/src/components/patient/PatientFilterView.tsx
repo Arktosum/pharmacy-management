@@ -22,6 +22,7 @@ import {
   VisitPrescription,
 } from "../../types";
 import { RemedyFilterMode } from "../shared/RemedyFilterFinder";
+import { matchesSearch } from "../Utils";
 import {
   normalizeSymptomName,
   resolveSymptomInDatabase,
@@ -204,11 +205,9 @@ export default function PatientFilterView({
       results.sort((a, b) => a.medicine.name.localeCompare(b.medicine.name));
     }
 
-    const q = remedySearch.trim().toLowerCase();
+    const q = remedySearch.trim();
     if (!q) return results;
-    return results.filter((r) =>
-      r.medicine.name.toLowerCase().includes(q)
-    );
+    return results.filter((r) => matchesSearch(q, r.medicine.name));
   }, [
     includedSymptoms,
     filterMode,

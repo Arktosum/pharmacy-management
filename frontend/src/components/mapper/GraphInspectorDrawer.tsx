@@ -15,6 +15,7 @@ import {
   PawPrint,
 } from "lucide-react";
 import { toast } from "react-toastify";
+import { matchesSearch } from "../Utils";
 import {
   useUpdateMedicineMutation,
   useUpdateDiseaseMutation,
@@ -122,9 +123,9 @@ export default function GraphInspectorDrawer({
     const pool = node.type === "medicine" ? diseases : medicines;
     const filtered = pool.filter((item) => !connectedIdSet.has(item.id));
     if (!searchLink.trim()) return filtered.slice(0, 10);
-    const lower = searchLink.toLowerCase();
+    const q = searchLink.trim();
     return filtered
-      .filter((item) => item.name.toLowerCase().includes(lower))
+      .filter((item) => matchesSearch(q, item.name))
       .slice(0, 10);
   }, [node, diseases, medicines, connectedIdSet, searchLink]);
 
@@ -412,7 +413,7 @@ export default function GraphInspectorDrawer({
               setIsLinkDropdownOpen(true);
             }}
             onFocus={() => setIsLinkDropdownOpen(true)}
-            placeholder={`Search ${node.type === "medicine" ? "disease" : "medicine"} to link...`}
+            placeholder={`Search ${node.type === "medicine" ? "disease" : "medicine"} to link (regex supported)...`}
             className="w-full px-4 py-3 text-sm bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition shadow-inner"
           />
           {isLinkDropdownOpen && (

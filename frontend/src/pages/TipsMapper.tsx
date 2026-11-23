@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Network,
   LayoutGrid,
@@ -26,15 +26,47 @@ import SimilarGroupsAudit from "../components/tips/SimilarGroupsAudit";
 import { auditSimilarGroups } from "../utils/similarityAudit";
 
 export default function TipsMapper() {
-  const [activeTab, setActiveTab] = useState<"graph" | "classic">("classic");
+  const [activeTab, setActiveTab] = useState<"graph" | "classic">(() => {
+    try {
+      const saved = localStorage.getItem("tips_active_tab");
+      if (saved === "graph" || saved === "classic") return saved;
+    } catch {}
+    return "classic";
+  });
   const [classicSubTab, setClassicSubTab] = useState<
     "common" | "search" | "create" | "merge" | "duplicates"
-  >("common");
+  >(() => {
+    try {
+      const saved = localStorage.getItem("tips_classic_sub_tab");
+      if (
+        saved === "common" ||
+        saved === "search" ||
+        saved === "create" ||
+        saved === "merge" ||
+        saved === "duplicates"
+      ) {
+        return saved;
+      }
+    } catch {}
+    return "common";
+  });
   const [searchSelection, setSearchSelection] = useState<{
     type: "medicine" | "disease";
     id: string;
     key?: number;
   } | null>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("tips_active_tab", activeTab);
+    } catch {}
+  }, [activeTab]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("tips_classic_sub_tab", classicSubTab);
+    } catch {}
+  }, [classicSubTab]);
 
   const handleSelectMedicineFromIntersection = (medicineId: string) => {
     setSearchSelection({
@@ -165,168 +197,174 @@ export default function TipsMapper() {
       </header>
 
       {/* Content Body */}
-      <div
-        className={`flex-1 overflow-hidden ${
-          activeTab === "graph" ? "p-3 bg-slate-950" : "bg-slate-100 text-slate-900"
-        }`}
-      >
-        {activeTab === "graph" ? (
+      <div className="flex-1 overflow-hidden relative">
+        {/* Interactive Graph Tab (Kept mounted in DOM) */}
+        <div
+          className={`h-full w-full p-3 bg-slate-950 ${
+            activeTab === "graph" ? "block" : "hidden"
+          }`}
+        >
           <GraphExplorer />
-        ) : (
-          <main className="h-full overflow-y-auto overflow-x-hidden px-3 sm:px-6 py-6 flex flex-col gap-4 max-w-[98vw] 2xl:max-w-[98vw] mx-auto w-full min-w-0">
-            {/* Sub-tab Navigation */}
-            <div className="flex items-center justify-between border-b border-slate-300 pb-3 shrink-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                {/* 1st Tab: Common Remedies */}
-                <button
-                  type="button"
-                  onClick={() => setClassicSubTab("common")}
-                  className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
-                    classicSubTab === "common"
-                      ? "bg-emerald-600 text-white shadow"
-                      : "bg-white text-slate-700 hover:bg-emerald-50 border border-slate-300"
-                  }`}
-                >
-                  <Layers className="w-5 h-5 text-emerald-400" />
-                  <span>Remedy Filter</span>
-                </button>
+        </div>
 
-                {/* 2nd Tab: Search M&D */}
-                <button
-                  type="button"
-                  onClick={() => setClassicSubTab("search")}
-                  className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
-                    classicSubTab === "search"
-                      ? "bg-slate-900 text-white shadow"
-                      : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-300"
-                  }`}
-                >
-                  <SearchIcon className="w-5 h-5" />
-                  <span>Search M&D</span>
-                </button>
+        {/* Classic Form View (Kept mounted in DOM) */}
+        <main
+          className={`h-full overflow-y-auto overflow-x-hidden px-3 sm:px-6 py-6 flex flex-col gap-4 max-w-[98vw] 2xl:max-w-[98vw] mx-auto w-full min-w-0 bg-slate-100 text-slate-900 ${
+            activeTab === "classic" ? "flex" : "hidden"
+          }`}
+        >
+          {/* Sub-tab Navigation */}
+          <div className="flex items-center justify-between border-b border-slate-300 pb-3 shrink-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* 1st Tab: Common Remedies */}
+              <button
+                type="button"
+                onClick={() => setClassicSubTab("common")}
+                className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
+                  classicSubTab === "common"
+                    ? "bg-emerald-600 text-white shadow"
+                    : "bg-white text-slate-700 hover:bg-emerald-50 border border-slate-300"
+                }`}
+              >
+                <Layers className="w-5 h-5 text-emerald-400" />
+                <span>Remedy Filter</span>
+              </button>
 
-                {/* 3rd Tab: Create & Add M&D */}
-                <button
-                  type="button"
-                  onClick={() => setClassicSubTab("create")}
-                  className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
-                    classicSubTab === "create"
-                      ? "bg-blue-600 text-white shadow"
-                      : "bg-white text-slate-700 hover:bg-blue-50 border border-slate-300"
-                  }`}
-                >
-                  <PlusCircle className="w-5 h-5 text-blue-400" />
-                  <span>Create & Add M&D</span>
-                </button>
+              {/* 2nd Tab: Search M&D */}
+              <button
+                type="button"
+                onClick={() => setClassicSubTab("search")}
+                className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
+                  classicSubTab === "search"
+                    ? "bg-slate-900 text-white shadow"
+                    : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-300"
+                }`}
+              >
+                <SearchIcon className="w-5 h-5" />
+                <span>Search M&D</span>
+              </button>
 
-                {/* 4th Tab: Multi-Entity Merge */}
-                <button
-                  type="button"
-                  onClick={() => setClassicSubTab("merge")}
-                  className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
-                    classicSubTab === "merge"
-                      ? "bg-purple-700 text-white shadow"
-                      : "bg-white text-slate-700 hover:bg-purple-50 border border-slate-300"
-                  }`}
-                >
-                  <GitMerge className="w-5 h-5 text-purple-400" />
-                  <span>Multi-Entity Merge</span>
-                </button>
+              {/* 3rd Tab: Create & Add M&D */}
+              <button
+                type="button"
+                onClick={() => setClassicSubTab("create")}
+                className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
+                  classicSubTab === "create"
+                    ? "bg-blue-600 text-white shadow"
+                    : "bg-white text-slate-700 hover:bg-blue-50 border border-slate-300"
+                }`}
+              >
+                <PlusCircle className="w-5 h-5 text-blue-400" />
+                <span>Create & Add M&D</span>
+              </button>
 
-                {/* 5th Tab: Similar Names & Duplicates */}
-                <button
-                  type="button"
-                  onClick={() => setClassicSubTab("duplicates")}
-                  className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
+              {/* 4th Tab: Multi-Entity Merge */}
+              <button
+                type="button"
+                onClick={() => setClassicSubTab("merge")}
+                className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
+                  classicSubTab === "merge"
+                    ? "bg-purple-700 text-white shadow"
+                    : "bg-white text-slate-700 hover:bg-purple-50 border border-slate-300"
+                }`}
+              >
+                <GitMerge className="w-5 h-5 text-purple-400" />
+                <span>Multi-Entity Merge</span>
+              </button>
+
+              {/* 5th Tab: Similar Names & Duplicates */}
+              <button
+                type="button"
+                onClick={() => setClassicSubTab("duplicates")}
+                className={`px-5 py-2.5 rounded-xl font-extrabold text-base flex items-center gap-2.5 transition shadow-sm ${
+                  classicSubTab === "duplicates"
+                    ? "bg-amber-600 text-white shadow"
+                    : "bg-white text-slate-700 hover:bg-amber-50 border border-slate-300"
+                }`}
+              >
+                <AlertTriangle
+                  className={`w-5 h-5 ${
                     classicSubTab === "duplicates"
-                      ? "bg-amber-600 text-white shadow"
-                      : "bg-white text-slate-700 hover:bg-amber-50 border border-slate-300"
+                      ? "text-white"
+                      : "text-amber-600"
                   }`}
-                >
-                  <AlertTriangle
-                    className={`w-5 h-5 ${
+                />
+                <span>Similar Names & Duplicates</span>
+                {auditSummary.totalGroups > 0 && (
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-sm font-black ${
                       classicSubTab === "duplicates"
-                        ? "text-white"
-                        : "text-amber-600"
+                        ? "bg-white/20 text-white"
+                        : "bg-amber-100 text-amber-900 border border-amber-300"
                     }`}
-                  />
-                  <span>Similar Names & Duplicates</span>
-                  {auditSummary.totalGroups > 0 && (
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-sm font-black ${
-                        classicSubTab === "duplicates"
-                          ? "bg-white/20 text-white"
-                          : "bg-amber-100 text-amber-900 border border-amber-300"
-                      }`}
-                    >
-                      {auditSummary.totalGroups}
-                    </span>
-                  )}
-                </button>
-              </div>
-
-              <div className="text-sm text-slate-500 font-bold hidden xl:block">
-                {classicSubTab === "common"
-                  ? "Filter remedies by AND, OR, or Entry Point across selected symptoms"
-                  : classicSubTab === "search"
-                  ? "Search, explore multi-hop chains & filter remedies"
-                  : classicSubTab === "create"
-                  ? "Create new diseases/medicines and link them together"
-                  : classicSubTab === "merge"
-                  ? "Consolidate multiple duplicate medicines or diseases"
-                  : `Auditing ${medicines.length} medicines & ${diseases.length} diseases`}
-              </div>
+                  >
+                    {auditSummary.totalGroups}
+                  </span>
+                )}
+              </button>
             </div>
 
-            {/* Sub-tab Body */}
-            {classicSubTab === "common" ? (
-              <div className="w-full min-w-0">
-                <IntersectionFinder
-                  onSelectMedicine={handleSelectMedicineFromIntersection}
-                />
-              </div>
-            ) : classicSubTab === "search" ? (
-              <div className="w-full min-w-0">
-                <Search initialSelection={searchSelection} />
-              </div>
-            ) : classicSubTab === "create" ? (
-              <div className="grid gap-6 w-full min-w-0">
-                <AddEntity />
-                <Linker />
-              </div>
-            ) : classicSubTab === "merge" ? (
-              <div className="w-full min-w-0">
-                <MultiMergeTool />
-              </div>
-            ) : (
-              <SimilarGroupsAudit
-                onInspectEntity={(type, id) => {
-                  setSearchSelection({ type, id, key: Date.now() });
-                  setClassicSubTab("search");
-                  setTimeout(() => {
-                    const searchEl =
-                      document.getElementById("search-manage-section") ||
-                      document.getElementById("tips-search-manage-section");
-                    if (searchEl) {
-                      searchEl.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start",
-                      });
-                    }
-                  }, 50);
-                }}
-                onEntityMerged={(deletedIds) => {
-                  setResolvedDeletedIds(
-                    (prev) => new Set([...prev, ...deletedIds])
-                  );
-                  refetchMeds();
-                  refetchIlls();
-                  refetchLinks();
-                }}
-              />
-            )}
-          </main>
-        )}
+            <div className="text-sm text-slate-500 font-bold hidden xl:block">
+              {classicSubTab === "common"
+                ? "Filter remedies by AND, OR, or Entry Point across selected symptoms"
+                : classicSubTab === "search"
+                ? "Search, explore multi-hop chains & filter remedies"
+                : classicSubTab === "create"
+                ? "Create new diseases/medicines and link them together"
+                : classicSubTab === "merge"
+                ? "Consolidate multiple duplicate medicines or diseases"
+                : `Auditing ${medicines.length} medicines & ${diseases.length} diseases`}
+            </div>
+          </div>
+
+          {/* Sub-tab Bodies (All kept mounted in DOM so selections never get cleared on tab switch) */}
+          <div className={`w-full min-w-0 ${classicSubTab === "common" ? "block" : "hidden"}`}>
+            <IntersectionFinder
+              onSelectMedicine={handleSelectMedicineFromIntersection}
+            />
+          </div>
+
+          <div className={`w-full min-w-0 ${classicSubTab === "search" ? "block" : "hidden"}`}>
+            <Search initialSelection={searchSelection} />
+          </div>
+
+          <div className={`grid gap-6 w-full min-w-0 ${classicSubTab === "create" ? "grid" : "hidden"}`}>
+            <AddEntity />
+            <Linker />
+          </div>
+
+          <div className={`w-full min-w-0 ${classicSubTab === "merge" ? "block" : "hidden"}`}>
+            <MultiMergeTool />
+          </div>
+
+          <div className={`w-full min-w-0 ${classicSubTab === "duplicates" ? "block" : "hidden"}`}>
+            <SimilarGroupsAudit
+              onInspectEntity={(type, id) => {
+                setSearchSelection({ type, id, key: Date.now() });
+                setClassicSubTab("search");
+                setTimeout(() => {
+                  const searchEl =
+                    document.getElementById("search-manage-section") ||
+                    document.getElementById("tips-search-manage-section");
+                  if (searchEl) {
+                    searchEl.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }, 50);
+              }}
+              onEntityMerged={(deletedIds) => {
+                setResolvedDeletedIds(
+                  (prev) => new Set([...prev, ...deletedIds])
+                );
+                refetchMeds();
+                refetchIlls();
+                refetchLinks();
+              }}
+            />
+          </div>
+        </main>
       </div>
     </div>
   );

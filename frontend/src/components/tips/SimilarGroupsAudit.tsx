@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { toast } from "react-toastify";
+import { matchesSearch } from "../Utils";
 import {
   useGetMedicinesQuery,
   useGetDiseasesQuery,
@@ -110,15 +111,11 @@ export default function SimilarGroupsAudit({
       ) {
         return false;
       }
-      // Search query filter
+      // Search query filter (Regex & Substring enabled)
       if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const matchesName = g.members.some((m) =>
-          m.name.toLowerCase().includes(q)
-        );
-        const matchesId = g.members.some((m) =>
-          m.id.toLowerCase().includes(q)
-        );
+        const q = searchQuery.trim();
+        const matchesName = g.members.some((m) => matchesSearch(q, m.name));
+        const matchesId = g.members.some((m) => matchesSearch(q, m.id));
         if (!matchesName && !matchesId) return false;
       }
       return true;
@@ -347,7 +344,7 @@ export default function SimilarGroupsAudit({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search within groups or IDs..."
+            placeholder="Search within groups or IDs (regex supported)..."
             style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
             className="w-full pl-9 pr-3 py-2 border border-emerald-500/50 rounded-lg text-sm font-semibold text-slate-900 placeholder-slate-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
           />

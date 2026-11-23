@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import {
   Pill,
   Stethoscope,
@@ -17,6 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Card from "../mapper/Card";
+import { matchesSearch } from "../Utils";
 import { Disease, Kingdom, Link, Medicine } from "../../types";
 import KingdomBadge, {
   KingdomIcon,
@@ -40,6 +41,7 @@ interface RemedyFilterFinderProps {
   allLinks: Link[];
   onSelectMedicine?: (medicineId: string) => void;
   initialSelectedDiseases?: Disease[];
+  storageKey?: string;
 }
 
 export default function RemedyFilterFinder({
@@ -48,18 +50,61 @@ export default function RemedyFilterFinder({
   allLinks,
   onSelectMedicine,
   initialSelectedDiseases = [],
+  storageKey = "remedy_filter_finder",
 }: RemedyFilterFinderProps): JSX.Element {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDiseases, setSelectedDiseases] = useState<Disease[]>(
-    initialSelectedDiseases
-  );
-  const [filterMode, setFilterMode] = useState<RemedyFilterMode>("and");
-  const [entryDiseaseIds, setEntryDiseaseIds] = useState<Set<string>>(
-    () => new Set()
-  );
-  const [selectedKingdom, setSelectedKingdom] = useState<Kingdom | "all">("all");
+  const [selectedDiseases, setSelectedDiseases] = useState<Disease[]>(() => {
+    if (storageKey) {
+      try {
+        const saved = localStorage.getItem(`${storageKey}_diseases`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return initialSelectedDiseases;
+  });
+  const [filterMode, setFilterMode] = useState<RemedyFilterMode>(() => {
+    if (storageKey) {
+      try {
+        const saved = localStorage.getItem(`${storageKey}_mode`);
+        if (saved === "and" || saved === "or" || saved === "entry") return saved;
+      } catch {}
+    }
+    return "and";
+  });
+  const [entryDiseaseIds, setEntryDiseaseIds] = useState<Set<string>>(() => {
+    if (storageKey) {
+      try {
+        const saved = localStorage.getItem(`${storageKey}_entry_ids`);
+        if (saved) return new Set(JSON.parse(saved));
+      } catch {}
+    }
+    return new Set();
+  });
+  const [selectedKingdom, setSelectedKingdom] = useState<Kingdom | "all">(() => {
+    if (storageKey) {
+      try {
+        const saved = localStorage.getItem(`${storageKey}_kingdom`);
+        if (saved) return saved as Kingdom | "all";
+      } catch {}
+    }
+    return "all";
+  });
   const [kingdomSearchQuery, setKingdomSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync state to localStorage whenever selection changes
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      localStorage.setItem(`${storageKey}_diseases`, JSON.stringify(selectedDiseases));
+      localStorage.setItem(`${storageKey}_mode`, filterMode);
+      localStorage.setItem(`${storageKey}_entry_ids`, JSON.stringify(Array.from(entryDiseaseIds)));
+      localStorage.setItem(`${storageKey}_kingdom`, selectedKingdom);
+    } catch {}
+  }, [storageKey, selectedDiseases, filterMode, entryDiseaseIds, selectedKingdom]);
 
   // Map of diseaseId -> Set of linked medicine IDs
   const diseaseToMedsMap = useMemo(() => {
@@ -78,10 +123,10 @@ export default function RemedyFilterFinder({
 
   // Search results capped to top 50 for speed
   const searchResults = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = searchQuery.trim();
     if (!q) return allDiseases.slice(0, 50);
     return allDiseases
-      .filter((disease) => disease.name.toLowerCase().includes(q))
+      .filter((disease) => matchesSearch(q, disease.name))
       .slice(0, 50);
   }, [searchQuery, allDiseases]);
 
@@ -193,8 +238,8 @@ export default function RemedyFilterFinder({
       );
     }
     if (kingdomSearchQuery.trim()) {
-      const q = kingdomSearchQuery.trim().toLowerCase();
-      list = list.filter((r) => r.medicine.name.toLowerCase().includes(q));
+      const q = kingdomSearchQuery.trim();
+      list = list.filter((r) => matchesSearch(q, r.medicine.name));
     }
     return list;
   }, [filteredResults, selectedKingdom, kingdomSearchQuery]);
@@ -338,7 +383,7 @@ export default function RemedyFilterFinder({
                 ref={searchInputRef}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Type to search diseases..."
+                placeholder="Type to search diseases (regex e.g. cough|fever)..."
                 style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
                 className="w-full px-4 py-3.5 pr-10 border-2 border-emerald-400 rounded-xl text-lg font-bold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition"
               />
@@ -742,7 +787,7 @@ export default function RemedyFilterFinder({
                   onChange={(e) => setKingdomSearchQuery(e.target.value)}
                   placeholder={`Search ${
                     selectedKingdom === "all" ? "remedies" : `${selectedKingdom} remedies`
-                  }...`}
+                  } (regex supported)...`}
                   className="w-full px-3 py-1.5 pr-8 border border-slate-300 rounded-lg text-xs font-bold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400 shadow-xs"
                 />
                 {kingdomSearchQuery && (

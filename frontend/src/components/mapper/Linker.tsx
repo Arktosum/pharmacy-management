@@ -16,6 +16,7 @@ import {
   useLinkMutation,
 } from "../../api/api";
 import { Medicine, Disease, Link } from "../../types";
+import { matchesSearch } from "../Utils";
 
 export default function Linker() {
   const { data: meds = [] } = useGetMedicinesQuery();
@@ -32,9 +33,7 @@ export default function Linker() {
     () =>
       illSearch.trim()
         ? ills
-            .filter((i) =>
-              i.name.toLowerCase().includes(illSearch.toLowerCase())
-            )
+            .filter((i) => matchesSearch(illSearch, i.name))
             .slice(0, 50)
         : [],
     [ills, illSearch]
@@ -44,9 +43,7 @@ export default function Linker() {
     () =>
       medSearch.trim()
         ? meds
-            .filter((m) =>
-              m.name.toLowerCase().includes(medSearch.toLowerCase())
-            )
+            .filter((m) => matchesSearch(medSearch, m.name))
             .slice(0, 50)
         : [],
     [meds, medSearch]
@@ -147,7 +144,7 @@ export default function Linker() {
             <input
               className="w-full pl-10 pr-4 py-3.5 border-2 border-emerald-600 rounded-xl text-lg font-black text-slate-950 placeholder-slate-800 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-500"
               style={{ backgroundColor: "rgb(85 185 105 / 65%)" }}
-              placeholder="Search disease..."
+              placeholder="Search disease (regex supported, e.g. a|b)..."
               onKeyDown={handleKeyDown}
               value={illSearch}
               onChange={(e) => setIllSearch(e.target.value)}
@@ -203,7 +200,7 @@ export default function Linker() {
             <input
               className="w-full pl-10 pr-4 py-3.5 border-2 border-emerald-600 rounded-xl text-lg font-black text-slate-950 placeholder-slate-800 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500"
               style={{ backgroundColor: "rgb(85 185 105 / 65%)" }}
-              placeholder="Search medicine..."
+              placeholder="Search medicine (regex supported, e.g. a|b)..."
               onKeyDown={handleKeyDown}
               value={medSearch}
               onChange={(e) => setMedSearch(e.target.value)}
