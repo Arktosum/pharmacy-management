@@ -59,15 +59,26 @@ export const toastErroroptions: ToastOptions<unknown> = {
  * - Groupings (e.g. "(calc|kali).*phos")
  * - Mid-typing fault tolerance (auto-closes unclosed parens, strips trailing pipes, falls back on invalid syntax)
  */
-export function matchesSearch(query: string, text: string): boolean {
-  if (!query || !query.trim()) return true;
-  if (!text) return false;
+// Fast LRU matcher cache (query string -> compiled test function)
+type MatcherFn = (text: string) => boolean;
+const matcherCache = new Map<string, MatcherFn>();
+const MAX_MATCHER_CACHE = 400;
+
+export function getSearchMatcher(query: string): MatcherFn {
+  if (!query || !query.trim()) return () => true;
+
+  const cached = matcherCache.get(query);
+  if (cached) return cached;
 
   let trimmed = query.trim();
 
   // Strip trailing pipes so typing 'bell|' continues matching 'bell' instead of matching everything
   trimmed = trimmed.replace(/\|+\s*$/, "");
-  if (!trimmed) return true;
+  if (!trimmed) {
+    const passAll = () => true;
+    matcherCache.set(query, passAll);
+    return passAll;
+  }
 
   // Track boundary wildcard and anchor status before transformations
   const startsWithWildcard = trimmed.startsWith("*");
@@ -121,19 +132,39 @@ export function matchesSearch(query: string, text: string): boolean {
     }
   }
 
+  let matcher: MatcherFn;
   try {
     const rx = new RegExp(transformed, "i");
-    return rx.test(text);
+    matcher = (text: string) => rx.test(text);
   } catch {
     // If complex invalid regex while typing, clean special chars and do safe word/substring check
     const fallback = query.trim().replace(/[-[\]{}()+*?.,\\^$|#\s]/g, " ").toLowerCase();
     const cleanTokens = fallback.split(/\s+/).filter(Boolean);
     if (cleanTokens.length > 0) {
-      const lowerText = text.toLowerCase();
-      return cleanTokens.every((tok) => lowerText.includes(tok));
+      matcher = (text: string) => {
+        const lowerText = text.toLowerCase();
+        return cleanTokens.every((tok) => lowerText.includes(tok));
+      };
+    } else {
+      const lowerQuery = query.trim().toLowerCase();
+      matcher = (text: string) => text.toLowerCase().includes(lowerQuery);
     }
-    return text.toLowerCase().includes(query.trim().toLowerCase());
   }
+
+  // Keep cache bounded
+  if (matcherCache.size >= MAX_MATCHER_CACHE) {
+    const firstKey = matcherCache.keys().next().value;
+    if (firstKey !== undefined) matcherCache.delete(firstKey);
+  }
+  matcherCache.set(query, matcher);
+
+  return matcher;
+}
+
+export function matchesSearch(query: string, text: string): boolean {
+  if (!query || !query.trim()) return true;
+  if (!text) return false;
+  return getSearchMatcher(query)(text);
 }
 
 export function regexUtil(regexPattern: string, testString: string) {

@@ -17,7 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Card from "../mapper/Card";
-import { matchesSearch } from "../Utils";
+import { matchesSearch, getSearchMatcher } from "../Utils";
 import { Disease, Kingdom, Link, Medicine } from "../../types";
 import KingdomBadge, {
   KingdomIcon,
@@ -121,13 +121,19 @@ export default function RemedyFilterFinder({
     [selectedDiseases]
   );
 
-  // Search results capped to top 50 for speed
+  // Search results capped to top 50 for blazing-fast responsiveness
   const searchResults = useMemo(() => {
     const q = searchQuery.trim();
     if (!q) return allDiseases.slice(0, 50);
-    return allDiseases
-      .filter((disease) => matchesSearch(q, disease.name))
-      .slice(0, 50);
+    const matcher = getSearchMatcher(q);
+    const results: Disease[] = [];
+    for (let i = 0; i < allDiseases.length; i++) {
+      if (matcher(allDiseases[i].name)) {
+        results.push(allDiseases[i]);
+        if (results.length >= 50) break;
+      }
+    }
+    return results;
   }, [searchQuery, allDiseases]);
 
   // Core filtering across AND / OR / Entry Point modes

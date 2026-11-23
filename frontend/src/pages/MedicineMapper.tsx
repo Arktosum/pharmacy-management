@@ -196,14 +196,12 @@ export default function MedicineMapper() {
 
       {/* Content Body */}
       <div className="flex-1 overflow-hidden relative">
-        {/* Interactive Graph Tab (Kept mounted in DOM) */}
-        <div
-          className={`h-full w-full p-3 bg-slate-950 ${
-            activeTab === "graph" ? "block" : "hidden"
-          }`}
-        >
-          <GraphExplorer />
-        </div>
+        {/* Interactive Graph Tab (Only mounted when active to prevent background physics lag) */}
+        {activeTab === "graph" && (
+          <div className="h-full w-full p-3 bg-slate-950 block">
+            <GraphExplorer />
+          </div>
+        )}
 
         {/* Classic Form View (Kept mounted in DOM) */}
         <main
@@ -335,27 +333,29 @@ export default function MedicineMapper() {
             <MultiMergeTool />
           </div>
 
-          <div className={`w-full min-w-0 ${classicSubTab === "duplicates" ? "block" : "hidden"}`}>
-            <SimilarGroupsAudit
-              onInspectEntity={(type, id) => {
-                setSearchSelection({ type, id, key: Date.now() });
-                setClassicSubTab("search");
-                setTimeout(() => {
-                  document
-                    .getElementById("search-manage-section")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }, 50);
-              }}
-              onEntityMerged={(deletedIds) => {
-                setResolvedDeletedIds(
-                  (prev) => new Set([...prev, ...deletedIds])
-                );
-                refetchMeds();
-                refetchIlls();
-                refetchLinks();
-              }}
-            />
-          </div>
+          {classicSubTab === "duplicates" && (
+            <div className="w-full min-w-0 block">
+              <SimilarGroupsAudit
+                onInspectEntity={(type, id) => {
+                  setSearchSelection({ type, id, key: Date.now() });
+                  setClassicSubTab("search");
+                  setTimeout(() => {
+                    document
+                      .getElementById("search-manage-section")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 50);
+                }}
+                onEntityMerged={(deletedIds) => {
+                  setResolvedDeletedIds(
+                    (prev) => new Set([...prev, ...deletedIds])
+                  );
+                  refetchMeds();
+                  refetchIlls();
+                  refetchLinks();
+                }}
+              />
+            </div>
+          )}
         </main>
       </div>
     </div>

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Card from "./Card";
 import GraphInspectorDrawer, { InspectedNode } from "./GraphInspectorDrawer";
-import { matchesSearch } from "../Utils";
+import { matchesSearch, getSearchMatcher } from "../Utils";
 import {
   useGetMedicinesQuery,
   useGetDiseasesQuery,
@@ -214,7 +214,8 @@ export default function SearchLinker({
   const matches = useMemo(() => {
     const list = type === "medicine" ? meds : ills;
     if (!debouncedQ) return list;
-    return list.filter((item) => matchesSearch(debouncedQ, item.name));
+    const matcher = getSearchMatcher(debouncedQ);
+    return list.filter((item) => matcher(item.name));
   }, [type, meds, ills, debouncedQ]);
 
   const medMap = useMemo(() => new Map(meds.map((m) => [m.id, m])), [meds]);
