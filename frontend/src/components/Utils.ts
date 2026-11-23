@@ -71,14 +71,15 @@ export function matchesSearch(query: string, text: string): boolean {
 
   // Track boundary wildcard and anchor status before transformations
   const startsWithWildcard = trimmed.startsWith("*");
-  const endsWithWildcard = trimmed.endsWith("*");
   const hasStartAnchor = trimmed.startsWith("^");
   const hasEndAnchor = trimmed.endsWith("$");
 
-  // Anchoring rule: By default without a '*' (or explicit regex anchor), anchor first (^) and last ($)
-  // unless '*' was used at the respective boundary.
-  const shouldAnchorStart = !startsWithWildcard && !hasStartAnchor && !hasEndAnchor;
-  const shouldAnchorEnd = !endsWithWildcard && !hasEndAnchor && !hasStartAnchor;
+  // Anchoring rule: By default, search terms act like prefix matches '^query*'
+  // (e.g. 'dia' acts like '^dia*', 'er*it*ng' acts like '^er.*it.*ng')
+  // - Anchors to start (^) unless user explicitly typed a leading '*' (e.g. '*cillin' or '*dia') or '^'
+  // - Does NOT anchor to end ($) unless user explicitly typed an end anchor '$'
+  const shouldAnchorStart = !startsWithWildcard && !hasStartAnchor;
+  const shouldAnchorEnd = hasEndAnchor;
 
   // Transform glob wildcards into regex wildcards:
   // - Any '*' not preceded by '.' or '\' becomes '.*' (e.g. 'er*it*ng' -> 'er.*it.*ng', '*cillin' -> '.*cillin')
