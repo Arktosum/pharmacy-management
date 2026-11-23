@@ -69,23 +69,47 @@ export function matchesSearch(query: string, text: string): boolean {
   trimmed = trimmed.replace(/\|+\s*$/, "");
   if (!trimmed) return true;
 
-  // Normalize leading * so common wildcard typo '*cillin' becomes '.*cillin'
-  if (trimmed.startsWith("*")) {
-    trimmed = "." + trimmed;
-  }
+  // Transform glob wildcards into regex wildcards:
+  // - Any '*' not preceded by '.' or '\' becomes '.*' (e.g. 'er*it*ng' -> 'er.*it.*ng', '*cillin' -> '.*cillin')
+  // - Multiple consecutive asterisks '***' are collapsed to a single '.*'
+  let transformed = trimmed.replace(/\*+/g, "*").replace(/(?<![.\\\\])\*/g, ".*");
+
+  // - Any '?' not preceded by '.', '\', '(', '*', '+' becomes '.' (single char wildcard)
+  transformed = transformed.replace(/(?<![.\\\\(*+?])\?/g, ".");
 
   // Normalize whitespace around OR pipe: 'bell | arnica' -> 'bell|arnica'
-  let normalized = trimmed.replace(/\s*\|\s*/g, "|");
+  transformed = transformed.replace(/\s*\|\s*/g, "|");
 
   // Auto-close unclosed '(' if user is mid-typing a group
-  const openParens = (normalized.match(/\(/g) || []).length;
-  const closeParens = (normalized.match(/\)/g) || []).length;
+  const openParens = (transformed.match(/\(/g) || []).length;
+  const closeParens = (transformed.match(/\)/g) || []).length;
   if (openParens > closeParens) {
-    normalized += ")".repeat(openParens - closeParens);
+    transformed += ")".repeat(openParens - closeParens);
+  }
+
+  // Multi-word / space handling:
+  // If user typed multiple space-separated words without '|' (and not wrapped in quotes),
+  // match if ALL tokens appear anywhere in the text in any order (positive lookahead AND search).
+  if (!transformed.includes("|") && !(transformed.startsWith('"') && transformed.endsWith('"'))) {
+    const tokens = transformed.split(/\s+/).filter(Boolean);
+    if (tokens.length > 1) {
+      try {
+        const pattern = tokens.map((t) => "(?=.*" + t + ")").join("");
+        const rx = new RegExp(pattern, "i");
+        return rx.test(text);
+      } catch {
+        // Fall back to sequential regex
+      }
+    }
+  }
+
+  // Exact phrase match if explicitly enclosed in quotes: "eruption itching"
+  if (transformed.startsWith('"') && transformed.endsWith('"') && transformed.length >= 2) {
+    transformed = transformed.slice(1, -1);
   }
 
   try {
-    const rx = new RegExp(normalized, "i");
+    const rx = new RegExp(transformed, "i");
     return rx.test(text);
   } catch {
     // If complex invalid regex while typing, clean special chars and do safe word/substring check
@@ -93,7 +117,7 @@ export function matchesSearch(query: string, text: string): boolean {
     const cleanTokens = fallback.split(/\s+/).filter(Boolean);
     if (cleanTokens.length > 0) {
       const lowerText = text.toLowerCase();
-      return cleanTokens.some((tok) => lowerText.includes(tok));
+      return cleanTokens.every((tok) => lowerText.includes(tok));
     }
     return text.toLowerCase().includes(query.trim().toLowerCase());
   }
