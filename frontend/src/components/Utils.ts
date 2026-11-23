@@ -69,6 +69,17 @@ export function matchesSearch(query: string, text: string): boolean {
   trimmed = trimmed.replace(/\|+\s*$/, "");
   if (!trimmed) return true;
 
+  // Track boundary wildcard and anchor status before transformations
+  const startsWithWildcard = trimmed.startsWith("*");
+  const endsWithWildcard = trimmed.endsWith("*");
+  const hasStartAnchor = trimmed.startsWith("^");
+  const hasEndAnchor = trimmed.endsWith("$");
+
+  // Anchoring rule: By default without a '*' (or explicit regex anchor), anchor first (^) and last ($)
+  // unless '*' was used at the respective boundary.
+  const shouldAnchorStart = !startsWithWildcard && !hasStartAnchor && !hasEndAnchor;
+  const shouldAnchorEnd = !endsWithWildcard && !hasEndAnchor && !hasStartAnchor;
+
   // Transform glob wildcards into regex wildcards:
   // - Any '*' not preceded by '.' or '\' becomes '.*' (e.g. 'er*it*ng' -> 'er.*it.*ng', '*cillin' -> '.*cillin')
   // - Multiple consecutive asterisks '***' are collapsed to a single '.*'
@@ -87,25 +98,26 @@ export function matchesSearch(query: string, text: string): boolean {
     transformed += ")".repeat(openParens - closeParens);
   }
 
-  // Multi-word / space handling:
-  // If user typed multiple space-separated words without '|' (and not wrapped in quotes),
-  // match if ALL tokens appear anywhere in the text in any order (positive lookahead AND search).
-  if (!transformed.includes("|") && !(transformed.startsWith('"') && transformed.endsWith('"'))) {
-    const tokens = transformed.split(/\s+/).filter(Boolean);
-    if (tokens.length > 1) {
-      try {
-        const pattern = tokens.map((t) => "(?=.*" + t + ")").join("");
-        const rx = new RegExp(pattern, "i");
-        return rx.test(text);
-      } catch {
-        // Fall back to sequential regex
-      }
-    }
-  }
-
   // Exact phrase match if explicitly enclosed in quotes: "eruption itching"
   if (transformed.startsWith('"') && transformed.endsWith('"') && transformed.length >= 2) {
     transformed = transformed.slice(1, -1);
+  } else if (!transformed.includes("|")) {
+    // Normalize multi-spaces to \s+ so "eruption  itching" matches "eruption itching"
+    transformed = transformed.replace(/\s+/g, "\\s+");
+  }
+
+  // Apply default anchors
+  if (shouldAnchorStart || shouldAnchorEnd) {
+    if (transformed.includes("|")) {
+      transformed = (shouldAnchorStart ? "^(?:" : "(?:") + transformed + (shouldAnchorEnd ? ")$" : ")");
+    } else {
+      if (shouldAnchorStart && !transformed.startsWith("^")) {
+        transformed = "^" + transformed;
+      }
+      if (shouldAnchorEnd && !transformed.endsWith("$")) {
+        transformed = transformed + "$";
+      }
+    }
   }
 
   try {
