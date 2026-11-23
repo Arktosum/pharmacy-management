@@ -5,7 +5,7 @@ import { LogItem } from "../redux/logSlice";
 import { isBetween, regexUtil } from "../components/Utils";
 
 export default function MedicineCount() {
-  const [regexString, setregexString] = useState(".*");
+  const [regexString, setregexString] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const dispatch = useAppDispatch();
@@ -62,11 +62,12 @@ export default function MedicineCount() {
             onChange={(e) => {
               setregexString(e.target.value);
             }}
-            className="py-1 rounded-sm bg-[#aae994] text-black px-2 font-bold text-[1.2em]"
+            placeholder="Search medicine..."
+            className="py-1 rounded-sm bg-[#aae994] text-black px-2 font-bold text-[1.2em] placeholder:text-slate-600 placeholder:font-normal"
           />
           <div
             onClick={() => {
-              setregexString(".*");
+              setregexString("");
             }}
             className="text-xl text-green-600 border-2 border-green-600 mx-5 px-5 py-2 rounded-xl
           hover:bg-green-600 hover:text-black cursor-pointer duration-200"

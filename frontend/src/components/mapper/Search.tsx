@@ -815,7 +815,7 @@ export default function SearchLinker({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Type to search ${type} (regex supported, e.g. bell|arnica)...`}
+              placeholder={`Search ${type === "medicine" ? "medicines" : "diseases"}...`}
               style={{ backgroundColor: "rgb(85 185 105 / 65%)" }}
               className="w-full px-4 py-3.5 border-2 border-emerald-600 rounded-xl focus:ring-2 focus:ring-emerald-500 text-slate-950 text-lg font-black placeholder-slate-800 shadow-sm transition"
             />
@@ -1588,7 +1588,7 @@ export default function SearchLinker({
                   autoFocus
                   value={modalSearch}
                   onChange={(e) => setModalSearch(e.target.value)}
-                  placeholder={`Filter among ${expandedColData.rawItems.length} items (regex supported, e.g. a|b)...`}
+                  placeholder={`Filter among ${expandedColData.rawItems.length} items...`}
                   style={{ backgroundColor: "rgb(118 213 133 / 35%)" }}
                   className="w-full pl-12 pr-10 py-3 text-lg font-bold border-2 border-slate-300 rounded-xl text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-inner transition"
                 />

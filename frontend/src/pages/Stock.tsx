@@ -44,7 +44,7 @@ export default function Stock() {
   const [showModal, setshowModal] = useState(false);
   const [selectedItem, setselectedItem] = useState<StockItem | null>(null);
   const [filter, setFilter] = useState({ type: "count", order: "asc" });
-  const [regexString, setregexString] = useState(".*");
+  const [regexString, setregexString] = useState("");
 
   return (
     <div className="bg-black h-[90vh] flex">
@@ -263,7 +263,8 @@ function SearchSection({
         onChange={(e) => {
           setregexString(e.target.value);
         }}
-        className="rounded-sm bg-[#aae994] text-black font-bold text-[1.2em]"
+        placeholder="Search stock..."
+        className="rounded-sm bg-[#aae994] text-black font-bold text-[1.2em] px-2 placeholder:text-slate-600 placeholder:font-normal"
       />
       <select
         name=""

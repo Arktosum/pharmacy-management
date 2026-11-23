@@ -7,7 +7,7 @@ import { deleteSVG } from "../assets/assets";
 import { toast } from "react-toastify";
 
 export default function SearchLog() {
-  const [regexString, setregexString] = useState(".*");
+  const [regexString, setregexString] = useState("");
   const [billItemList, setbillItemList] = useState<LogItem[] | []>([]);
   const [receivedAmt, setreceivedAmt] = useState(0);
   const [evalString, setevalString] = useState("");
@@ -193,11 +193,12 @@ export default function SearchLog() {
             onChange={(e) => {
               setregexString(e.target.value);
             }}
-            className="py-1 rounded-sm bg-[#aae994] text-black px-2 font-bold text-[1.2em]"
+            placeholder="Search patient..."
+            className="py-1 rounded-sm bg-[#aae994] text-black px-2 font-bold text-[1.2em] placeholder:text-slate-600 placeholder:font-normal"
           />
           <div
             onClick={() => {
-              setregexString(".*");
+              setregexString("");
             }}
             className="text-xl text-green-600 border-2 border-green-600 px-5 py-2 rounded-xl
             hover:bg-green-600 hover:text-black cursor-pointer duration-200

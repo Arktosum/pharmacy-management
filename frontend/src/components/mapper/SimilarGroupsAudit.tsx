@@ -344,7 +344,7 @@ export default function SimilarGroupsAudit({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search within groups or IDs (regex supported)..."
+            placeholder="Search within groups or IDs..."
             style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
             className="w-full pl-9 pr-3 py-2 border border-emerald-500/50 rounded-lg text-sm font-semibold text-slate-900 placeholder-slate-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
           />

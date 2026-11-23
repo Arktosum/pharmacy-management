@@ -389,7 +389,7 @@ export default function RemedyFilterFinder({
                 ref={searchInputRef}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Type to search diseases (regex e.g. cough|fever)..."
+                placeholder="Search diseases..."
                 style={{ backgroundColor: "rgb(118 213 133 / 54%)" }}
                 className="w-full px-4 py-3.5 pr-10 border-2 border-emerald-400 rounded-xl text-lg font-bold text-slate-900 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition"
               />
@@ -793,7 +793,7 @@ export default function RemedyFilterFinder({
                   onChange={(e) => setKingdomSearchQuery(e.target.value)}
                   placeholder={`Search ${
                     selectedKingdom === "all" ? "remedies" : `${selectedKingdom} remedies`
-                  } (regex supported)...`}
+                  }...`}
                   className="w-full px-3 py-1.5 pr-8 border border-slate-300 rounded-lg text-xs font-bold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400 shadow-xs"
                 />
                 {kingdomSearchQuery && (

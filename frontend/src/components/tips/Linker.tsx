@@ -144,7 +144,7 @@ export default function Linker() {
             <input
               className="w-full pl-10 pr-4 py-3.5 border-2 border-emerald-600 rounded-xl text-lg font-black text-slate-950 placeholder-slate-800 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-500"
               style={{ backgroundColor: "rgb(85 185 105 / 65%)" }}
-              placeholder="Search disease (regex supported, e.g. a|b)..."
+              placeholder="Search disease..."
               onKeyDown={handleKeyDown}
               value={illSearch}
               onChange={(e) => setIllSearch(e.target.value)}
@@ -200,7 +200,7 @@ export default function Linker() {
             <input
               className="w-full pl-10 pr-4 py-3.5 border-2 border-emerald-600 rounded-xl text-lg font-black text-slate-950 placeholder-slate-800 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500"
               style={{ backgroundColor: "rgb(85 185 105 / 65%)" }}
-              placeholder="Search medicine (regex supported, e.g. a|b)..."
+              placeholder="Search medicine..."
               onKeyDown={handleKeyDown}
               value={medSearch}
               onChange={(e) => setMedSearch(e.target.value)}

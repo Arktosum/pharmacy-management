@@ -413,7 +413,7 @@ export default function GraphInspectorDrawer({
               setIsLinkDropdownOpen(true);
             }}
             onFocus={() => setIsLinkDropdownOpen(true)}
-            placeholder={`Search ${node.type === "medicine" ? "disease" : "medicine"} to link (regex supported)...`}
+            placeholder={`Search ${node.type === "medicine" ? "disease" : "medicine"} to link...`}
             className="w-full px-4 py-3 text-sm bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition shadow-inner"
           />
           {isLinkDropdownOpen && (
