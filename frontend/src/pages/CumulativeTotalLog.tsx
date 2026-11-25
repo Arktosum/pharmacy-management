@@ -161,7 +161,7 @@ export default function SearchLog() {
                     {med.multiplier}
                   </div>
                   <div className="col-span-3 text-right font-bold text-emerald-400 text-[1.2em]">
-                    ₹{med.price}
+                    {med.price}
                   </div>
                 </div>
               ))}
@@ -179,26 +179,26 @@ export default function SearchLog() {
               </div>
               <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl">
                 <span className="block text-xs uppercase text-slate-300 font-bold mb-0.5">
-                  Fee
+                  Fee (₹)
                 </span>
                 <span className="text-[1.4em] font-black text-amber-400">
-                  ₹{modalFeeTotal}
+                  {modalFeeTotal}
                 </span>
               </div>
               <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl">
                 <span className="block text-xs uppercase text-slate-300 font-bold mb-0.5">
-                  MT Total
+                  MT Total (₹)
                 </span>
                 <span className="text-[1.4em] font-black text-emerald-400">
-                  ₹{modalMTtotal}
+                  {modalMTtotal}
                 </span>
               </div>
               <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 p-2.5 rounded-xl">
                 <span className="block text-xs uppercase text-emerald-300 font-bold mb-0.5">
-                  Grand Total
+                  Grand Total (₹)
                 </span>
                 <span className="text-[1.4em] font-black text-emerald-300">
-                  ₹{modalFeeTotal + modalMTtotal}
+                  {modalFeeTotal + modalMTtotal}
                 </span>
               </div>
             </div>
@@ -359,10 +359,10 @@ export default function SearchLog() {
         {/* Selected Items Table Header */}
         <div className="grid grid-cols-10 px-4 py-2.5 bg-slate-900/90 border-b border-slate-800 text-[1.1em] font-bold uppercase tracking-wider text-slate-200 shrink-0 text-center">
           <div className="col-span-2 text-left">Name</div>
-          <div className="col-span-2">MT Total</div>
-          <div className="col-span-2">MT Fee</div>
+          <div className="col-span-2">MT Total (₹)</div>
+          <div className="col-span-2">MT Fee (₹)</div>
           <div className="col-span-2">MT Count</div>
-          <div className="col-span-2">Grand Total</div>
+          <div className="col-span-2">Grand Total (₹)</div>
         </div>
 
         {/* Selected Items Scrollable List */}
@@ -386,16 +386,16 @@ export default function SearchLog() {
                   <span className="truncate">{item.data.patientName}</span>
                 </div>
                 <div className="col-span-2 font-bold text-emerald-400 text-[1.3em]">
-                  ₹{item.data.MTtotal || 0}
+                  {item.data.MTtotal || 0}
                 </div>
                 <div className="col-span-2 font-bold text-amber-400 text-[1.3em]">
-                  ₹{item.data.consultFee || 0}
+                  {item.data.consultFee || 0}
                 </div>
                 <div className="col-span-2 font-bold text-blue-400 text-[1.3em]">
                   {item.data.itemCount || 0}
                 </div>
                 <div className="col-span-2 flex items-center justify-center gap-2 font-bold text-emerald-300 text-[1.3em]">
-                  <span>₹{(item.data.consultFee || 0) + (item.data.MTtotal || 0)}</span>
+                  <span>{(item.data.consultFee || 0) + (item.data.MTtotal || 0)}</span>
                   <button
                     type="button"
                     onClick={(e) => {
