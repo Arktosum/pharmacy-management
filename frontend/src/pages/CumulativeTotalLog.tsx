@@ -142,7 +142,7 @@ export default function SearchLog() {
             </div>
 
             {/* Modal Medicine List */}
-            <div className="px-6 py-2.5 bg-slate-950/60 border-b border-slate-800 grid grid-cols-12 text-xs font-bold uppercase tracking-wider text-slate-300">
+            <div className="px-6 py-2.5 bg-slate-950/60 border-b border-slate-800 grid grid-cols-12 text-sm font-bold uppercase tracking-wider text-rose-400">
               <div className="col-span-6">Medicine Name</div>
               <div className="col-span-3 text-center">Multiplier</div>
               <div className="col-span-3 text-right">Price</div>
@@ -249,7 +249,7 @@ export default function SearchLog() {
         </div>
 
         {/* Table Column Headers */}
-        <div className="grid grid-cols-12 px-4 py-2 bg-slate-900/60 border-b border-slate-800/80 text-xs font-bold uppercase tracking-wider text-slate-300 shrink-0">
+        <div className="grid grid-cols-12 px-4 py-2.5 bg-slate-900/60 border-b border-slate-800/80 text-sm font-bold uppercase tracking-wider text-rose-400 shrink-0">
           <div className="col-span-5">Date & Time</div>
           <div className="col-span-5">Patient Name</div>
           <div className="col-span-2 text-right">Items</div>
@@ -357,7 +357,7 @@ export default function SearchLog() {
         </div>
 
         {/* Selected Items Table Header */}
-        <div className="grid grid-cols-10 px-4 py-2 bg-slate-900/90 border-b border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-300 shrink-0 text-center">
+        <div className="grid grid-cols-10 px-4 py-2.5 bg-slate-900/90 border-b border-slate-800 text-sm font-bold uppercase tracking-wider text-rose-400 shrink-0 text-center">
           <div className="col-span-2 text-left">Name</div>
           <div className="col-span-2">MT Total</div>
           <div className="col-span-2">MT Fee</div>
@@ -391,7 +391,7 @@ export default function SearchLog() {
                 <div className="col-span-2 font-bold text-amber-400 text-base">
                   {item.data.consultFee || 0}
                 </div>
-                <div className="col-span-2 font-bold text-blue-400 text-base">
+                <div className="col-span-2 font-black text-blue-400 text-lg">
                   {item.data.itemCount || 0}
                 </div>
                 <div className="col-span-2 flex items-center justify-center gap-2 font-bold text-emerald-300 text-base">
