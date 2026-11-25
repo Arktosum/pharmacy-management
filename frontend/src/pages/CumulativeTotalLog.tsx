@@ -142,25 +142,25 @@ export default function SearchLog() {
             </div>
 
             {/* Modal Medicine List */}
-            <div className="px-6 py-3 bg-slate-950/60 border-b border-slate-800 grid grid-cols-12 text-sm font-bold uppercase tracking-wider text-slate-300">
+            <div className="px-6 py-2.5 bg-slate-950/60 border-b border-slate-800 grid grid-cols-12 text-xs font-bold uppercase tracking-wider text-slate-300">
               <div className="col-span-6">Medicine Name</div>
               <div className="col-span-3 text-center">Multiplier</div>
-              <div className="col-span-3 text-right">Price (₹)</div>
+              <div className="col-span-3 text-right">Price</div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-6 py-2 divide-y divide-slate-800/60 max-h-[45vh]">
               {selectedItem.data.medicines?.map((med) => (
                 <div
                   key={med.id}
-                  className="grid grid-cols-12 py-3 items-center text-[1.2em] font-bold"
+                  className="grid grid-cols-12 py-2 items-center font-bold"
                 >
-                  <div className="col-span-6 font-bold text-yellow-300 text-[1.1em] uppercase">
+                  <div className="col-span-6 font-bold text-yellow-300 text-sm uppercase">
                     {med.name}
                   </div>
-                  <div className="col-span-3 text-center font-bold text-cyan-400 text-[1.2em]">
+                  <div className="col-span-3 text-center font-bold text-cyan-400 text-sm">
                     {med.multiplier}
                   </div>
-                  <div className="col-span-3 text-right font-bold text-emerald-400 text-[1.2em]">
+                  <div className="col-span-3 text-right font-bold text-emerald-400 text-sm">
                     {med.price}
                   </div>
                 </div>
@@ -168,36 +168,36 @@ export default function SearchLog() {
             </div>
 
             {/* Modal Summary Footer */}
-            <div className="bg-slate-950 border-t border-slate-800 p-4 grid grid-cols-4 gap-3 text-center">
+            <div className="bg-slate-950 border-t border-slate-800 p-3 grid grid-cols-4 gap-3 text-center">
               <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl">
                 <span className="block text-xs uppercase text-slate-300 font-bold mb-0.5">
                   Item Count
                 </span>
-                <span className="text-[1.4em] font-black text-blue-400">
+                <span className="text-xl font-black text-blue-400">
                   {modalItemCount}
                 </span>
               </div>
               <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl">
                 <span className="block text-xs uppercase text-slate-300 font-bold mb-0.5">
-                  Fee (₹)
+                  Fee
                 </span>
-                <span className="text-[1.4em] font-black text-amber-400">
+                <span className="text-xl font-black text-amber-400">
                   {modalFeeTotal}
                 </span>
               </div>
               <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl">
                 <span className="block text-xs uppercase text-slate-300 font-bold mb-0.5">
-                  MT Total (₹)
+                  MT Total
                 </span>
-                <span className="text-[1.4em] font-black text-emerald-400">
+                <span className="text-xl font-black text-emerald-400">
                   {modalMTtotal}
                 </span>
               </div>
               <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 p-2.5 rounded-xl">
                 <span className="block text-xs uppercase text-emerald-300 font-bold mb-0.5">
-                  Grand Total (₹)
+                  Grand Total
                 </span>
-                <span className="text-[1.4em] font-black text-emerald-300">
+                <span className="text-xl font-black text-emerald-300">
                   {modalFeeTotal + modalMTtotal}
                 </span>
               </div>
@@ -249,7 +249,7 @@ export default function SearchLog() {
         </div>
 
         {/* Table Column Headers */}
-        <div className="grid grid-cols-12 px-4 py-2.5 bg-slate-900/60 border-b border-slate-800/80 text-[1.1em] font-bold uppercase tracking-wider text-slate-200 shrink-0">
+        <div className="grid grid-cols-12 px-4 py-2 bg-slate-900/60 border-b border-slate-800/80 text-xs font-bold uppercase tracking-wider text-slate-300 shrink-0">
           <div className="col-span-5">Date & Time</div>
           <div className="col-span-5">Patient Name</div>
           <div className="col-span-2 text-right">Items</div>
@@ -258,7 +258,7 @@ export default function SearchLog() {
         {/* Scrollable List of Logs */}
         <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40 p-2 space-y-1">
           {stockItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 text-slate-500 text-lg gap-2">
+            <div className="flex flex-col items-center justify-center h-48 text-slate-500 text-sm gap-2">
               <Search className="w-8 h-8 opacity-40" />
               <span>No matching patients found</span>
             </div>
@@ -279,22 +279,22 @@ export default function SearchLog() {
                     }
                     setbillItemList((prev) => [...prev, item]);
                   }}
-                  className={`grid grid-cols-12 items-center px-3 py-2.5 rounded-xl cursor-pointer transition border ${
+                  className={`grid grid-cols-12 items-center px-3 py-2 rounded-xl cursor-pointer transition border ${
                     isSelected
                       ? "bg-slate-900/40 border-slate-800/60 opacity-45 cursor-pointer hover:opacity-65"
                       : "bg-slate-900/60 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700 text-slate-200"
                   }`}
                 >
                   <div className="col-span-5 font-mono text-slate-400 flex flex-col font-bold">
-                    <span className={isSelected ? "text-slate-500" : "text-amber-400/90 font-bold text-[1.1em]"}>
+                    <span className={isSelected ? "text-slate-500" : "text-amber-400/90 font-bold text-xs"}>
                       {date}
                     </span>
-                    <span className="text-[0.95em] text-slate-400 font-semibold">{time}</span>
+                    <span className="text-[11px] text-slate-400 font-semibold">{time}</span>
                   </div>
 
                   <div className="col-span-5 flex items-center gap-2 overflow-hidden pr-2">
                     <span
-                      className={`truncate text-[1.2em] font-bold uppercase ${
+                      className={`truncate text-sm font-bold uppercase ${
                         isSelected
                           ? "line-through text-slate-500"
                           : "text-yellow-300"
@@ -303,15 +303,15 @@ export default function SearchLog() {
                       {patientName}
                     </span>
                     {isSelected && (
-                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">
-                        <Check className="w-3.5 h-3.5" /> Added
+                      <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                        <Check className="w-3 h-3" /> Added
                       </span>
                     )}
                   </div>
 
                   <div className="col-span-2 text-right">
                     <span
-                      className={`inline-block px-3 py-1 rounded-md text-[1.2em] font-black ${
+                      className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-black ${
                         isSelected
                           ? "bg-slate-800 text-slate-500"
                           : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
@@ -357,18 +357,18 @@ export default function SearchLog() {
         </div>
 
         {/* Selected Items Table Header */}
-        <div className="grid grid-cols-10 px-4 py-2.5 bg-slate-900/90 border-b border-slate-800 text-[1.1em] font-bold uppercase tracking-wider text-slate-200 shrink-0 text-center">
+        <div className="grid grid-cols-10 px-4 py-2 bg-slate-900/90 border-b border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-300 shrink-0 text-center">
           <div className="col-span-2 text-left">Name</div>
-          <div className="col-span-2">MT Total (₹)</div>
-          <div className="col-span-2">MT Fee (₹)</div>
+          <div className="col-span-2">MT Total</div>
+          <div className="col-span-2">MT Fee</div>
           <div className="col-span-2">MT Count</div>
-          <div className="col-span-2">Grand Total (₹)</div>
+          <div className="col-span-2">Grand Total</div>
         </div>
 
         {/* Selected Items Scrollable List */}
         <div className="flex-1 overflow-y-auto divide-y divide-slate-800/50 p-2 space-y-1">
           {billItemList.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 text-slate-500 text-lg gap-2">
+            <div className="flex flex-col items-center justify-center h-48 text-slate-500 text-sm gap-2">
               <Receipt className="w-8 h-8 opacity-40" />
               <span>Click on any patient on the left to add to total</span>
             </div>
@@ -380,21 +380,21 @@ export default function SearchLog() {
                   setselectedItem(item);
                   setshowModal(true);
                 }}
-                className="grid grid-cols-10 items-center px-4 py-3 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 rounded-xl duration-150 cursor-pointer text-center group font-bold"
+                className="grid grid-cols-10 items-center px-4 py-2 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 rounded-xl duration-150 cursor-pointer text-center group font-bold"
               >
-                <div className="col-span-2 text-left font-bold text-yellow-300 text-[1.2em] uppercase truncate pr-2">
+                <div className="col-span-2 text-left font-bold text-yellow-300 text-sm uppercase truncate pr-2">
                   <span className="truncate">{item.data.patientName}</span>
                 </div>
-                <div className="col-span-2 font-bold text-emerald-400 text-[1.3em]">
+                <div className="col-span-2 font-bold text-emerald-400 text-base">
                   {item.data.MTtotal || 0}
                 </div>
-                <div className="col-span-2 font-bold text-amber-400 text-[1.3em]">
+                <div className="col-span-2 font-bold text-amber-400 text-base">
                   {item.data.consultFee || 0}
                 </div>
-                <div className="col-span-2 font-bold text-blue-400 text-[1.3em]">
+                <div className="col-span-2 font-bold text-blue-400 text-base">
                   {item.data.itemCount || 0}
                 </div>
-                <div className="col-span-2 flex items-center justify-center gap-2 font-bold text-emerald-300 text-[1.3em]">
+                <div className="col-span-2 flex items-center justify-center gap-2 font-bold text-emerald-300 text-base">
                   <span>{(item.data.consultFee || 0) + (item.data.MTtotal || 0)}</span>
                   <button
                     type="button"
@@ -407,7 +407,7 @@ export default function SearchLog() {
                     className="p-1 rounded-lg text-rose-500 hover:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 transition active:scale-95 ml-1"
                     title="Remove item"
                   >
-                    <Trash2 className="w-4 h-4 text-rose-500" />
+                    <Trash2 className="w-3.5 h-3.5 text-rose-500" />
                   </button>
                 </div>
               </div>
@@ -471,7 +471,7 @@ export default function SearchLog() {
               placeholder="e.g. 50 100 250"
               value={evalString}
               onChange={(e) => setevalString(e.target.value)}
-              className="bg-orange-300 py-1 rounded-xl text-[1.2em] px-3 font-bold text-black placeholder:text-orange-950/60 placeholder:font-semibold focus:outline-none w-56"
+              className="bg-orange-300 py-1.5 rounded-xl text-[1.2em] px-4 font-bold text-black placeholder:text-orange-950/60 placeholder:font-semibold focus:outline-none w-80 sm:w-96"
             />
             <div className="text-black font-bold text-[1.4em] bg-yellow-300 px-5 py-0.5 rounded-md">
               {addevalString()}
