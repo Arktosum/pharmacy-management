@@ -11,11 +11,7 @@ import {
   X,
   Receipt,
   FileSpreadsheet,
-  Calculator,
   User,
-  Hash,
-  Coins,
-  Wallet,
 } from "lucide-react";
 
 export default function SearchLog() {
@@ -211,7 +207,7 @@ export default function SearchLog() {
       )}
 
       {/* -------------------- LEFT COLUMN: LOG SEARCH & SELECTION -------------------- */}
-      <div className="w-full md:w-[46%] xl:w-[42%] flex flex-col h-full border-r border-slate-800/80 bg-slate-950/40">
+      <div className="w-full md:w-[32%] xl:w-[28%] flex flex-col h-full border-r border-slate-800/80 bg-slate-950/40">
         {/* Header & Title */}
         <div className="p-4 sm:p-5 border-b border-slate-800/70 shrink-0">
           <div className="flex items-center justify-between gap-3 mb-3">
@@ -298,10 +294,10 @@ export default function SearchLog() {
 
                   <div className="col-span-5 flex items-center gap-2 overflow-hidden pr-2">
                     <span
-                      className={`truncate text-sm font-bold ${
+                      className={`truncate text-sm font-bold uppercase ${
                         isSelected
                           ? "line-through text-slate-500"
-                          : "text-emerald-300"
+                          : "text-yellow-300"
                       }`}
                     >
                       {patientName}
@@ -332,7 +328,7 @@ export default function SearchLog() {
       </div>
 
       {/* -------------------- RIGHT COLUMN: SELECTED BILLS & TOTALS -------------------- */}
-      <div className="w-full md:w-[54%] xl:w-[58%] flex flex-col h-full bg-slate-950/80 overflow-hidden">
+      <div className="w-full md:w-[68%] xl:w-[72%] flex flex-col h-full bg-slate-950/80 overflow-hidden">
         {/* Section Header */}
         <div className="px-5 py-4 border-b border-slate-800/80 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
@@ -361,11 +357,11 @@ export default function SearchLog() {
         </div>
 
         {/* Selected Items Table Header */}
-        <div className="grid grid-cols-12 px-4 py-2.5 bg-slate-900/90 border-b border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0 text-center">
-          <div className="col-span-4 text-left">Name</div>
-          <div className="col-span-2">Count</div>
+        <div className="grid grid-cols-10 px-4 py-2.5 bg-slate-900/90 border-b border-slate-800 text-sm font-bold uppercase tracking-wider text-slate-300 shrink-0 text-center">
+          <div className="col-span-2 text-left">Name</div>
           <div className="col-span-2">MT Total</div>
-          <div className="col-span-2">Fee</div>
+          <div className="col-span-2">MT Fee</div>
+          <div className="col-span-2">MT Count</div>
           <div className="col-span-2">Grand Total</div>
         </div>
 
@@ -384,21 +380,21 @@ export default function SearchLog() {
                   setselectedItem(item);
                   setshowModal(true);
                 }}
-                className="grid grid-cols-12 items-center px-4 py-2 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 rounded-xl duration-150 cursor-pointer text-center group"
+                className="grid grid-cols-10 items-center px-4 py-2.5 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 rounded-xl duration-150 cursor-pointer text-center group text-base font-bold"
               >
-                <div className="col-span-4 text-left font-bold text-amber-300 truncate pr-2 flex items-center gap-2">
+                <div className="col-span-2 text-left font-bold text-yellow-300 text-sm uppercase truncate pr-2">
                   <span className="truncate">{item.data.patientName}</span>
                 </div>
-                <div className="col-span-2 font-black text-blue-400">
-                  {item.data.itemCount || 0}
-                </div>
-                <div className="col-span-2 font-black text-emerald-400">
+                <div className="col-span-2 font-bold text-emerald-400 text-base">
                   ₹{item.data.MTtotal || 0}
                 </div>
-                <div className="col-span-2 font-black text-amber-400">
+                <div className="col-span-2 font-bold text-amber-400 text-base">
                   ₹{item.data.consultFee || 0}
                 </div>
-                <div className="col-span-2 flex items-center justify-end gap-2 font-black text-emerald-300">
+                <div className="col-span-2 font-bold text-blue-400 text-base">
+                  {item.data.itemCount || 0}
+                </div>
+                <div className="col-span-2 flex items-center justify-center gap-2 font-bold text-emerald-300 text-base">
                   <span>₹{(item.data.consultFee || 0) + (item.data.MTtotal || 0)}</span>
                   <button
                     type="button"
@@ -408,10 +404,10 @@ export default function SearchLog() {
                         prev.filter((x) => x.id !== item.id)
                       );
                     }}
-                    className="p-1.5 rounded-lg text-rose-500 hover:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 transition active:scale-95"
+                    className="p-1 rounded-lg text-rose-500 hover:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 transition active:scale-95 ml-1"
                     title="Remove item"
                   >
-                    <Trash2 className="w-4 h-4 text-rose-500" />
+                    <Trash2 className="w-3.5 h-3.5 text-rose-500" />
                   </button>
                 </div>
               </div>
@@ -420,111 +416,74 @@ export default function SearchLog() {
         </div>
 
         {/* -------------------- STATS & TOTALS DOCK -------------------- */}
-        <div className="p-4 bg-slate-900 border-t border-slate-800/90 shrink-0 flex flex-col gap-3">
-          {/* 4 Summary Badges */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 text-center">
-            <div className="bg-slate-950 border border-slate-800/90 p-2.5 rounded-xl">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-center gap-1">
-                <Coins className="w-3.5 h-3.5 text-amber-400" /> Fee Total
-              </span>
-              <span className="text-lg font-black text-amber-400 block mt-0.5">
-                ₹{grandFeeTotal.toLocaleString("en-IN")}
-              </span>
-            </div>
-
-            <div className="bg-slate-950 border border-slate-800/90 p-2.5 rounded-xl">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-center gap-1">
-                <Receipt className="w-3.5 h-3.5 text-emerald-400" /> MT Total
-              </span>
-              <span className="text-lg font-black text-emerald-400 block mt-0.5">
-                ₹{grandMTtotal.toLocaleString("en-IN")}
-              </span>
-            </div>
-
-            <div className="bg-slate-950 border border-slate-800/90 p-2.5 rounded-xl">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-center gap-1">
-                <Hash className="w-3.5 h-3.5 text-blue-400" /> Total Count
-              </span>
-              <span className="text-lg font-black text-blue-400 block mt-0.5">
+        <div className="p-4 bg-slate-900 border-t border-slate-800/90 shrink-0 flex flex-col gap-4">
+          {/* Top Row: Grand Items Count, MT Total, Grand Total, Received, Balance */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+            <div className="flex items-center justify-between gap-2 bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
+              <span className="text-white text-base font-bold pl-1">Item Count</span>
+              <span className="text-black font-bold text-[1.4em] bg-[#ff8a1d] px-3 py-0.5 rounded-md">
                 {grandItemCount}
               </span>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-500/15 to-pink-500/10 border border-purple-500/30 p-2.5 rounded-xl">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-purple-300 flex items-center justify-center gap-1">
-                <Wallet className="w-3.5 h-3.5 text-purple-400" /> Grand Total
+            <div className="flex items-center justify-between gap-2 bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
+              <span className="text-white text-base font-bold pl-1">MT Total</span>
+              <span className="text-black font-bold text-[1.4em] bg-[#d8ff15] px-3 py-0.5 rounded-md">
+                {grandMTtotal}
               </span>
-              <span className="text-lg font-black text-purple-300 block mt-0.5">
-                ₹{grandTotal.toLocaleString("en-IN")}
+            </div>
+
+            <div className="flex items-center justify-between gap-2 bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
+              <span className="text-white text-base font-bold pl-1">GTotal</span>
+              <span className="text-black font-bold text-[1.4em] bg-[#f886dd] px-3 py-0.5 rounded-md">
+                {grandTotal}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
+              <span className="text-white text-base font-bold pl-1">Received:</span>
+              <input
+                type="number"
+                min="0"
+                className={`text-black text-center font-bold text-[1.4em] ${
+                  numReceived > 0 ? "pulse-red-green" : "bg-green-300"
+                } w-24 py-0.5 rounded-md focus:outline-none`}
+                value={receivedAmt}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setreceivedAmt(val === "" ? "" : Number(val));
+                }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-2 bg-slate-950/70 p-2 rounded-xl border border-slate-800/60">
+              <span className="text-white text-base font-bold pl-1">Balance</span>
+              <span className="text-black font-bold text-[1.4em] bg-yellow-300 px-3 py-0.5 rounded-md">
+                {balance}
               </span>
             </div>
           </div>
 
-          {/* Payment & Balance Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-center bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/60">
-            <div className="flex items-center justify-between sm:justify-center gap-2 px-2">
-              <span className="text-xs uppercase font-bold text-slate-400">
-                Payable:
-              </span>
-              <span className="text-base font-black text-purple-300">
-                ₹{grandTotal.toLocaleString("en-IN")}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between sm:justify-center gap-2 px-2">
-              <span className="text-xs uppercase font-bold text-slate-400 shrink-0">
-                Received:
-              </span>
-              <div className="relative w-28">
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
-                  ₹
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  className="w-full pl-6 pr-2 py-1 bg-slate-900 border border-emerald-500/50 rounded-lg text-emerald-300 font-black text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-                  value={receivedAmt}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setreceivedAmt(val === "" ? "" : Number(val));
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between sm:justify-center gap-2 px-2">
-              <span className="text-xs uppercase font-bold text-slate-400">
-                Balance:
-              </span>
-              <span
-                className={`text-base font-black ${
-                  balance < 0
-                    ? "text-rose-400"
-                    : balance > 0
-                    ? "text-emerald-400"
-                    : "text-slate-300"
-                }`}
-              >
-                ₹{balance.toLocaleString("en-IN")}
-              </span>
-            </div>
-          </div>
-
-          {/* Quick Evaluator Strip */}
-          <div className="flex items-center gap-2 pt-1 border-t border-slate-800/40">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 shrink-0">
-              <Calculator className="w-3.5 h-3.5 text-amber-400" />
-              <span>Quick Sum:</span>
-            </div>
+          {/* Quick Evaluator Strip matching Checkout bottom style */}
+          <div className="flex items-center gap-4">
             <input
               type="text"
               placeholder="e.g. 50 100 250"
               value={evalString}
               onChange={(e) => setevalString(e.target.value)}
-              className="flex-1 px-3 py-1 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-amber-300 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+              className="bg-orange-300 py-1 rounded-xl text-[1.2em] px-3 font-bold text-black placeholder:text-orange-950/60 placeholder:font-semibold focus:outline-none w-56"
             />
-            <div className="px-3 py-1 bg-amber-400/10 border border-amber-400/20 text-amber-300 font-black text-xs rounded-lg shrink-0">
-              = ₹{addevalString()}
+            <div className="text-black font-bold text-[1.4em] bg-yellow-300 px-5 py-0.5 rounded-md">
+              {addevalString()}
+            </div>
+            <div className="text-white text-base font-bold flex">Rounded</div>
+            <div className="text-black font-bold text-[1.2em] bg-[#f886dd] text-center px-5 py-0.5 rounded-md">
+              {grandTotal % 100 === 20 ||
+              grandTotal % 100 === 40 ||
+              grandTotal % 100 === 70 ||
+              grandTotal % 100 === 90
+                ? grandTotal + 10
+                : grandTotal}
             </div>
           </div>
         </div>
