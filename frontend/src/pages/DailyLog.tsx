@@ -206,7 +206,7 @@ export default function LogData() {
           setshowModal(true);
         }}
       >
-        <div className="text-yellow-300 text-[1em] font-bold uppercase truncate max-w-[200px]">
+        <div className="text-yellow-300 text-[1em] uppercase truncate max-w-[200px]">
           {item.data.patientName}
         </div>
         <div className="text-green-300 text-[1em]">{mtTotal}</div>
