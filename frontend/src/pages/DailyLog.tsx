@@ -206,7 +206,7 @@ export default function LogData() {
           setshowModal(true);
         }}
       >
-        <div className="text-yellow-300 text-[1em]">
+        <div className="text-yellow-300 text-[1em] font-bold uppercase truncate max-w-[200px]">
           {item.data.patientName}
         </div>
         <div className="text-green-300 text-[1em]">{mtTotal}</div>
@@ -293,6 +293,11 @@ interface ModalProps {
 }
 
 function Modal({ selectedItem, setselectedItem, setshowModal }: ModalProps) {
+  const [patientName, setPatientName] = useState(
+    selectedItem.data.patientName || ""
+  );
+  const [isSavingName, setIsSavingName] = useState(false);
+
   let feeTotal = 0;
   let MTTotal = 0;
   let itemCount = 0;
@@ -301,6 +306,39 @@ function Modal({ selectedItem, setselectedItem, setshowModal }: ModalProps) {
   feeTotal = selectedItem.data.consultFee;
 
   const dispatch = useAppDispatch();
+
+  function handleSavePatientName() {
+    const trimmed = patientName.trim().toUpperCase();
+    if (trimmed === "") {
+      toast.error("Patient name cannot be empty!");
+      return;
+    }
+    if (trimmed === selectedItem.data.patientName) return;
+
+    setIsSavingName(true);
+    const updatedItem: LogItem = {
+      ...selectedItem,
+      data: {
+        ...selectedItem.data,
+        patientName: trimmed,
+      },
+    };
+
+    dispatch(updateLogItem(updatedItem))
+      .unwrap()
+      .then(() => {
+        setselectedItem(updatedItem);
+        toast.success("Patient name updated!");
+      })
+      .catch((err) => {
+        toast.error(
+          "Failed to update patient name: " + (err?.message || "Error")
+        );
+      })
+      .finally(() => {
+        setIsSavingName(false);
+      });
+  }
 
   function undoItem(logItem: LogItem, stockItem: StockLog) {
     const choice = prompt("Sure to undo? (y/n)");
@@ -341,41 +379,81 @@ function Modal({ selectedItem, setselectedItem, setshowModal }: ModalProps) {
   return (
     <>
       <div className="w-full h-full bg-[#000000a0] absolute flex justify-center items-center">
-        <div className="bg-gray-800 h-[75%] w-[75%] rounded-lg">
-          <div className="grid grid-cols-4 bg-slate-900 place-items-center rounded-lg text-xl">
-            <div className="text-orange-400 uppercase text-md font-bold">
-              Name
+        <div className="bg-gray-800 h-[75%] w-[75%] rounded-lg flex flex-col justify-between overflow-hidden">
+          <div className="bg-slate-900 rounded-t-lg">
+            <div className="flex items-center justify-between px-6 py-3 border-b border-slate-700/60">
+              <div className="flex items-center gap-3">
+                <span className="text-white text-base font-bold">Patient:</span>
+                <input
+                  type="text"
+                  value={patientName}
+                  onChange={(e) => setPatientName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSavePatientName();
+                    }
+                  }}
+                  className="bg-yellow-300 text-black text-lg font-bold px-3 py-1 rounded-md uppercase tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  placeholder="Patient Name"
+                />
+                <button
+                  type="button"
+                  onClick={handleSavePatientName}
+                  disabled={
+                    isSavingName ||
+                    patientName.trim() === selectedItem.data.patientName
+                  }
+                  className={`px-4 py-1.5 rounded-md font-bold text-sm uppercase transition duration-150 ${
+                    patientName.trim() !== selectedItem.data.patientName &&
+                    patientName.trim() !== ""
+                      ? "bg-green-600 hover:bg-green-500 text-white cursor-pointer active:scale-95"
+                      : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  {isSavingName ? "Saving..." : "Save"}
+                </button>
+              </div>
+
+              <div
+                onClick={() => {
+                  setselectedItem(null);
+                  setshowModal(false);
+                }}
+                className="text-green-500 uppercase px-4 py-1.5 border-2 border-green-500 rounded-xl hover:bg-green-500 duration-200 hover:text-white text-center cursor-pointer font-bold text-sm"
+              >
+                Close
+              </div>
             </div>
-            <div className="text-orange-400 uppercase text-md font-bold">
-              Multiplier
-            </div>
-            <div className="text-orange-400 uppercase text-md font-bold">
-              Price
-            </div>
-            <div
-              onClick={() => {
-                setselectedItem(null);
-                setshowModal(false);
-              }}
-              className="text-green-600  uppercase px-5 py-5 m-5 border-2 border-green-600 rounded-xl hover:bg-green-600 duration-200 hover:text-white text-center cursor-pointer"
-            >
-              Cancel
+
+            <div className="grid grid-cols-4 place-items-center py-3 text-lg font-bold">
+              <div className="text-orange-400 uppercase">
+                Medicine Name
+              </div>
+              <div className="text-orange-400 uppercase">
+                Multiplier
+              </div>
+              <div className="text-orange-400 uppercase">
+                Price
+              </div>
+              <div className="text-orange-400 uppercase">
+                Action
+              </div>
             </div>
           </div>
-          <div className="h-[50vh] overflow-y-auto flex flex-col gap-5">
+          <div className="h-[45vh] overflow-y-auto flex flex-col gap-4 p-4">
             {infoItems}
           </div>
-          <div className="grid grid-cols-4 place-items-center">
-            <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
-              Item Count: <span className="text-green-300 ">{itemCount}</span>
+          <div className="grid grid-cols-4 place-items-center p-3 bg-slate-900 rounded-b-lg">
+            <div className="text-orange-300 font-bold text-[1.1em] bg-slate-950 px-4 py-3 rounded-xl">
+              Item Count: <span className="text-green-300">{itemCount}</span>
             </div>
-            <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+            <div className="text-orange-300 font-bold text-[1.1em] bg-slate-950 px-4 py-3 rounded-xl">
               Fee Total: <span className="text-green-300">{feeTotal}</span>
             </div>
-            <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+            <div className="text-orange-300 font-bold text-[1.1em] bg-slate-950 px-4 py-3 rounded-xl">
               MT Total: <span className="text-green-300">{MTTotal}</span>
             </div>
-            <div className="text-orange-300 font-bold text-[1.2em] bg-slate-950 p-5 rounded-xl">
+            <div className="text-orange-300 font-bold text-[1.1em] bg-slate-950 px-4 py-3 rounded-xl">
               Grand Total:{" "}
               <span className="text-green-300">{feeTotal + MTTotal}</span>
             </div>
